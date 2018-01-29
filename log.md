@@ -1,6 +1,6 @@
 # MEMORY THROUGHPUTS : LYON0
 
-Each tile has 1MB of L2(LLC) of 1MB.
+Each tile has 1MB of LLC(L2) of 1MB.
 
 https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
@@ -11,6 +11,8 @@ lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests
 
 
 # MEMORY THROUGHPUTS :  KIEV0
+
+LLC is L3 of 30MB. 
 
 This is for Xeon according to https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
 
