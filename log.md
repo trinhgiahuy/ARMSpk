@@ -1,20 +1,20 @@
-# MEMORY_THROUGHPUTS : LYON0
-( https://matsulab.slack.com/archives/C8NENQMC3/p1516867766000196 )
+# MEMORY THROUGHPUTS : LYON0
 
-For the time being, let's calculate throughputs on lyon0 from (l2_requests.miss * cache-line-length[64 bytes] / seconds). This throughputs are nearly in proportion to `offcore_response.any_request.ddr` [unit unknown]. Other counters which seem good (e.g. `OFFCORE_RESPONSE.ANY_DATA_RD.DDR`, `OFFCORE_RESPONSE.ANY_DATA_RD.MCDRAM`) are not supported actually.
-
-```
-lyon0 % perf stat -e l2_requests.miss -a ls >/dev/null
-```
-
-# MEMORY_THROUGHPUTS :  KIEV0
-( https://matsulab.slack.com/archives/C8NENQMC3/p1516793575000060 )
-
-This is for Xeon.
+There is no st  https://github.com/RRZE-HPC/likwid/blob/master/groups/knl/L2CACHE.txt
 
 ```
-keiv0% perf stat -e uncore_imc_0/cas_count_write/,uncore_imc_0/cas_count_read/,uncore_imc_1/cas_count_write/,uncore_imc_1/cas_count_read/,uncore_imc_4/cas_count_write/,uncore_imc_4/cas_count_read/,uncore_imc_5/cas_count_write/,uncore_imc_5/cas_count_read/ -a sleep 1 2>&1 >/dev/null  | sed -e 's/MiB/@\n/' | grep @ | awk '{s += $1} END {printf ("%.2f MB\n", s * 1.024 * 1.024)}'
-53.02 MB
+lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
+487488 B
+```
+
+
+# MEMORY THROUGHPUTS :  KIEV0
+
+This is for Xeon according to https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
+
+```
+kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | grep mem_load | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
+10880 B
 ```
 
 
