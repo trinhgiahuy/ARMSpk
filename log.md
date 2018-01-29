@@ -31,11 +31,8 @@ kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | gre
 ##################################
 #
 #	First, get result.txt:
-#	mpirun -np 1 bash -c 
-'../../sde-external-8.12.0-2017-10-23-lin/sde64 -knl -iform 1 -omix 
-tmp/"$MPI_LOCALRANKID".txt -- ./exe'
-#	for i in tmp/*.txt; do cat $i | egrep '\*total|elements' | sort 
--t ' ' -k1,1 -k 2rn | uniq -w 22; done >> result.txt
+#	mpirun -np 1 bash -c '../../sde-external-8.12.0-2017-10-23-lin/sde64 -knl -iform 1 -omix tmp/"$MPI_LOCALRANKID".txt -- ./exe'
+#	for i in tmp/*.txt; do cat $i | egrep '\*total|elements' | sort -t ' ' -k1,1 -k 2rn | uniq -w 22; done >> result.txt
 #
 #	Second, get time.txt
 #	(time mpirun -n 1 ./exe;)2>time.txt
