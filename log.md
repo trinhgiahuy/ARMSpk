@@ -20,7 +20,7 @@ keiv0% perf stat -e uncore_imc_0/cas_count_write/,uncore_imc_0/cas_count_read/,u
 
 # FLOP
 ( https://matsulab.slack.com/files/U755Q4FC0/F8XL55459/calculate.py )
-```
+```py
 #!/bin/python
 
 
