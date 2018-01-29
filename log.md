@@ -1,6 +1,6 @@
 # MEMORY THROUGHPUTS : LYON0
 
-Each tile has 1MB of LLC(L2) of 1MB.
+Each tile has LLC(L2) of 1MB.
 
 https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
