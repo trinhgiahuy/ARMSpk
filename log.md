@@ -7,9 +7,6 @@ For the time being, let's calculate throughputs on lyon0 from (l2_requests.miss 
 lyon0 % perf stat -e l2_requests.miss -a ls >/dev/null
 ```
 
-( Although kiev0 is not working now, it can be calculated on Xeon by almost same way . )
-The problem remaining is how to decide whether compute bound or memory bound.
-
 # KIEV0 MEMORY_THROUGHPUTS
 ( https://matsulab.slack.com/archives/C8NENQMC3/p1516793575000060 )
 
