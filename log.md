@@ -78,7 +78,11 @@ for i in element:
         if temp[0]=='*total':
                 continue
         if temp[1][0]=='i':
-                result['int']+=element[i]
+                len = int(temp[1][1:]) * int(temp[-1])
+                if len <= 64:
+                        result['int']+=element[i]
+                else :
+                        result['int']+=element[i] * len/64
         else:
                 if temp[2]=='single':
                         result['single']+=element[i]*int(temp[-1])
