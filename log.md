@@ -23,7 +23,7 @@ kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | gre
 
 
 # FLOP
-Note: `-a` option must be replaced by `-bdw` on KIEV0.
+Note: `-knl` option must be replaced by `-bdw` on KIEV0.
 
 https://software.intel.com/en-us/articles/intel-software-development-emulator
 
