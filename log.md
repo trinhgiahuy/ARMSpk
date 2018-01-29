@@ -97,4 +97,6 @@ print('Percentage of INT:  %2.2f'%(result['int']*100.0/result['total']))
 print('total time is: %fs'%(time))
 print('Performance (sp):        %f GFLOPS' % (result['single']/time/1000/1000/1000))
 print('Performance (dp):        %f GFLOPS' % (result['double']/time/1000/1000/1000))
+print('TOTAL GFLOPS (dp):       %f GFLOP' % (result['single']/1.0/1000/1000/1000))
+print('TOTAL GFLOPS (dp):       %f GFLOP' % (result['double']/1.0/1000/1000/1000))
 ```
