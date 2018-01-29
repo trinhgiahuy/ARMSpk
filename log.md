@@ -1,6 +1,8 @@
 # MEMORY THROUGHPUTS : LYON0
 
-There is no st  https://github.com/RRZE-HPC/likwid/blob/master/groups/knl/L2CACHE.txt
+Each tile has 1MB of L2(LLC) of 1MB.
+
+https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
 ```
 lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
