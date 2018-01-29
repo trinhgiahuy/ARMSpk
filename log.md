@@ -1,17 +1,25 @@
 # KIEV0 MEMORY_THROUGHPUTS
 ( https://matsulab.slack.com/archives/C8NENQMC3/p1516867766000196 )
+
 For the time being, let's calculate throughputs on lyon0 from (l2_requests.miss * cache-line-length[64 bytes] / seconds). This throughputs are nearly in proportion to `offcore_response.any_request.ddr` [unit unknown]. Other counters which seem good (e.g. `OFFCORE_RESPONSE.ANY_DATA_RD.DDR`, `OFFCORE_RESPONSE.ANY_DATA_RD.MCDRAM`) are not supported actually.
-```lyon0 % perf stat -e l2_requests.miss -a ls >/dev/null
+
 ```
+lyon0 % perf stat -e l2_requests.miss -a ls >/dev/null
+```
+
 ( Although kiev0 is not working now, it can be calculated on Xeon by almost same way . )
 The problem remaining is how to decide whether compute bound or memory bound.
 
 # KIEV0 MEMORY_THROUGHPUTS
 ( https://matsulab.slack.com/archives/C8NENQMC3/p1516793575000060 )
+
 This is for Xeon.
-``` keiv0% perf stat -e uncore_imc_0/cas_count_write/,uncore_imc_0/cas_count_read/,uncore_imc_1/cas_count_write/,uncore_imc_1/cas_count_read/,uncore_imc_4/cas_count_write/,uncore_imc_4/cas_count_read/,uncore_imc_5/cas_count_write/,uncore_imc_5/cas_count_read/ -a sleep 1 2>&1 >/dev/null  | sed -e 's/MiB/@\n/' | grep @ | awk '{s += $1} END {printf ("%.2f MB\n", s * 1.024 * 1.024)}'
+
+```
+keiv0% perf stat -e uncore_imc_0/cas_count_write/,uncore_imc_0/cas_count_read/,uncore_imc_1/cas_count_write/,uncore_imc_1/cas_count_read/,uncore_imc_4/cas_count_write/,uncore_imc_4/cas_count_read/,uncore_imc_5/cas_count_write/,uncore_imc_5/cas_count_read/ -a sleep 1 2>&1 >/dev/null  | sed -e 's/MiB/@\n/' | grep @ | awk '{s += $1} END {printf ("%.2f MB\n", s * 1.024 * 1.024)}'
 53.02 MB
 ```
+
 
 # FLOP
 ( https://matsulab.slack.com/files/U755Q4FC0/F8XL55459/calculate.py )
