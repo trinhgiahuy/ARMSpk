@@ -4,7 +4,7 @@ Each tile has LLC(L2) of 1MB.
 
 https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
-Note: You must divide bytes by elapsed time outputted by `perf`.
+Note: In order to calculate bandwidth, You must divide bytes by elapsed time outputted by `perf`.
 
 ```
 lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
@@ -18,7 +18,7 @@ LLC is L3 of 30MB.
 
 This is for Xeon according to https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
 
-Note: You must divide bytes by elapsed time outputted by `perf`.
+Note: In order to calculate bandwidth, You must divide bytes by elapsed time outputted by `perf`.
 
 ```
 kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | grep mem_load | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
