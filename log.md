@@ -1,4 +1,4 @@
-# LYON0MEMORY_THROUGHPUTS
+# MEMORY_THROUGHPUTS : LYON0
 ( https://matsulab.slack.com/archives/C8NENQMC3/p1516867766000196 )
 
 For the time being, let's calculate throughputs on lyon0 from (l2_requests.miss * cache-line-length[64 bytes] / seconds). This throughputs are nearly in proportion to `offcore_response.any_request.ddr` [unit unknown]. Other counters which seem good (e.g. `OFFCORE_RESPONSE.ANY_DATA_RD.DDR`, `OFFCORE_RESPONSE.ANY_DATA_RD.MCDRAM`) are not supported actually.
@@ -7,7 +7,7 @@ For the time being, let's calculate throughputs on lyon0 from (l2_requests.miss 
 lyon0 % perf stat -e l2_requests.miss -a ls >/dev/null
 ```
 
-# KIEV0 MEMORY_THROUGHPUTS
+# MEMORY_THROUGHPUTS :  KIEV0
 ( https://matsulab.slack.com/archives/C8NENQMC3/p1516793575000060 )
 
 This is for Xeon.
