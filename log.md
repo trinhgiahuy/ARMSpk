@@ -1,3 +1,6 @@
+# Links
+- Spreadsheet: https://docs.google.com/spreadsheets/d/1un0TIi31LXI9yURmwobPkCOatNXTvVPofXbEu_W-SvA/
+
 # Settings
 ```sh
 source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 >/dev/null
@@ -14,17 +17,14 @@ ulimit -n 4096
 
 
 # MEMORY THROUGHPUTS : LYON0
-
-Each tile has LLC(L2) of 1MB.
-
-https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
-
-Note: In order to calculate bandwidth, you must divide bytes by elapsed time outputted by `perf`.
-
 ```
 lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
 487488 B
 ```
+
+- Note: In order to calculate bandwidth, you must divide bytes by elapsed time outputted by `perf`.
+- Each tile has LLC(L2) of 1MB.
+- List of counters : https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
 According to ["Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al.]( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
 
@@ -44,23 +44,19 @@ lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's
 
 
 # MEMORY THROUGHPUTS :  KIEV0
-
-LLC is L3 of 30MB. 
-
-This is for Xeon according to https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
-
-Note: In order to calculate bandwidth, you must divide bytes by elapsed time outputted by `perf`.
-
 ```
 kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | grep mem_load | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
 10880 B
 ```
 
+- Note: In order to calculate bandwidth, you must divide bytes by elapsed time outputted by `perf`.
+- LLC is L3 of 30MB. 
+- Following https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
+
 
 # FLOP
-Note: `-knl` option must be replaced by `-bdw` on KIEV0.
-
-https://software.intel.com/en-us/articles/intel-software-development-emulator
+- Note: `-knl` option must be replaced by `-bdw` on KIEV0.
+- sde means [Intel SDE](https://software.intel.com/en-us/articles/intel-software-development-emulator)
 
 ( https://matsulab.slack.com/files/U755Q4FC0/F8XL55459/calculate.py )
 ```py
