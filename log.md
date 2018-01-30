@@ -26,7 +26,7 @@ lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests
 487488 B
 ```
 
-According to "Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al. ( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
+According to ["Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al.]( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
 
 ```
 Therefore, the proportion of main memory accesses is severely underestimated by the OFFCORE_RESPONSE events.
