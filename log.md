@@ -30,8 +30,8 @@ According to ["Detecting Memory-Boundedness with Hardware Performance Counters" 
 
 ```
 Therefore, the proportion of main memory accesses is severely underestimated by the OFFCORE_RESPONSE events.
-However, the sum of the L3 hit and L3 miss events is very close to the number of L1 misses
-in both cases, so the number of cache line transfers from the uncore to each core can be measured quite accurately.
+However, the sum of the L3 hit and L3 miss events is very close to the number of L1 misses in both cases,
+so the number of cache line transfers from the uncore to each core can be measured quite accurately.
 ```
 
 ## MPI
