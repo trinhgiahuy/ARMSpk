@@ -51,7 +51,7 @@ kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | gre
 
 - Note: In order to calculate bandwidth, you must divide bytes by elapsed time outputted by `perf`.
 - LLC is L3 of 30MB. 
-- Following https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
+- This is following https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
 
 
 # FLOP
