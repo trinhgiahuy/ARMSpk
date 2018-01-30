@@ -36,7 +36,7 @@ so the number of cache line transfers from the uncore to each core can be measur
 
 ### MPI
 ```sh
-lyon0% mkdir tmp
+lyon0% mkdir p
 lyon0% mpiexec -n 8 bash -c 'perf stat -e mem_load_uops_retired.l3_miss sleep 1 >/dev/null 2>p/"$MPI_LOCALRANKID".txt'
 lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's/\s\+/ /g' | cut -d ' ' -f 2 | tr '\n' ' '; echo; done } | awk '{ s += $1 / $2 } END { printf ("%f GB/sec\n", s * 64 / (1000 ** 3)) }' 
 0.000300 GB/sec
