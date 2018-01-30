@@ -9,6 +9,10 @@ ulimit -s unlimited
 ulimit -n 4096
 ```
 
+- `OMP_NUM_THREADS` **must** be several.
+- The number of MPI processes **should** be one.
+
+
 # MEMORY THROUGHPUTS : LYON0
 
 Each tile has LLC(L2) of 1MB.
