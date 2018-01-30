@@ -51,7 +51,7 @@ https://software.intel.com/en-us/articles/intel-software-development-emulator
 #	for i in tmp/*.txt; do cat $i | egrep '\*total|elements' | sort -t ' ' -k1,1 -k 2rn | uniq -w 22; done >> result.txt
 #
 #	Second, get time.txt
-#	(time mpirun -n 1 ./exe;)2>time.txt
+#	(time mpirun -n 1 ./exe 2>/dev/null;)2>time.txt
 #
 ##################################
 
