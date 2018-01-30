@@ -34,7 +34,7 @@ However, the sum of the L3 hit and L3 miss events is very close to the number of
 so the number of cache line transfers from the uncore to each core can be measured quite accurately.
 ```
 
-## MPI
+### MPI
 ```
 lyon0% mkdir tmp
 lyon0% mpiexec -n 8 bash -c 'perf stat -e mem_load_uops_retired.l3_miss sleep 1 >/dev/null 2>p/"$MPI_LOCALRANKID".txt'
