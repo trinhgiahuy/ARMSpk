@@ -26,6 +26,14 @@ lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests
 487488 B
 ```
 
+According to "Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al. ( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
+
+```
+Therefore, the proportion of main memory accesses is severely underestimated by the OFFCORE_RESPONSE events.
+However, the sum of the L3 hit and L3 miss events is very close to the number of L1 misses
+in both cases, so the number of cache line transfers from the uncore to each core can be measured quite accurately.
+```
+
 ## MPI
 ```
 lyon0% mkdir tmp
