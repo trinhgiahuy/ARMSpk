@@ -17,7 +17,7 @@ ulimit -n 4096
 
 
 # MEMORY THROUGHPUTS : LYON0
-```
+```sh
 lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
 487488 B
 ```
@@ -35,7 +35,7 @@ so the number of cache line transfers from the uncore to each core can be measur
 ```
 
 ### MPI
-```
+```sh
 lyon0% mkdir tmp
 lyon0% mpiexec -n 8 bash -c 'perf stat -e mem_load_uops_retired.l3_miss sleep 1 >/dev/null 2>p/"$MPI_LOCALRANKID".txt'
 lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's/\s\+/ /g' | cut -d ' ' -f 2 | tr '\n' ' '; echo; done } | awk '{ s += $1 / $2 } END { printf ("%f GB/sec\n", s * 64 / (1000 ** 3)) }' 
@@ -44,7 +44,7 @@ lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's
 
 
 # MEMORY THROUGHPUTS :  KIEV0
-```
+```sh
 kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | grep mem_load | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
 10880 B
 ```
