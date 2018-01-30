@@ -1,3 +1,14 @@
+# Settings
+```sh
+source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 >/dev/null
+export I_MPI_CC=icc
+export I_MPI_CXX=icpc
+export I_MPI_F77=ifort
+export I_MPI_F90=ifort
+ulimit -s unlimited
+ulimit -n 4096
+```
+
 # MEMORY THROUGHPUTS : LYON0
 
 Each tile has LLC(L2) of 1MB.
