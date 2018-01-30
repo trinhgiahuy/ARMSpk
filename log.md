@@ -11,6 +11,14 @@ lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests
 487488 B
 ```
 
+## MPI
+```
+lyon0% mkdir tmp
+lyon0% mpiexec -n 8 bash -c 'perf stat -e mem_load_uops_retired.l3_miss sleep 1 >/dev/null 2>p/"$MPI_LOCALRANKID".txt'
+lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's/\s\+/ /g' | cut -d ' ' -f 2 | tr '\n' ' '; echo; done } | awk '{ s += $1 / $2 } END { printf ("%f GB/sec\n", s * 64 / (1000 ** 3)) }' 
+0.000300 GB/sec
+```
+
 
 # MEMORY THROUGHPUTS :  KIEV0
 
