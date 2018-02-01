@@ -26,14 +26,6 @@ lyon0 % perf stat -e l2_requests.miss sleep 1 2>&1 >/dev/null | grep l2_requests
 - Each tile has LLC(L2) of 1MB.
 - List of counters : https://github.com/TomTheBear/perfmondb/blob/master/KNL/KnightsLanding_core_V6.tsv
 
-According to ["Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al.]( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
-
-```
-Therefore, the proportion of main memory accesses is severely underestimated by the OFFCORE_RESPONSE events.
-However, the sum of the L3 hit and L3 miss events is very close to the number of L1 misses in both cases,
-so the number of cache line transfers from the uncore to each core can be measured quite accurately.
-```
-
 ### MPI
 ```sh
 lyon0% mkdir p
@@ -53,6 +45,13 @@ kiev0 % perf stat -e mem_load_uops_retired.l3_miss sleep 1 2>&1 >/dev/null | gre
 - LLC is L3 of 30MB. 
 - This is following https://github.com/RRZE-HPC/likwid/blob/master/groups/broadwell/L3CACHE.txt
 
+According to ["Detecting Memory-Boundedness with Hardware Performance Counters" Daniel Molka et al.]( http://www.readex.eu/wp-content/uploads/2017/06/ICPE2017_authors_version.pdf ) :
+
+```
+Therefore, the proportion of main memory accesses is severely underestimated by the OFFCORE_RESPONSE events.
+However, the sum of the L3 hit and L3 miss events is very close to the number of L1 misses in both cases,
+so the number of cache line transfers from the uncore to each core can be measured quite accurately.
+```
 
 # FLOP
 - Note: `-knl` option must be replaced by `-bdw` on KIEV0.
