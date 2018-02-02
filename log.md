@@ -129,4 +129,6 @@ print('Performance (sp):        %f GFLOPS' % (result['single']/time/1000/1000/10
 print('Performance (dp):        %f GFLOPS' % (result['double']/time/1000/1000/1000))
 print('TOTAL GFLOPS (sp):       %f GFLOP' % (result['single']/1.0/1000/1000/1000))
 print('TOTAL GFLOPS (dp):       %f GFLOP' % (result['double']/1.0/1000/1000/1000))
+f.close()
+f2.close()
 ```
