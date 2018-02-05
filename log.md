@@ -40,7 +40,7 @@ mill0 % perf stat -e cache-misses sleep 1 2>&1 >/dev/null | grep cache-misses | 
 366528 B
 ```
 
-- The `cache-misses` above is same with raw counter `r412e` of KNL's `l2_requests.miss`.
+- The `cache-misses` above is the same as the raw counter `r412e` of KNL's `l2_requests.miss`.
 
 # MEMORY THROUGHPUTS :  KIEV0
 ```sh
