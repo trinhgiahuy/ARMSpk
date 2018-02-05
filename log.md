@@ -34,7 +34,7 @@ lyon0% { for i in p/*.txt; do cat $i | egrep 'sec|miss' | tr -d ','  | sed -e 's
 0.000300 GB/sec
 ```
 
-# MEMORY THROUGHPUTS : mill[0-1] (KNM)
+# MEMORY THROUGHPUTS : mill\[0-1\] (KNM)
 ```sh
 mill0 % perf stat -e cache-misses sleep 1 2>&1 >/dev/null | grep cache-misses | tr -d ',' | awk '{printf ("%d B\n", $1 * 64)}'
 366528 B
