@@ -88,36 +88,36 @@ times=float(times)
 time=times+timem*60
 element={}
 while  tmp!= '':
-        key=tmp.split(' ')[0]
-        number=tmp.split(' ')[-1]
-        number=int(number)
-        if element.has_key(key):
-                element[key]+=number
-        else:
-                element.setdefault(key, 0)
-                element[key]+=number
-        tmp=f.readline()
+    key=tmp.split(' ')[0]
+    number=tmp.split(' ')[-1]
+    number=int(number)
+    if element.has_key(key):
+        element[key]+=number
+    else:
+        element.setdefault(key, 0)
+        element[key]+=number
+    tmp=f.readline()
 
 print('read file success!')
 
 result={'single':0,'double':0,'int':0,'total':0}
 for i in element:
-        temp=i.split('_')
-        if temp[-1] == 'masked':
-                temp[-1] = temp[-2]
-        if temp[0]=='*total':
-                continue
-        if temp[1][0]=='i':
-                len = int(temp[1][1:]) * int(temp[-1])
-                if len <= 64:
-                        result['int']+=element[i]
-                else :
-                        result['int']+=element[i] * len/64
-        else:
-                if temp[2]=='single':
-                        result['single']+=element[i]*int(temp[-1])
-                else: 
-                        result['double']+=element[i]*int(temp[-1])
+    temp=i.split('_')
+    if temp[-1] == 'masked':
+        temp[-1] = temp[-2]
+    if temp[0]=='*total':
+        continue
+    if temp[1][0]=='i':
+        len = int(temp[1][1:]) * int(temp[-1])
+        if len <= 64:
+            result['int']+=element[i]
+        else :
+            result['int']+=element[i] * len/64
+    else:
+        if temp[2]=='single':
+            result['single']+=element[i]*int(temp[-1])
+        else: 
+            result['double']+=element[i]*int(temp[-1])
 
 result['total']=result['single']+result['double']+result['int']
 print(result)
