@@ -63,6 +63,8 @@ so the number of cache line transfers from the uncore to each core can be measur
 # FLOP
 - Note: `-knl` option must be replaced by `-bdw` on KIEV0.
 - sde means [Intel SDE](https://software.intel.com/en-us/articles/intel-software-development-emulator)
+- _Considering `FMA FLOP` and `MASKED FLOP` is future work._
+  - https://software.intel.com/en-us/articles/calculating-flop-using-intel-software-development-emulator-intel-sde
 
 ( https://matsulab.slack.com/files/U755Q4FC0/F8XL55459/calculate.py )
 ```py
