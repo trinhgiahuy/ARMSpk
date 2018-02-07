@@ -1,0 +1,3 @@
+[submodule "AMG"]
+	path = AMG
+	url = https://github.com/LLNL/AMG.git
