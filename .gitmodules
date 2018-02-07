@@ -4,3 +4,6 @@
 [submodule "CANDLE"]
 	path = CANDLE
 	url = https://github.com/ECP-CANDLE/Benchmarks.git
+[submodule "CoMD"]
+	path = CoMD
+	url = https://github.com/ECP-copa/CoMD.git
