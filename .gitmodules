@@ -1,3 +1,6 @@
 [submodule "AMG"]
 	path = AMG
 	url = https://github.com/LLNL/AMG.git
+[submodule "CANDLE"]
+	path = CANDLE
+	url = https://github.com/ECP-CANDLE/Benchmarks.git
