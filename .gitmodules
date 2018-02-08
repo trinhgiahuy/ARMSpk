@@ -13,3 +13,9 @@
 [submodule "dep/mfem"]
 	path = dep/mfem
 	url = https://github.com/mfem/mfem.git
+[submodule "MACSio"]
+	path = MACSio
+	url = https://github.com/LLNL/MACSio.git
+[submodule "dep/json-cwx"]
+	path = dep/json-cwx
+	url = https://github.com/LLNL/json-cwx
