@@ -19,3 +19,6 @@
 [submodule "dep/json-cwx"]
 	path = dep/json-cwx
 	url = https://github.com/LLNL/json-cwx
+[submodule "MiniAMR"]
+	path = MiniAMR
+	url = https://github.com/Mantevo/miniAMR.git
