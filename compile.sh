@@ -35,4 +35,10 @@ if [ ! -f $HOME/anaconda2/bin/anaconda ]; then
 	cd ../
 fi
 
-
+# compile CoMD
+if [ ! -f ./CoMD/bin/CoMD-openmp-mpi ]; then
+	cd ./CoMD/src-openmp/
+	cp Makefile.vanilla Makefile
+	make
+	cd ../../
+fi
