@@ -121,3 +121,13 @@ if [ ! -f ./MiniFE/mkl/src/miniFE.x ]; then
 	cd $ROOTDIR
 fi
 
+# compile miniTri
+if [ ! -f ./MiniTri/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
+	cd ./MiniTri/miniTri/linearAlgebra/MPI
+	make
+	cd $ROOTDIR
+	cd ./MiniTri/miniTri/linearAlgebra/openmp
+	make
+	cd $ROOTDIR
+fi
+
