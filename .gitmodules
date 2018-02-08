@@ -22,3 +22,6 @@
 [submodule "MiniAMR"]
 	path = MiniAMR
 	url = https://github.com/Mantevo/miniAMR.git
+[submodule "MiniFE"]
+	path = MiniFE
+	url = https://github.com/Mantevo/miniFE.git

@@ -108,3 +108,16 @@ if [ ! -f ./MiniAMR/ref/ma.x ]; then
 	cd $ROOTDIR
 fi
 
+# compile miniFE
+if [ ! -f ./MiniFE/mkl/src/miniFE.x ]; then
+	cd ./MiniFE/mkl/src
+	make
+	cd $ROOTDIR
+	cd ./MiniFE/openmp-opt/src
+	make
+	cd $ROOTDIR
+	cd ./MiniFE/openmp-opt-knl/src
+	make
+	cd $ROOTDIR
+fi
+
