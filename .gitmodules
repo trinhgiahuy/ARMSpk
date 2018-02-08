@@ -7,3 +7,9 @@
 [submodule "CoMD"]
 	path = CoMD
 	url = https://github.com/ECP-copa/CoMD.git
+[submodule "Laghos"]
+	path = Laghos
+	url = https://github.com/CEED/Laghos
+[submodule "dep/mfem"]
+	path = dep/mfem
+	url = https://github.com/mfem/mfem.git
