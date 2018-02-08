@@ -61,7 +61,7 @@ if [ ! -f ./Laghos/laghos ]; then
 		make
 		cd -
 	fi
-	if [ ! -f ]; then
+	if [ ! -f ../dep/mfem/libmfem.a ]; then
 		cd ../dep/mfem/
 		git checkout laghos-v1.0
 		sed -i -e 's#@MFEM_DIR@/../hypre#@MFEM_DIR@/../../Laghos/hypre#' config/defaults.mk
@@ -74,3 +74,30 @@ if [ ! -f ./Laghos/laghos ]; then
 	make
 	cd ../
 fi
+
+# compile MACSio
+if [ ! -f ./MACSio/macsio/macsio ]; then
+	cd ./MACSio/
+	if [ ! -f ../dep/json-cwx/lib/libjson-cwx.a ]; then
+		cd ../dep/json-cwx/json-cwx
+		./autogen.sh
+		./configure --prefix=`pwd`/../
+		make install
+		cd -
+	fi
+	if [ ! -f ../dep/silo-4.10.2/bin/silofile ]; then
+		cd ../dep/
+		wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+		tar xzf silo-4.10.2.tar.gz
+		cd silo-4.10.2/
+		./configure --prefix=`pwd`
+		make install
+		cd ../../MACSio/
+	fi
+	mkdir -p build; cd build
+	cmake -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+	make
+	make install
+	cd ../../
+fi
+
