@@ -127,7 +127,16 @@ if [ ! -f ./MiniTri/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 	make
 	cd $ROOTDIR
 	cd ./MiniTri/miniTri/linearAlgebra/openmp
+	sed -i -e 's/= g++/= icpc/' Makefile
+	sed -i -r '/Time to compute miniTri/ s#^(.*)$#//\1#' miniTri.cc
 	make
 	cd $ROOTDIR
+	# get an valid input
+	if [ ! -f ./MiniTri/bcsstk30.mtx ]; then
+		cd ./MiniTri
+		wget ftp://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/bcsstruc5/bcsstk30.mtx.gz
+		gunzip bcsstk30.mtx.gz
+		cd $ROOTDIR
+	fi
 fi
 
