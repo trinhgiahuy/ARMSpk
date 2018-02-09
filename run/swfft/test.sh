@@ -9,32 +9,25 @@ ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
 #-genv KMP_PLACE_THREADS=1T -genv KMP_AFFINITY=compact -genv I_MPI_PIN_DOMAIN=node -genv I_MPI_PIN_ORDER=spread"
 
-# ============================ miniAMR ========================================
-source conf/miniamr.sh
-NumRUNS=3
-DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/miniamr.log"
+# ============================ SWFFFT =========================================
+source conf/swfft.sh
+NumRUNS=10
+LOG="$ROOTDIR/log/testrun/swfft.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
-	if [ "x${NumMPI}x" != "x1x" ]; then
-		X="`echo $TEST | cut -d '|' -f3`"
-		Y="`echo $TEST | cut -d '|' -f4`"
-		Z="`echo $TEST | cut -d '|' -f5`"
-		INPUT=$DEFINPUT
-		INPUT="`echo $INPUT | sed -e \"s/npx 1/npx $X/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/npy 1/npy $Y/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/npz 1/npz $Z/\"`"
-	fi
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
+		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		ENDED="`date +%s.%N`"
+		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 done
-echo "Best miniAMR run:"
-BEST="`grep 'total GFLOPS' $LOG | awk -F 'GFLOPS:' '{print $2}' | sort -r -g | head -1`"
+echo "Best SWFFT run:"
+BEST="`grep 'Total running time:' $LOG | awk -F 'time:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

@@ -36,7 +36,7 @@ for BEST in $BESTCONF; do
 	done
 done
 echo "Best miniAMR run:"
-BEST="`grep 'total GFLOPS' $LOG | awk -F 'GFLOPS:' '{print $2}' | sort -r -n | head -1`"
+BEST="`grep 'total GFLOPS' $LOG | awk -F 'GFLOPS:' '{print $2}' | sort -r -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

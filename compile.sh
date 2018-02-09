@@ -148,5 +148,53 @@ if [ ! -f ./Nekbone/test/nek_mgrid/nekbone ]; then
 	cd $ROOTDIR
 fi
 
-cd SW4lite
-sed -i -e 's/CXX = mpic++/CXX = mpicxx/' -e 's/openmp = no/openmp = yes/' Makefile
+# compile SW4lite
+if [ ! -f ./SW4lite/optimize_mp_kiev/sw4lite ]; then
+	cd ./SW4lite
+	sed -i -e "s/^HOSTNAME := /HOSTNAME := kiev #/g" Makefile
+	sed -i -e "s/quadknl/kiev/g" -e "s#/opt/intel/compilers_and_libraries_2017/linux#`dirname $MKLROOT`#g"  Makefile
+	sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" Makefile
+	make
+	sed -i -e "s/kiev/mill/g" Makefile
+	sed -i -e "s/#NOKNL-xmic-avx512/-xmic-avx512/g" Makefile
+	make
+	cd $ROOTDIR
+fi
+
+# compile SWFFT
+if [ ! -f ./SWFFT/build.xeon/TestDfft ]; then
+	cd ./SWFFT
+	if [ ! -f ./fftw-3.3.4/bin/fftw-wisdom ]; then
+		wget http://fftw.org/fftw-3.3.4.tar.gz
+		tar xzf fftw-3.3.4.tar.gz
+		cd ./fftw-3.3.4/
+		./configure --prefix=`pwd`/../fftw-xmic --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
+		make -j CFLAGS="-O3 -xMIC-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		make install
+		make distclean
+		./configure --prefix=`pwd`/../fftw-xeon --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
+		make -j CFLAGS="-O3 -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		make install
+		cd $ROOTDIR/SWFFT
+	fi
+	oldPATH=$PATH
+	export PATH=$oldPATH:`pwd`/fftw-xeon/bin
+	make -f GNUmakefile.openmp
+	cp -r build.openmp build.xeon
+	make -f GNUmakefile.openmp clean
+	export PATH=$oldPATH:`pwd`/fftw-xmic/bin
+	make -f GNUmakefile.openmp
+	cp -r build.openmp build.xmic
+	make -f GNUmakefile.openmp clean
+	export PATH=$oldPATH
+	cd $ROOTDIR
+fi
+
+# compile XSBench
+if [ ! -f ./XSBench/src/XSBench ]; then
+	cd ./XSBench/src
+	sed -i -e 's/^COMPILER.*= gnu/COMPILER = intel/' -e 's/^MPI.* = no/MPI = yes/' -e 's/-openmp/-fopenmp/' Makefile
+	make
+	cd $ROOTDIR
+fi
+

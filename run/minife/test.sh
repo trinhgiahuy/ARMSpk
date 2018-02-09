@@ -25,6 +25,6 @@ for TEST in $TESTCONF; do
 	done
 done
 echo "Best miniFE run:"
-BEST="`grep 'Total CG Mflops' $LOG | awk -F 'Mflops:' '{print $2}' | sort -n -r | head -1`"
+BEST="`grep 'Total CG Mflops' $LOG | awk -F 'Mflops:' '{print $2}' | sort -r -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 cd $ROOTDIR

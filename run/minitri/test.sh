@@ -34,7 +34,7 @@ echo "Best miniTri run:"
 grep 'compute.*B:' $LOG | awk -F 'B:' '{print $2}' > /dev/shm/1
 grep 'compute ver' $LOG | awk -F 'vertex degrees:' '{print $2}' > /dev/shm/2
 grep 'compute edg' $LOG | awk -F 'edge degrees:' '{print $2}' > /dev/shm/3
-BEST="`paste /dev/shm/1 /dev/shm/2 /dev/shm/3 | awk '{print $1+$2+$3 "\t" $1}' | sort -n | head -1 | awk '{print $2}'`"
+BEST="`paste /dev/shm/1 /dev/shm/2 /dev/shm/3 | awk '{print $1+$2+$3 "\t" $1}' | sort -g | head -1 | awk '{print $2}'`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

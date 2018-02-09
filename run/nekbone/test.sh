@@ -24,7 +24,7 @@ for TEST in $TESTCONF; do
 	done
 done
 echo "Best Nekbone run:"
-BEST="`grep '^Avg MFlops' $LOG | awk -F 'MFlops =' '{print $2}' | sort -n -r | head -1`"
+BEST="`grep '^Avg MFlops' $LOG | awk -F 'MFlops =' '{print $2}' | sort -g -r | head -1`"
 grep "^Avg.*$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

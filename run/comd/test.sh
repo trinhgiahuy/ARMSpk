@@ -33,8 +33,4 @@ for TEST in $TESTCONF; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	done
 done
-#echo "Best CoMD run:"
-#BEST="`grep -A3 'export\|mpiexec\|Problem 1.*AMG-PCG Solve' $LOG | grep 'wall' | cut -d '=' -f2 | sort -n | head -1`"
-#grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
-#echo ""
 cd $ROOTDIR

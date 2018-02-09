@@ -25,7 +25,7 @@ for BEST in $BESTCONF; do
 	done
 done
 echo "Best AMG run:"
-BEST="`grep -A3 'Problem 1.*AMG-PCG Solve' $LOG | grep 'wall' | awk -F 'time =' '{print $2}' | sort -n | head -1`"
+BEST="`grep -A3 'Problem 1.*AMG-PCG Solve' $LOG | grep 'wall' | awk -F 'time =' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

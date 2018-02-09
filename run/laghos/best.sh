@@ -26,7 +26,7 @@ for BEST in $BESTCONF; do
 	done
 done
 echo "Best Laghos run:"
-BEST="`grep 'Major kernels total time' $LOG | awk -F 'seconds):' '{print $2}' | sort -n | head -1`"
+BEST="`grep 'Major kernels total time' $LOG | awk -F 'seconds):' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR
