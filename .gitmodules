@@ -28,3 +28,6 @@
 [submodule "MiniTri"]
 	path = MiniTri
 	url = https://github.com/Mantevo/miniTri.git
+[submodule "Nekbone"]
+	path = Nekbone
+	url = https://github.com/Nek5000/Nekbone.git
