@@ -40,3 +40,6 @@
 [submodule "XSBench"]
 	path = XSBench
 	url = https://github.com/ANL-CESAR/XSBench.git
+[submodule "dep/fftw3"]
+	path = dep/fftw3
+	url = https://github.com/FFTW/fftw3.git
