@@ -7,7 +7,7 @@ if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
 	# on "normal" Xeon
 	export BINARY="./build.xeon/TestDfft"
 	export TESTCONF="1|96 1|48 1|24 1|12 2|24 2|12 4|12 4|6 12|2 24|1 32|1 48|1"
-	export BESTCONF=""
+	export BESTCONF="12|2"
 else
 	# on one of the Phi
 	export BINARY="./build.xmic/TestDfft"

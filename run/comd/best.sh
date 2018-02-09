@@ -7,22 +7,21 @@ source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/n
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
-#-genv KMP_PLACE_THREADS=1T -genv KMP_AFFINITY=compact -genv I_MPI_PIN_DOMAIN=node -genv I_MPI_PIN_ORDER=spread"
 
 # ============================ CoMD ===========================================
 source conf/comd.sh
 NumRUNS=10
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/comd.log"
+LOG="$ROOTDIR/log/bestrun/comd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
-for TEST in $TESTCONF; do
-	NumMPI="`echo $TEST | cut -d '|' -f1`"
-	NumOMP="`echo $TEST | cut -d '|' -f2`"
+for BEST in $BESTCONF; do
+	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	if [ "x${NumMPI}x" != "x1x" ]; then
-		I="`echo $TEST | cut -d '|' -f3`"
-		J="`echo $TEST | cut -d '|' -f4`"
-		K="`echo $TEST | cut -d '|' -f5`"
+		I="`echo $BEST | cut -d '|' -f3`"
+		J="`echo $BEST | cut -d '|' -f4`"
+		K="`echo $BEST | cut -d '|' -f5`"
 		INPUT=$DEFINPUT
 		INPUT="`echo $INPUT | sed -e \"s/i1/i$I/\"`"
 		INPUT="`echo $INPUT | sed -e \"s/j1/j$J/\"`"
@@ -30,7 +29,9 @@ for TEST in $TESTCONF; do
 	fi
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
+		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		echo "Ended at " `date --iso-8601=s` >> $LOG 2>&1
 	done
 done
 rm *.yaml

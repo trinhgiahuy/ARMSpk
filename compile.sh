@@ -37,6 +37,7 @@ fi
 # compile CoMD
 if [ ! -f ./CoMD/bin/CoMD-openmp-mpi ]; then
 	cd ./CoMD/src-openmp/
+	sed -i -e 's#%s: %s\\n", timeString#= %f =: %s\\n", MPI_Wtime()#' parallel.c
 	cp Makefile.vanilla Makefile
 	make
 	cd $ROOTDIR

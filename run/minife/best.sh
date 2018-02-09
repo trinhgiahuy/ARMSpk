@@ -14,7 +14,7 @@ LOG="$ROOTDIR/log/bestrun/minife.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
-	for BINARY in $BINARYS; do
+	for BINARY in $BBINARY; do
 		NumMPI="`echo $BEST | cut -d '|' -f1`"
 		NumOMP="`echo $BEST | cut -d '|' -f2`"
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
