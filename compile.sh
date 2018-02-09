@@ -140,3 +140,11 @@ if [ ! -f ./MiniTri/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 	fi
 fi
 
+# compile Nekbone
+if [ ! -f ./Nekbone/test/nek_mgrid/nekbone ]; then
+	cd ./Nekbone/test/nek_mgrid
+	sed -i -e 's/lp = 10)/lp = 576)/' SIZE
+	./makenek NotUsedCasename $ROOTDIR/Nekbone/src
+	cd $ROOTDIR
+fi
+
