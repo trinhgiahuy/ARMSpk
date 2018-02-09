@@ -7,7 +7,6 @@ source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/n
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
-#-genv KMP_PLACE_THREADS=1T -genv KMP_AFFINITY=compact -genv I_MPI_PIN_DOMAIN=node -genv I_MPI_PIN_ORDER=spread"
 
 # ============================ XSBench ========================================
 source conf/xsbench.sh
