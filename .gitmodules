@@ -31,3 +31,6 @@
 [submodule "Nekbone"]
 	path = Nekbone
 	url = https://github.com/Nek5000/Nekbone.git
+[submodule "SW4lite"]
+	path = SW4lite
+	url = https://github.com/geodynamics/sw4lite.git
