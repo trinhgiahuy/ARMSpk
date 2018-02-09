@@ -34,3 +34,6 @@
 [submodule "SW4lite"]
 	path = SW4lite
 	url = https://github.com/geodynamics/sw4lite.git
+[submodule "SWFFT"]
+	path = SWFFT
+	url = https://xgitlab.cels.anl.gov/hacc/SWFFT.git

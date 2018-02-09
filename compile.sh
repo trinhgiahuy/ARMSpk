@@ -148,3 +148,5 @@ if [ ! -f ./Nekbone/test/nek_mgrid/nekbone ]; then
 	cd $ROOTDIR
 fi
 
+cd SW4lite
+sed -i -e 's/CXX = mpic++/CXX = mpicxx/' -e 's/openmp = no/openmp = yes/' Makefile
