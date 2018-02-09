@@ -37,3 +37,6 @@
 [submodule "SWFFT"]
 	path = SWFFT
 	url = https://xgitlab.cels.anl.gov/hacc/SWFFT.git
+[submodule "XSBench"]
+	path = XSBench
+	url = https://github.com/ANL-CESAR/XSBench.git
