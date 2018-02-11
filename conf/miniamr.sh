@@ -7,7 +7,7 @@ export INPUT="--num_refine 4 --max_blocks 9000 --npx 1 --npy 1 --npz 1 --nx 8 --
 if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
 	# on "normal" Xeon
 	export TESTCONF="6|1|3|2|1 12|1|3|2|2 24|1|4|3|2 32|1|4|4|2 48|1|4|4|3 96|1|6|4|4"
-	export BESTCONF=""
+	export BESTCONF="48|1|4|4|3"
 else
 	# on one of the Phi
 	export TESTCONF=""
