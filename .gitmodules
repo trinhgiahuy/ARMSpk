@@ -52,3 +52,6 @@
 [submodule "NICAM"]
 	path = NICAM
 	url = https://github.com/fiber-miniapp/nicam-dc-mini.git
+[submodule "MVMC"]
+	path = MVMC
+	url = https://github.com/fiber-miniapp/mVMC-mini.git

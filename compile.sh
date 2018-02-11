@@ -10,8 +10,8 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 
 # compile AMG -> comes w/ 2 problems
-if [ ! -f ./AMG/test/amg ]; then
-	cd ./AMG/
+if [ ! -f $ROOTDIR/AMG/test/amg ]; then
+	cd $ROOTDIR/AMG/
 	make
 	make clean
 	cd $ROOTDIR
@@ -19,7 +19,7 @@ fi
 
 # compile CANDLE -> comes w/ 7 problems
 if [ ! -f $HOME/anaconda2/bin/anaconda ]; then
-	cd ./CANDLE/
+	cd $ROOTDIR/CANDLE/
 	curl -o Anaconda2-4.3.1-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-4.3.1-Linux-x86_64.sh
 	chmod u+x ./Anaconda2-4.3.1-Linux-x86_64.sh
 	./Anaconda2-4.3.1-Linux-x86_64.sh -b
@@ -35,8 +35,8 @@ if [ ! -f $HOME/anaconda2/bin/anaconda ]; then
 fi
 
 # compile CoMD
-if [ ! -f ./CoMD/bin/CoMD-openmp-mpi ]; then
-	cd ./CoMD/src-openmp/
+if [ ! -f $ROOTDIR/CoMD/bin/CoMD-openmp-mpi ]; then
+	cd $ROOTDIR/CoMD/src-openmp/
 	sed -i -e 's#%s: %s\\n", timeString#= %f =: %s\\n", MPI_Wtime()#' parallel.c
 	cp Makefile.vanilla Makefile
 	make
@@ -44,9 +44,9 @@ if [ ! -f ./CoMD/bin/CoMD-openmp-mpi ]; then
 fi
 
 # compile Laghos
-if [ ! -f ./Laghos/laghos ]; then
-	cd ./Laghos/
-	if [ ! -f hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then
+if [ ! -f $ROOTDIR/Laghos/laghos ]; then
+	cd $ROOTDIR/Laghos/
+	if [ ! -f ./hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then
 		wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz
 		tar xzf hypre-2.10.0b.tar.gz
 		cd ./hypre-2.10.0b/src
@@ -54,15 +54,15 @@ if [ ! -f ./Laghos/laghos ]; then
 		make -j
 		cd $ROOTDIR/Laghos/
 	fi
-	if [ ! -f metis-4.0.3/graphchk ]; then
+	if [ ! -f ./metis-4.0.3/graphchk ]; then
 		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
 		tar xzf metis-4.0.3.tar.gz
 		cd ./metis-4.0.3/
 		make
 		cd $ROOTDIR/Laghos/
 	fi
-	if [ ! -f ../dep/mfem/libmfem.a ]; then
-		cd ../dep/mfem/
+	if [ ! -f $ROOTDIR/dep/mfem/libmfem.a ]; then
+		cd $ROOTDIR/dep/mfem/
 		git checkout laghos-v1.0
 		sed -i -e 's#@MFEM_DIR@/../hypre#@MFEM_DIR@/../../Laghos/hypre#' config/defaults.mk
 		sed -i -e 's#@MFEM_DIR@/../metis-4.0$#@MFEM_DIR@/../../Laghos/metis-4.0.3#' config/defaults.mk
@@ -76,17 +76,17 @@ if [ ! -f ./Laghos/laghos ]; then
 fi
 
 # compile MACSio
-if [ ! -f ./MACSio/macsio/macsio ]; then
-	cd ./MACSio/
-	if [ ! -f ../dep/json-cwx/lib/libjson-cwx.a ]; then
-		cd ../dep/json-cwx/json-cwx
+if [ ! -f $ROOTDIR/MACSio/macsio/macsio ]; then
+	cd $ROOTDIR/MACSio/
+	if [ ! -f $ROOTDIR/dep/json-cwx/lib/libjson-cwx.a ]; then
+		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
 		./configure --prefix=`pwd`/../
 		make install
 		cd $ROOTDIR/MACSio/
 	fi
-	if [ ! -f ../dep/silo-4.10.2/bin/silofile ]; then
-		cd ../dep/
+	if [ ! -f $ROOTDIR/dep/silo-4.10.2/bin/silofile ]; then
+		cd $ROOTDIR/dep/
 		wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
 		tar xzf silo-4.10.2.tar.gz
 		cd silo-4.10.2/
@@ -102,56 +102,52 @@ if [ ! -f ./MACSio/macsio/macsio ]; then
 fi
 
 # compile miniAMR
-if [ ! -f ./MiniAMR/ref/ma.x ]; then
-	cd ./MiniAMR/ref/
+if [ ! -f $ROOTDIR/MiniAMR/ref/ma.x ]; then
+	cd $ROOTDIR/MiniAMR/ref
 	sed -i -e 's#= cc#= mpicc#' Makefile
 	make
 	cd $ROOTDIR
 fi
 
 # compile miniFE
-if [ ! -f ./MiniFE/mkl/src/miniFE.x ]; then
-	cd ./MiniFE/mkl/src
+if [ ! -f $ROOTDIR/MiniFE/mkl/src/miniFE.x ]; then
+	cd $ROOTDIR/MiniFE/mkl/src
 	make
-	cd $ROOTDIR
-	cd ./MiniFE/openmp-opt/src
+	cd $ROOTDIR/MiniFE/openmp-opt/src
 	make
-	cd $ROOTDIR
-	cd ./MiniFE/openmp-opt-knl/src
+	cd $ROOTDIR/MiniFE/openmp-opt-knl/src
 	make
 	cd $ROOTDIR
 fi
 
 # compile miniTri
-if [ ! -f ./MiniTri/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
-	cd ./MiniTri/miniTri/linearAlgebra/MPI
+if [ ! -f $ROOTDIR/MiniTri/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
+	cd $ROOTDIR/MiniTri/miniTri/linearAlgebra/MPI
 	make
-	cd $ROOTDIR
-	cd ./MiniTri/miniTri/linearAlgebra/openmp
+	cd $ROOTDIR/MiniTri/miniTri/linearAlgebra/openmp
 	sed -i -e 's/= g++/= icpc/' Makefile
 	sed -i -r '/Time to compute miniTri/ s#^(.*)$#//\1#' miniTri.cc
 	make
-	cd $ROOTDIR
 	# get an valid input
-	if [ ! -f ./MiniTri/bcsstk30.mtx ]; then
-		cd ./MiniTri
+	if [ ! -f $ROOTDIR/MiniTri/bcsstk30.mtx ]; then
+		cd $ROOTDIR/MiniTri
 		wget ftp://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/bcsstruc5/bcsstk30.mtx.gz
 		gunzip bcsstk30.mtx.gz
-		cd $ROOTDIR
 	fi
+	cd $ROOTDIR
 fi
 
 # compile Nekbone
-if [ ! -f ./Nekbone/test/nek_mgrid/nekbone ]; then
-	cd ./Nekbone/test/nek_mgrid
+if [ ! -f $ROOTDIR/Nekbone/test/nek_mgrid/nekbone ]; then
+	cd $ROOTDIR/Nekbone/test/nek_mgrid
 	sed -i -e 's/lp = 10)/lp = 576)/' SIZE
 	./makenek NotUsedCasename $ROOTDIR/Nekbone/src
 	cd $ROOTDIR
 fi
 
 # compile SW4lite
-if [ ! -f ./SW4lite/optimize_mp_kiev/sw4lite ]; then
-	cd ./SW4lite
+if [ ! -f $ROOTDIR/SW4lite/optimize_mp_kiev/sw4lite ]; then
+	cd $ROOTDIR/SW4lite
 	sed -i -e "s/^HOSTNAME := /HOSTNAME := kiev #/g" Makefile
 	sed -i -e "s/quadknl/kiev/g" -e "s#/opt/intel/compilers_and_libraries_2017/linux#`dirname $MKLROOT`#g"  Makefile
 	sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" Makefile
@@ -163,9 +159,9 @@ if [ ! -f ./SW4lite/optimize_mp_kiev/sw4lite ]; then
 fi
 
 # compile SWFFT
-if [ ! -f ./SWFFT/build.xeon/TestDfft ]; then
-	cd ./SWFFT
-	if [ ! -f ./fftw-3.3.4/bin/fftw-wisdom ]; then
+if [ ! -f $ROOTDIR/SWFFT/build.xeon/TestDfft ]; then
+	cd $ROOTDIR/SWFFT
+	if [ ! -f $ROOTDIR/fftw-3.3.4/bin/fftw-wisdom ]; then
 		wget http://fftw.org/fftw-3.3.4.tar.gz
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
@@ -192,16 +188,16 @@ if [ ! -f ./SWFFT/build.xeon/TestDfft ]; then
 fi
 
 # compile XSBench
-if [ ! -f ./XSBench/src/XSBench ]; then
-	cd ./XSBench/src
+if [ ! -f $ROOTDIR/XSBench/src/XSBench ]; then
+	cd $ROOTDIR/XSBench/src
 	sed -i -e 's/^COMPILER.*= gnu/COMPILER = intel/' -e 's/^MPI.* = no/MPI = yes/' -e 's/-openmp/-fopenmp/' Makefile
 	make
 	cd $ROOTDIR
 fi
 
 # compile CCS QCD
-if [ ! -f ./QCD/src/ccs_qcd_solver_bench_class1 ]; then
-	cd ./QCD/src
+if [ ! -f $ROOTDIR/QCD/src/ccs_qcd_solver_bench_class1 ]; then
+	cd $ROOTDIR/QCD/src
 	sed -i -e 's/-openmp/-fopenmp/' make.ifort.inc
 	make MAKE_INC=make.ifort.inc CLASS=1 PX=1 PY=1 PZ=1
 	make MAKE_INC=make.ifort.inc CLASS=2 PX=1 PY=1 PZ=1
@@ -210,10 +206,31 @@ if [ ! -f ./QCD/src/ccs_qcd_solver_bench_class1 ]; then
 fi
 
 # compile FFVC
-if [ ! -f ./FFVC/bin/ffvc_mini ]; then
-	cd ./FFVC/src
+if [ ! -f $ROOTDIR/FFVC/bin/ffvc_mini ]; then
+	cd $ROOTDIR/FFVC/src
 	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
 	rm make_setting; ln -s make_setting.intel make_setting
 	make
 	cd $ROOTDIR
 fi
+
+# compile NICAM
+if [ ! -f $ROOTDIR/NICAM/bin/nhm_driver ]; then
+	cd $ROOTDIR/NICAM/src
+	export NICAM_SYS=Linux64-intel-impi
+	make
+	cd '../test/case/jablonowski'
+	make
+	# TODO: check how to create correct shells myself:
+	#make jobshell
+	cd $ROOTDIR
+fi
+
+# compile mVMC
+if [ ! -f $ROOTDIR/MVMC/src/vmc.out ]; then
+	cd $ROOTDIR/MVMC/src
+	sed -i -e 's/-openmp/-fopenmp/g' -e 's/-opt-prefetch=3/-qopt-prefetch=3/g' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g"  Makefile_intel
+	make intel
+	cd $ROOTDIR
+fi
+
