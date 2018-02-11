@@ -55,3 +55,12 @@
 [submodule "MVMC"]
 	path = MVMC
 	url = https://github.com/fiber-miniapp/mVMC-mini.git
+[submodule "NGSAnalyzer"]
+	path = NGSAnalyzer
+	url = https://github.com/fiber-miniapp/ngsa-mini.git
+[submodule "NTChem"]
+	path = NTChem
+	url = https://github.com/fiber-miniapp/ntchem-mini.git
+[submodule "FFB"]
+	path = FFB
+	url = https://github.com/fiber-miniapp/ffb-mini.git
