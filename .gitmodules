@@ -46,3 +46,6 @@
 [submodule "QCD"]
 	path = QCD
 	url = https://github.com/fiber-miniapp/ccs-qcd.git
+[submodule "FFVC"]
+	path = FFVC
+	url = https://github.com/fiber-miniapp/ffvc-mini.git
