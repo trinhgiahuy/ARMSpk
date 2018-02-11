@@ -234,3 +234,47 @@ if [ ! -f $ROOTDIR/MVMC/src/vmc.out ]; then
 	cd $ROOTDIR
 fi
 
+# compile NGS Analyzer
+if [ ! -f $ROOTDIR/NGSAnalyzer/bin/workflow ]; then
+	cd $ROOTDIR/NGSAnalyzer
+	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./makefile.x86_64_gcc
+	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./SNP_indel_caller/Makefile
+	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./bwa-0.5.9rc1_kei/bwt_gen/Makefile
+	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/examples/Makefile
+	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/misc/Makefile
+	make -f makefile.x86_64_gcc
+	cd $ROOTDIR
+fi
+
+# compile MODYLAS (req. license agreement on website)
+
+# compile NTChem
+if [ ! -f $ROOTDIR/NTChem/bin/rimp2.exe ]; then
+	cd $ROOTDIR/NTChem
+	TOP_DIR=`pwd`
+	TYPE=intel
+	cp platforms/config_mine.${TYPE} ./config_mine
+	sed -i -e 's/-openmp/-fopenmp/g' ./config/linux64_mpif90_omp_intel_proto.makeconfig.in
+	./config_mine
+	mkdir $ROOTDIR/NTChem/bin
+	make CC=mpicc CXX=mpicxx F77C=mpif77 F90C=mpif90
+	cd $ROOTDIR
+fi
+
+# compile FFB (w/o REVOCAP_Refiner library b/c it has 'registration wall' -> fix later)
+if [ ! -f $ROOTDIR/FFB/bin/les3x.mpi ]; then
+	cd $ROOTDIR/FFB/src
+	if [ ! -f ./metis-5.1.0/bin/graphchk ]; then
+		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+		tar xzf metis-5.1.0.tar.gz
+		cd ./metis-5.1.0/
+		make config cc=icc prefix=`pwd`
+		make install
+		cd $ROOTDIR/FFB/src
+	fi
+	cp ./make_setting.intel ./make_setting
+	sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/FFB/src/metis-5.1.0#g" ./make_setting
+	make
+	cd $ROOTDIR
+fi
+
