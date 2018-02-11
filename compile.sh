@@ -202,10 +202,18 @@ fi
 # compile CCS QCD
 if [ ! -f ./QCD/src/ccs_qcd_solver_bench_class1 ]; then
 	cd ./QCD/src
-	sed -i -e 's/-openmp/-fopenmp/'  make.ifort.inc
+	sed -i -e 's/-openmp/-fopenmp/' make.ifort.inc
 	make MAKE_INC=make.ifort.inc CLASS=1 PX=1 PY=1 PZ=1
 	make MAKE_INC=make.ifort.inc CLASS=2 PX=1 PY=1 PZ=1
 	make MAKE_INC=make.ifort.inc CLASS=3 PX=1 PY=1 PZ=1
 	cd $ROOTDIR
 fi
 
+# compile FFVC
+if [ ! -f ./FFVC/bin/ffvc_mini ]; then
+	cd ./FFVC/src
+	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
+	rm make_setting; ln -s make_setting.intel make_setting
+	make
+	cd $ROOTDIR
+fi
