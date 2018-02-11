@@ -43,3 +43,6 @@
 [submodule "dep/fftw3"]
 	path = dep/fftw3
 	url = https://github.com/FFTW/fftw3.git
+[submodule "QCD"]
+	path = QCD
+	url = https://github.com/fiber-miniapp/ccs-qcd.git
