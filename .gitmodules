@@ -49,3 +49,6 @@
 [submodule "FFVC"]
 	path = FFVC
 	url = https://github.com/fiber-miniapp/ffvc-mini.git
+[submodule "NICAM"]
+	path = NICAM
+	url = https://github.com/fiber-miniapp/nicam-dc-mini.git
