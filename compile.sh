@@ -199,3 +199,13 @@ if [ ! -f ./XSBench/src/XSBench ]; then
 	cd $ROOTDIR
 fi
 
+# compile CCS QCD
+if [ ! -f ./QCD/src/ccs_qcd_solver_bench_class1 ]; then
+	cd ./QCD/src
+	sed -i -e 's/-openmp/-fopenmp/'  make.ifort.inc
+	make MAKE_INC=make.ifort.inc CLASS=1 PX=1 PY=1 PZ=1
+	make MAKE_INC=make.ifort.inc CLASS=2 PX=1 PY=1 PZ=1
+	make MAKE_INC=make.ifort.inc CLASS=3 PX=1 PY=1 PZ=1
+	cd $ROOTDIR
+fi
+
