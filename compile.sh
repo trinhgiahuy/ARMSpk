@@ -243,6 +243,18 @@ if [ ! -f $ROOTDIR/NGSAnalyzer/bin/workflow ]; then
 	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/examples/Makefile
 	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/misc/Makefile
 	make -f makefile.x86_64_gcc
+	# we also need to get an input data set
+	if [ ! -f $ROOTDIR/NGSAnalyzer/ngsa_mini_input/reference.fa ]; then
+		echo "Creating NGSAnalyzer input may take 2h or more (stay tuned) ..."
+		mkdir -p ./ngsa_mini_input/work/../bwa_db; cd ./ngsa_mini_input
+		bash $ROOTDIR/NGSAnalyzer/bin/download_reference.sh ./work
+		../bin/samtools faidx reference.fa
+		cd ./work
+		../../bin/bwa index -a bwtsw -p ../bwa_db/reference.fa ../reference.fa
+		bash $ROOTDIR/NGSAnalyzer/bin/download_contig.sh
+		cd $ROOTDIR/NGSAnalyzer
+		echo "... done"
+	fi
 	cd $ROOTDIR
 fi
 
