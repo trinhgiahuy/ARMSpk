@@ -247,6 +247,15 @@ if [ ! -f $ROOTDIR/NGSAnalyzer/bin/workflow ]; then
 fi
 
 # compile MODYLAS (req. license agreement on website)
+if [ ! -f $ROOTDIR/MODYLAS/src/modylas_mini ]; then
+	mkdir -p $ROOTDIR/MODYLAS
+	tar xzf $ROOTDIR/dep/modylas-mini-1.0.0.tar.gz -C $ROOTDIR/MODYLAS --strip-components 1
+	cd $ROOTDIR/MODYLAS/src
+	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
+	rm make_setting; ln -s make_setting.intel make_setting
+	make
+	cd $ROOTDIR
+fi
 
 # compile NTChem
 if [ ! -f $ROOTDIR/NTChem/bin/rimp2.exe ]; then
