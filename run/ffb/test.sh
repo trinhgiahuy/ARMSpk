@@ -8,11 +8,11 @@ ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
 
-# ============================ FFVC ===========================================
-source conf/ffvc.sh
+# ============================ FFB ============================================
+source conf/ffb.sh
 NumRUNS=5
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/ffvc.log"
+LOG="$ROOTDIR/log/testrun/ffb.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do
@@ -27,11 +27,13 @@ for TEST in $TESTCONF; do
 	INPUT="`echo $INPUT | sed -e \"s/DZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		mkdir ./tmp; sleep 2; cd ./tmp
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
+		cd ../; rm -rf ./tmp; sleep 2
 	done
 done
-echo "Best FFVC run:"
-BEST="`grep 'Main Loop' $LOG | awk -F 'max)' '{print $2}' | awk -F '[' '{print $1}' | sort -g | head -1`"
+echo "Best FFB run:"
+BEST="`grep '^MAIN_LOOP' $LOG | awk -F 'max)' '{print $2}' | awk -F '[' '{print $1}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR
