@@ -21,10 +21,11 @@ for BEST in $BESTCONF; do
 	X="`echo $BEST | cut -d '|' -f3`"
 	Y="`echo $BEST | cut -d '|' -f4`"
 	Z="`echo $BEST | cut -d '|' -f5`"
-	INPUT=$DEFINPUT
-	INPUT="`echo $INPUT | sed -e \"s/DX/$X/\"`"
-	INPUT="`echo $INPUT | sed -e \"s/DY/$Y/\"`"
-	INPUT="`echo $INPUT | sed -e \"s/DZ/$Z/\"`"
+	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
+	# try finding closest cube size per proc
+	FLOAT=`echo "e((1/3)*l($MAXDCZ / $NumMPI))" | bc -l`
+	DCZ=`echo "($FLOAT+0.5)/1" | bc`
+	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
 		mkdir ./tmp; sleep 2; cd ./tmp
@@ -35,7 +36,7 @@ for BEST in $BESTCONF; do
 	done
 done
 echo "Best FFB run:"
-BEST="`grep '^MAIN_LOOP' $LOG | awk -F 'max)' '{print $2}' | awk -F '[' '{print $1}' | sort -g | head -1`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

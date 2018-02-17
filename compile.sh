@@ -13,7 +13,6 @@ export I_MPI_F90=ifort
 if [ ! -f $ROOTDIR/AMG/test/amg ]; then
 	cd $ROOTDIR/AMG/
 	make
-	make clean
 	cd $ROOTDIR
 fi
 
@@ -37,7 +36,6 @@ fi
 # compile CoMD
 if [ ! -f $ROOTDIR/CoMD/bin/CoMD-openmp-mpi ]; then
 	cd $ROOTDIR/CoMD/src-openmp/
-	sed -i -e 's#%s: %s\\n", timeString#= %f =: %s\\n", MPI_Wtime()#' parallel.c
 	cp Makefile.vanilla Makefile
 	make
 	cd $ROOTDIR

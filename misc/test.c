@@ -1,19 +1,40 @@
 #include <stdio.h>
+#include <mpi.h>
+
+#define STARTSDE __SSC_MARK(0x111);
+#define STOPSDE __SSC_MARK(0x222);
+
 int main() {
-	__SSC_MARK(0x222);
+double mkrts, mkrte; // my kernel run-time
+STOPSDE;
+
 	float *a, *b;
 	int i;
-	a=malloc(1024 * sizeof(*a));
-	b=malloc(1024 * sizeof(*b));
-	for (i=0; i<1024; a[i]=2, b[i]=3, i++);
-	for (i=0; i<1024; i++) a[i] *= b[i];
-	for (i=0; i<1024; b[i]=4, i++);
-	__SSC_MARK(0x111);
-	for (i=0; i<1024; i++) a[i] *= b[i];
-	__SSC_MARK(0x222);
-	printf("Hello, World %f %f!", a[0], a[i]);
+	MPI_Init(NULL, NULL);
+
+	a=malloc(10240 * sizeof(*a));
+	b=malloc(10240 * sizeof(*b));
+	for (i=0; i<10240; a[i]=2, b[i]=3, i++);
+	#pragma omp parallel for
+	for (i=0; i<10240; i++) a[i] *= b[i];
+	for (i=0; i<10240; b[i]=4, i++);
+
+mkrts = MPI_Wtime();
+STARTSDE;
+
+	#pragma omp parallel for
+	for (i=0; i<10240; i++) a[i] *= b[i];
+
+STOPSDE;
+mkrte = MPI_Wtime();
+printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+
+	printf("Hello, World %f %f\n", a[0], a[--i]);
 	free(a);
 	free(b);
-	__SSC_MARK(0x111);
+
+	MPI_Finalize();
+
+STARTSDE;
 	return 0;
 }

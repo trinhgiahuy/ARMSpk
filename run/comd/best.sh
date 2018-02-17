@@ -18,15 +18,10 @@ cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	if [ "x${NumMPI}x" != "x1x" ]; then
-		I="`echo $BEST | cut -d '|' -f3`"
-		J="`echo $BEST | cut -d '|' -f4`"
-		K="`echo $BEST | cut -d '|' -f5`"
-		INPUT=$DEFINPUT
-		INPUT="`echo $INPUT | sed -e \"s/i1/i$I/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/j1/j$J/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/k1/k$K/\"`"
-	fi
+	X="`echo $TEST | cut -d '|' -f3`"
+	Y="`echo $TEST | cut -d '|' -f4`"
+	Z="`echo $TEST | cut -d '|' -f5`"
+	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
@@ -36,9 +31,7 @@ for BEST in $BESTCONF; do
 done
 rm *.yaml
 echo "Best CoMD run:"
-grep 'Starting simulation' $LOG | awk -F '=' '{print $2}' > /dev/shm/1
-grep 'Ending simulation' $LOG | awk -F '=' '{print $2}' > /dev/shm/2
-BEST="`paste /dev/shm/1 /dev/shm/2 | awk '{print $2-$1 "\t" $1}' | sort -g | head -1 | awk '{print $2}'`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR
