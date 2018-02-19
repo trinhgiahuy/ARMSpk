@@ -7,7 +7,6 @@ source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/n
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
-#-genv KMP_PLACE_THREADS=1T -genv KMP_AFFINITY=compact -genv I_MPI_PIN_DOMAIN=node -genv I_MPI_PIN_ORDER=spread"
 
 # ============================ Nekbone ========================================
 source conf/nekbone.sh
@@ -15,9 +14,13 @@ NumRUNS=5
 LOG="$ROOTDIR/log/testrun/nekbone.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
+if [ ! -f ./data.rea.bak ]; then cp ./data.rea ./data.rea.bak; fi
 for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
+	# prep input for strong scaling test
+	NEPP=$(($ielN / $NumMPI))
+	sed -e "s/1   50  1 = iel0/$NEPP  $NEPP  1 = iel0/" -e 's/8   10  2 = nx0/8    8  2 = nx0/' ./data.rea.bak > ./data.rea
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1

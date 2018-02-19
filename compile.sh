@@ -138,7 +138,7 @@ fi
 # compile Nekbone
 if [ ! -f $ROOTDIR/Nekbone/test/nek_mgrid/nekbone ]; then
 	cd $ROOTDIR/Nekbone/test/nek_mgrid
-	sed -i -e 's/lp = 10)/lp = 576)/' SIZE
+	sed -i -e 's/lp = 10)/lp = 576)/' -e 's/lelt=100/lelt=1024/' SIZE
 	./makenek NotUsedCasename $ROOTDIR/Nekbone/src
 	cd $ROOTDIR
 fi
@@ -235,6 +235,7 @@ fi
 # compile NGS Analyzer
 if [ ! -f $ROOTDIR/NGSAnalyzer/bin/workflow ]; then
 	cd $ROOTDIR/NGSAnalyzer
+	sed -i -e 's/^N_THREADS=1/N_THREADS=$OMP_NUM_THREADS/' ./workflow/workflow_01.sh
 	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./makefile.x86_64_gcc
 	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./SNP_indel_caller/Makefile
 	# bwa w/ intel breaks

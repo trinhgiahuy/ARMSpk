@@ -21,4 +21,8 @@ for TEST in $TESTCONF; do
 		popd
 	done
 done
+echo "Best CANDLE run:"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
+grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
+echo ""
 cd $ROOTDIR

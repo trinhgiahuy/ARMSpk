@@ -3,6 +3,7 @@
 export APPDIR="./Nekbone/test/nek_mgrid"
 export BINARY="./nekbone"
 export INPUT=""
+export ielN=1024
 
 if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
 	# on "normal" Xeon
