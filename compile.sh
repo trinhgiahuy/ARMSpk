@@ -280,7 +280,7 @@ if [ ! -f $ROOTDIR/NTChem/bin/rimp2.exe ]; then
 	cp platforms/config_mine.${TYPE} ./config_mine
 	sed -i -e 's/-openmp/-fopenmp/g' ./config/linux64_mpif90_omp_intel_proto.makeconfig.in
 	./config_mine
-	mkdir $ROOTDIR/NTChem/bin
+	mkdir -p $ROOTDIR/NTChem/bin
 	make CC=mpicc CXX=mpicxx F77C=mpif77 F90C=mpif90
 	cd $ROOTDIR
 fi
