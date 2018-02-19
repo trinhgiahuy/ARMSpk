@@ -93,7 +93,7 @@ if [ ! -f $ROOTDIR/MACSio/macsio/macsio ]; then
 		cd $ROOTDIR/MACSio/
 	fi
 	mkdir -p build; cd build
-	cmake -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CC_COMPILER=mpicc -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
 	make
 	make install
 	cd $ROOTDIR

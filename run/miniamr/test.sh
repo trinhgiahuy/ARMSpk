@@ -19,15 +19,10 @@ cd $APPDIR
 for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
-	if [ "x${NumMPI}x" != "x1x" ]; then
-		X="`echo $TEST | cut -d '|' -f3`"
-		Y="`echo $TEST | cut -d '|' -f4`"
-		Z="`echo $TEST | cut -d '|' -f5`"
-		INPUT=$DEFINPUT
-		INPUT="`echo $INPUT | sed -e \"s/npx 1/npx $X/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/npy 1/npy $Y/\"`"
-		INPUT="`echo $INPUT | sed -e \"s/npz 1/npz $Z/\"`"
-	fi
+	X="`echo $TEST | cut -d '|' -f3`"
+	Y="`echo $TEST | cut -d '|' -f4`"
+	Z="`echo $TEST | cut -d '|' -f5`"
+	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRUNS`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
