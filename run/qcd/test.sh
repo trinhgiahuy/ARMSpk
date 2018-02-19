@@ -6,6 +6,7 @@ cd $ROOTDIR
 source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
+MPIEXECOPT="-host `hostname`"
 
 # ============================ CCS QCD ========================================
 source conf/qcd.sh
