@@ -41,7 +41,9 @@ for TEST in $TESTCONF; do
 	for i in `seq 1 $NumRUNS`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY >> $LOG 2>&1
 		cat ./msg.pe00000 >> $LOG 2>&1
+		break
 	done
+	break
 done
 
 # clean up
@@ -50,7 +52,7 @@ cd $APPDIR
 if [ -d "$INPUT" ] && [ "x" != "x$INPUT" ]; then rm -rf $INPUT; fi
 
 echo "Best NICam run:"
-BEST="`grep 'Main ALL' $LOG | awk -F 'max)=' '{print $2}' | awk -F ',' '{print $1}' | sort -g | head -1`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

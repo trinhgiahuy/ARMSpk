@@ -219,8 +219,6 @@ if [ ! -f $ROOTDIR/NICAM/bin/nhm_driver ]; then
 	make
 	cd '../test/case/jablonowski'
 	make
-	# TODO: check how to create correct shells myself:
-	#make jobshell
 	cd $ROOTDIR
 fi
 
