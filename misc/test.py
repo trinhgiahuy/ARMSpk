@@ -2,7 +2,6 @@
 import numpy as np
 import time
 
-#from ctypes import c_int
 import numpy.ctypeslib as npct
 # load the library, using numpy mechanisms
 libssc = npct.load_library("libssc", ".")

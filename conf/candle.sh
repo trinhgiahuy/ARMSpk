@@ -3,6 +3,7 @@
 export APPDIR="./CANDLE"
 export BINARYS="p1b1_baseline_keras2.py" # p1b2_baseline_keras2.py p1b3_baseline_keras2.py p2b1_baseline_keras2.py p2b2_baseline_keras2.py p3b1_baseline_keras2.py p3b2_baseline_keras2.py"
 export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
+export MKL_THREADING_LAYER=GNU
 export NumRunsTEST=3
 export NumRunsBEST=10
 

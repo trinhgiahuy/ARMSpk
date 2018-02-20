@@ -16,15 +16,16 @@ if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
 	chmod u+x ./Anaconda2-5.1.0-Linux-x86_64.sh
 	./Anaconda2-5.1.0-Linux-x86_64.sh -b -p $ROOTDIR/dep/anaconda2
 	export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
-	conda install -y -c intel python
-	conda install -y -c intel intelpython2_core
-	conda install -y -c intel tensorflow
-	conda install -y -c intel mkl
+	conda config --set changeps1 False
 	conda install -y -c anaconda hdf5
 	conda install -y -c anaconda theano
-	conda install -y -c conda-forge keras=2
+	conda install -y -c conda-forge keras
 	conda install -y -c conda-forge opencv
 	conda install -y -c conda-forge tqdm
+	conda install -y -c intel --override-channels python=2 pip numpy
+	conda install -y -c intel --override-channels intelpython2_core
+	conda remove -y blaze
+	conda install -y -c intel --override-channels tensorflow
 	cd $ROOTDIR
 fi
 
