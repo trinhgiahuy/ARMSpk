@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ SWFFFT =========================================
 source conf/swfft.sh
-NumRUNS=10
 LOG="$ROOTDIR/log/testrun/swfft.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -26,7 +25,7 @@ for TEST in $TESTCONF; do
 		echo "INVALID Decomposition: mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		continue
 	fi
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	done
 done

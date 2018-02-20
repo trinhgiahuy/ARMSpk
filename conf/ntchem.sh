@@ -6,6 +6,8 @@ export INPUT=""
 export NTCHEM_DIR=$APPDIR
 export MODEL="h2o"
 export DATA_DIR=${NTCHEM_DIR}/tests/${MODEL}
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

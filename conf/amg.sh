@@ -4,6 +4,8 @@ export APPDIR="./AMG"
 export BINARY="./test/amg"
 export MAXXYZ=$((2*2*2*2*2*3*3))
 export INPUT="-problem 1 -P PX PY PZ -n NX NY NZ"
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

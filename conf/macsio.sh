@@ -3,6 +3,8 @@
 export APPDIR="./MACSio"
 export BINARY="./macsio/macsio"
 export INPUT=""
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniAMR ========================================
 source conf/miniamr.sh
-NumRUNS=10
 DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/bestrun/miniamr.log"
 mkdir -p `dirname $LOG`
@@ -23,7 +22,7 @@ for BEST in $BESTCONF; do
 	Z="`echo $BEST | cut -d '|' -f5`"
 	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsBEST`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 		echo "Ended at " `date --iso-8601=s` >> $LOG 2>&1

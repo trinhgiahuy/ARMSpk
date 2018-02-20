@@ -5,6 +5,8 @@ export BINARYMPI="./miniTri/linearAlgebra/MPI/miniTri.exe"
 export BINARYOMP="./miniTri/linearAlgebra/openmp/miniTri.exe"
 export INPUTMPI="./bcsstk30.mtx MM"
 export INPUTOMP="./bcsstk30.mtx 16 OMPNT MM"
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

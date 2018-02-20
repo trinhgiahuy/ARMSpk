@@ -3,6 +3,8 @@
 export APPDIR="./Nekbone/test/nek_mgrid"
 export BINARY="./nekbone"
 export INPUT=""
+export NumRunsTEST=3
+export NumRunsBEST=10
 export ielN=1024
 
 if [[ $HOSTNAME = *"kiev"* ]]; then

@@ -4,6 +4,8 @@ export APPDIR="./QCD/src"
 export BINARYS="./ccs_qcd_solver_bench_class1 ./ccs_qcd_solver_bench_class2 ./ccs_qcd_solver_bench_class3"
 export BBINARY="./ccs_qcd_solver_bench_class3"
 export INPUT=""
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

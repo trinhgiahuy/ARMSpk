@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NTChem =========================================
 source conf/ntchem.sh $ROOTDIR
-NumRUNS=20
 LOG="$ROOTDIR/log/testrun/ntchem.log"
 mkdir -p `dirname $LOG`
 cd $DATA_DIR
@@ -18,7 +17,7 @@ for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $APPDIR/$BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $APPDIR/$BINARY $INPUT >> $LOG 2>&1
 		ENDED="`date +%s.%N`"

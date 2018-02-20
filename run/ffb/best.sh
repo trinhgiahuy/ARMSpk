@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ FFB ============================================
 source conf/ffb.sh
-NumRUNS=10
 DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/bestrun/ffb.log"
 mkdir -p `dirname $LOG`
@@ -27,7 +26,7 @@ for BEST in $BESTCONF; do
 	DCZ=`echo "($FLOAT+0.5)/1" | bc`
 	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsBEST`; do
 		mkdir ./tmp; sleep 2; cd ./tmp
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1

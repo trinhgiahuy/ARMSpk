@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ MACSio =========================================
 source conf/macsio.sh
-NumRUNS=3
 LOG="$ROOTDIR/log/testrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -19,7 +18,7 @@ for TEST in $TESTCONF; do
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
 	mkdir -p ./testrun; cd ./testrun
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
 		grep 'Processor\|^Info' macsio-log.log >> $LOG 2>&1
 	done

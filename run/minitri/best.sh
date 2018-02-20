@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniTri ========================================
 source conf/minitri.sh
-NumRUNS=10
 LOG="$ROOTDIR/log/bestrun/minitri.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -25,7 +24,7 @@ for BEST in $BESTCONF; do
 		INPUT="`echo $INPUTOMP | sed -e \"s/OMPNT/$NumOMP/\"`"
 	fi
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsBEST`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 		echo "Ended at " `date --iso-8601=s` >> $LOG 2>&1

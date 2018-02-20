@@ -29,7 +29,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
-NumRUNS=5
 LOG="$ROOTDIR/log/testrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -37,7 +36,7 @@ for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		# prep input (dep on numMPI; up to 12 supported)
 		PreprocessInput $NumMPI $INPUTDIR
 		START="`date +%s.%N`"

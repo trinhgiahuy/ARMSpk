@@ -4,6 +4,8 @@ export APPDIR="./FFB/bin/"
 export BINARY="./ffb_mini"
 export MAXDCZ=$((50*50*50))
 export INPUT="PX PY PZ DCZ"
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

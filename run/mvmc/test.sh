@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ mVMC ===========================================
 source conf/mvmc.sh
-NumRUNS=5
 LOG="$ROOTDIR/log/testrun/mvmc.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -23,7 +22,7 @@ for TEST in $TESTCONF; do
 	./makeDef/makeDef_large.py ${NumMPI}
 	cd ./job_mpi${NumMPI}
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
 		rm -f Lx*Ly*/zvo_*

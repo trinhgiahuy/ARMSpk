@@ -3,6 +3,8 @@
 export APPDIR="./MODYLAS/data/wat222"
 export BINARY="../../src/modylas_mini"
 export INPUT="./wat222"
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

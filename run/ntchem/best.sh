@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NTChem =========================================
 source conf/ntchem.sh $ROOTDIR
-NumRUNS=10
 LOG="$ROOTDIR/log/bestrun/ntchem.log"
 mkdir -p `dirname $LOG`
 cd $DATA_DIR
@@ -18,7 +17,7 @@ for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $APPDIR/$BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsBEST`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $APPDIR/$BINARY $INPUT >> $LOG 2>&1

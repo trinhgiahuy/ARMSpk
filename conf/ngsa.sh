@@ -4,6 +4,8 @@ export APPDIR="./NGSAnalyzer"
 export BINARY="./bin/workflow"
 export INPUTDIR="./ngsa_mini_input"
 export INPUT="$INPUTDIR/bwa_db/reference.fa $INPUTDIR/seq_contig.md $INPUTDIR/reference.fa $INPUTDIR/reference.fa.fai $INPUTDIR/00-read-rank"
+export NumRunsTEST=3
+export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

@@ -8,14 +8,13 @@ ulimit -n 4096
 
 # ============================ CANDLE =========================================
 source conf/candle.sh
-NumRUNS=5
 LOG="$ROOTDIR/log/testrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do
 	for BINARY in $BINARYS; do
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
-		for i in `seq 1 $NumRUNS`; do
+		for i in `seq 1 $NumRunsTEST`; do
 			python $BINARY >> $LOG 2>&1
 		done
 		popd

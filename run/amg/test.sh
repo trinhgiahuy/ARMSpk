@@ -11,7 +11,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ AMG ============================================
 source conf/amg.sh
-NumRUNS=5
 DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/testrun/amg.log"
 mkdir -p `dirname $LOG`
@@ -28,7 +27,7 @@ for TEST in $TESTCONF; do
 	Z=$(($MAXXYZ / $Z))
 	INPUT="`echo $INPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		sleep 0
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	done

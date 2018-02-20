@@ -11,7 +11,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniTri ========================================
 source conf/minitri.sh
-NumRUNS=20
 LOG="$ROOTDIR/log/testrun/minitri.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -26,7 +25,7 @@ for TEST in $TESTCONF; do
 		INPUT="`echo $INPUTOMP | sed -e \"s/OMPNT/$NumOMP/\"`"
 	fi
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	done
 done

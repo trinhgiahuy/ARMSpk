@@ -10,7 +10,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ MACSio =========================================
 source conf/macsio.sh
-NumRUNS=10
 LOG="$ROOTDIR/log/bestrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -19,7 +18,7 @@ for BEST in $BESTCONF; do
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	mkdir -p ./bestrun; cd ./bestrun
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsBEST`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
 		grep 'Processor\|^Info' macsio-log.log >> $LOG 2>&1

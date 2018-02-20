@@ -11,7 +11,6 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ XSBench ========================================
 source conf/xsbench.sh
-NumRUNS=5
 LOG="$ROOTDIR/log/testrun/xsbench.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
@@ -21,7 +20,7 @@ for TEST in $TESTCONF; do
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
 	INPUT="`echo $DEFINPUT | sed -e \"s/OMPNT/$NumOMP/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRUNS`; do
+	for i in `seq 1 $NumRunsTEST`; do
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	done
 done
