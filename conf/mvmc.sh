@@ -3,7 +3,7 @@
 export APPDIR="./MVMC"
 export BINARY="../src/vmc.out"
 export INPUT="./multiDir.def"
-export PATH=$HOME/anaconda2/bin:$PATH
+export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 export NumRunsTEST=3
 export NumRunsBEST=10
 
