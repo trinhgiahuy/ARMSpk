@@ -19,34 +19,20 @@ fi
 # compile CANDLE -> comes w/ 7 problems
 if [ ! -f $HOME/anaconda2/bin/anaconda ]; then
 	cd $ROOTDIR/CANDLE/
-	curl -o Anaconda2-4.3.1-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-4.3.1-Linux-x86_64.sh
-	chmod u+x ./Anaconda2-4.3.1-Linux-x86_64.sh
-	./Anaconda2-4.3.1-Linux-x86_64.sh -b
+	curl -o Anaconda2-5.1.0-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-5.1.0-Linux-x86_64.sh
+	chmod u+x ./Anaconda2-5.1.0-Linux-x86_64.sh
+	./Anaconda2-5.1.0-Linux-x86_64.sh -b -p $HOME/anaconda2
 	export PATH=$HOME/anaconda2/bin:$PATH
-	conda install -y -c conda-forge tensorflow
-	conda install -y -c anaconda hdf5=1.8.17
+	conda install -y -c intel python
+	conda install -y -c intel intelpython2_core
+	conda install -y -c intel tensorflow
+	conda install -y -c intel mkl
+	conda install -y -c anaconda hdf5
 	conda install -y -c anaconda theano
 	conda install -y -c conda-forge keras=2
 	conda install -y -c conda-forge opencv
 	conda install -y -c conda-forge tqdm
-	conda update -y -c conda-forge numpy
 	cd $ROOTDIR
-	#
-	#curl -o Anaconda2-5.1.0-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-5.1.0-Linux-x86_64.sh
-	#chmod u+x ./Anaconda2-5.1.0-Linux-x86_64.sh
-	#./Anaconda2-5.1.0-Linux-x86_64.sh -b -p $HOME/anaconda2
-	#export PATH=$HOME/anaconda2/bin:$PATH
-	#conda install -y -c intel python
-	#conda install -y -c intel intelpython2_core
-	#conda install -y -c intel tensorflow
-	#conda install -y -c intel mkl
-	#conda install -y -c anaconda hdf5=1.8.17
-	#conda install -y -c anaconda theano
-	#conda install -y -c conda-forge keras=2
-	#conda install -y -c conda-forge opencv
-	#conda install -y -c conda-forge tqdm
-	#conda update -y -c conda-forge numpy
-	#cd $ROOTDIR
 fi
 
 # compile CoMD
