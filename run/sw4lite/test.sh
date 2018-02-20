@@ -7,7 +7,6 @@ source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/n
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
-#-genv KMP_PLACE_THREADS=1T -genv KMP_AFFINITY=compact -genv I_MPI_PIN_DOMAIN=node -genv I_MPI_PIN_ORDER=spread"
 
 # ============================ SW4lite ========================================
 source conf/sw4lite.sh
@@ -25,7 +24,7 @@ for TEST in $TESTCONF; do
 	done
 done
 echo "Best SW4lite run:"
-BEST="`grep 'Total running time:' $LOG | awk -F 'time:' '{print $2}' | sort -g | head -1`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

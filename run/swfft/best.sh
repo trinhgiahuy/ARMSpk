@@ -17,18 +17,23 @@ cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	# test if Decomposition is valid
+	INSIZE="`echo $INPUT | awk '{print $2}'`"
+	`dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
+	if [ "x$?" = "x0" ]; then
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	else
+		echo "INVALID Decomposition: mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		continue
+	fi
 	for i in `seq 1 $NumRUNS`; do
 		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
-		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		ENDED="`date +%s.%N`"
-		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		echo "Ended at " `date --iso-8601=s` >> $LOG 2>&1
 	done
 done
 echo "Best SWFFT run:"
-BEST="`grep 'Total running time:' $LOG | awk -F 'time:' '{print $2}' | sort -g | head -1`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

@@ -27,9 +27,7 @@ for BEST in $BESTCONF; do
 	done
 done
 echo "Best XSBench run:"
-grep 'Total Lookups' $LOG | awk -F 's:' '{print $2}' > /dev/shm/1
-cat /dev/shm/1 | sed -e 's/,//g' > /dev/shm/2
-BEST="`paste /dev/shm/1 /dev/shm/2 | awk '{print $2 "\t" $1}' | sort -g -r | head -1 | awk '{print $2}'`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

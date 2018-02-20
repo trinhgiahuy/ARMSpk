@@ -172,14 +172,16 @@ if [ ! -f $ROOTDIR/SWFFT/build.xeon/TestDfft ]; then
 		make install
 		cd $ROOTDIR/SWFFT
 	fi
+	# fortran version is 5-10% faster in my tests
+	sed -i -e 's/^default: nativec/default: fortran/' GNUmakefile
 	oldPATH=$PATH
 	export PATH=$oldPATH:`pwd`/fftw-xeon/bin
 	make -f GNUmakefile.openmp
-	cp -r build.openmp build.xeon
+	mv build.openmp build.xeon
 	make -f GNUmakefile.openmp clean
 	export PATH=$oldPATH:`pwd`/fftw-xmic/bin
 	make -f GNUmakefile.openmp
-	cp -r build.openmp build.xmic
+	mv build.openmp build.xmic
 	make -f GNUmakefile.openmp clean
 	export PATH=$oldPATH
 	cd $ROOTDIR
