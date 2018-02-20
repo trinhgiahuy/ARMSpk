@@ -10,10 +10,15 @@ MPIEXECOPT="-host `hostname`"
 
 export PATH=$ROOTDIR/dep/sde-external-8.16.0-2018-01-30-lin:$PATH
 SDE="`which sde` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
-if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
+if [[ $HOSTNAME = *"kiev"* ]]; then
 	SDE="$SDE -bdw -- "
-else
+elif [[ $HOSTNAME = *"lyon"* ]]; then
 	SDE="$SDE -knl -- "
+elif [[ $HOSTNAME = *"mill"* ]]; then
+	SDE="$SDE -knm -- "
+else
+	echo "Unsupported host"
+	exit
 fi
 
 # ============================ AMG ============================================

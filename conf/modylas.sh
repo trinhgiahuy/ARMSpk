@@ -4,12 +4,19 @@ export APPDIR="./MODYLAS/data/wat222"
 export BINARY="../../src/modylas_mini"
 export INPUT="./wat222"
 
-if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
+if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="8|1 8|2 8|3 8|4 8|6 16|1 16|2 16|3 16|4 32|1 32|2 64|1"
 	export BESTCONF=""
-else
-	# on one of the Phi
+elif [[ $HOSTNAME = *"lyon"* ]]; then
+	# on one of the Phi (knl)
 	export TESTCONF=""
 	export BESTCONF=""
+elif [[ $HOSTNAME = *"mill"* ]]; then
+	# on one of the Phi (knm)
+	export TESTCONF=""
+	export BESTCONF=""
+else
+	echo "Unsupported host"
+	exit
 fi

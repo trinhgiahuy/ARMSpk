@@ -5,7 +5,7 @@ export BINARY="./ffb_mini"
 export MAXDCZ=$((50*50*50))
 export INPUT="PX PY PZ DCZ"
 
-if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
+if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="1|6|1|1|1 1|12|1|1|1 1|24|1|1|1 1|32|1|1|1 1|48|1|1|1 1|96|1|1|1
 			 2|6|2|1|1 2|12|2|1|1 2|24|2|1|1
@@ -17,8 +17,15 @@ if [ "x`lscpu | grep '^Model name.*E5-2650' | wc -l`" = "x1" ]; then
 			 48|1|4|4|3
 			 96|1|6|4|4"
 	export BESTCONF=""
-else
-	# on one of the Phi
+elif [[ $HOSTNAME = *"lyon"* ]]; then
+	# on one of the Phi (knl)
 	export TESTCONF=""
 	export BESTCONF=""
+elif [[ $HOSTNAME = *"mill"* ]]; then
+	# on one of the Phi (knm)
+	export TESTCONF=""
+	export BESTCONF=""
+else
+	echo "Unsupported host"
+	exit
 fi
