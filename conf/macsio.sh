@@ -2,7 +2,8 @@
 
 export APPDIR="./MACSio"
 export BINARY="./macsio/macsio"
-export INPUT=""
+export MAXNDPP=$((2*2*2*2*2*3*3))
+export INPUT="--units_prefix_system decimal --num_dumps NDPP"
 export NumRunsTEST=3
 export NumRunsBEST=10
 

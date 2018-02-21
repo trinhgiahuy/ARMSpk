@@ -10,12 +10,14 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ MACSio =========================================
 source conf/macsio.sh
+DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/testrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
+	INPUT="`echo $DEFINPUT | sed -e \"s/NDPP/$(($MAXNDPP / $NumMPI))/\"`"
 	mkdir -p ./testrun; cd ./testrun
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsTEST`; do
@@ -25,6 +27,6 @@ for TEST in $TESTCONF; do
 	cd ../; rm -rf ./testrun
 done
 echo "Best MACSio run:"
-BEST="`grep 'Summed  BW:' $LOG | awk -F 'BW:' '{print $2}' | sort -r -g | head -1`"
+BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 cd $ROOTDIR
