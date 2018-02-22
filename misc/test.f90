@@ -48,7 +48,7 @@ program hello
 
       call SSC_MARK_STOP()
       mkrte = MPI_WTIME()
-      write(*,"(A,F10.6,A)") "Walltime of the main kernel:", mkrte - mkrts, " sec"
+      write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", mkrte - mkrts, " sec"
 
       write(*,*) "Hello World!", a(1), a(1024)
       deallocate(a, b)
