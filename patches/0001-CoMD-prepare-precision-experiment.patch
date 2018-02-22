@@ -1,4 +1,4 @@
-From 165a79aa4e9ac4d4b26647f64d3472ad7268be6f Mon Sep 17 00:00:00 2001
+From ea7a99144ebf4e1c770835ac7ac673aaac6852a0 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:51:52 +0900
 Subject: [PATCH 1/1] CoMD: prepare precision experiment
@@ -82,7 +82,7 @@ index 12466c8..4ab5004 100644
  
 diff --git a/src-openmp/Makefile b/src-openmp/Makefile
 new file mode 100644
-index 0000000..3558c2c
+index 0000000..5882749
 --- /dev/null
 +++ b/src-openmp/Makefile
 @@ -0,0 +1,108 @@
@@ -105,7 +105,7 @@ index 0000000..3558c2c
 +### (such as -lm for the math library) put them in C_LIB.
 +CC = mpicc
 +CFLAGS = -std=c99 -fopenmp
-+OPTFLAGS = -g -O5
++OPTFLAGS = -g -O3 -ipo -xHost
 +INCLUDES = 
 +C_LIB = -lm
 +

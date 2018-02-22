@@ -33,7 +33,6 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		make
 		cd $ROOTDIR/$BM/src
 	fi
-	cp ./make_setting.intel ./make_setting
 	sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 	sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux-intel #" ./make_setting
 	make
