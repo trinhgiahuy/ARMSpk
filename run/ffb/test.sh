@@ -27,9 +27,12 @@ for TEST in $TESTCONF; do
 	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsTEST`; do
-		mkdir ./tmp; sleep 2; cd ./tmp
+		mkdir ./tmp; sleep 1; cd ./tmp
+		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
-		cd ../; rm -rf ./tmp; sleep 2
+		ENDED="`date +%s.%N`"
+		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+		cd ../; rm -rf ./tmp; sleep 1
 	done
 done
 echo "Best FFB run:"

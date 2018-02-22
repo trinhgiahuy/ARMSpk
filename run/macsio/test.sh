@@ -21,8 +21,11 @@ for TEST in $TESTCONF; do
 	mkdir -p ./testrun; cd ./testrun
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsTEST`; do
+		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
+		ENDED="`date +%s.%N`"
 		grep 'Processor\|^Info' macsio-log.log >> $LOG 2>&1
+		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 	cd ../; rm -rf ./testrun
 done

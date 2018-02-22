@@ -23,9 +23,10 @@ for BEST in $BESTCONF; do
 	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
-		echo "Start at " `date --iso-8601=s` >> $LOG 2>&1
+		START="`date +%s.%N`"
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		echo "Ended at " `date --iso-8601=s` >> $LOG 2>&1
+		ENDED="`date +%s.%N`"
+		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 done
 rm *.yaml

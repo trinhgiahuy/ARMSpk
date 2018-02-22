@@ -16,7 +16,10 @@ for TEST in $TESTCONF; do
 	for BINARY in $BINARYS; do
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
 		for i in `seq 1 $NumRunsTEST`; do
+			START="`date +%s.%N`"
 			python $BINARY >> $LOG 2>&1
+			ENDED="`date +%s.%N`"
+			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		done
 		popd
 	done
