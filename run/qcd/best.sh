@@ -29,4 +29,5 @@ done
 echo "Best QCD run:"
 BEST="`grep 'BiCGStab Total FLOPS:' $LOG | awk -F 'FLOPS:' '{print $2}' | sort -r -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
+echo ""
 cd $ROOTDIR

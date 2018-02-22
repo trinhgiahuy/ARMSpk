@@ -23,7 +23,7 @@ fi
 
 # ============================ SW4lite ========================================
 source conf/sw4lite.sh
-LOG="$ROOTDIR/log/bestrun/sw4lite.log"
+LOG="$ROOTDIR/log/profrun/sw4lite.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 sed -i -e 's/corder=1/corder=0/' $INPUT
@@ -37,9 +37,12 @@ for BEST in $BESTCONF; do
 		ENDED="`date +%s.%N`"
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
+	for P in `seq 0 $((NumMPI - 1))`; do
+		echo "SDE output of MPI process $P" >> $LOG 2>&1
+		cat ./oSDE/${P}.txt >> $LOG 2>&1
+	done
+	echo "=== SDE summary ===" >> $LOG 2>&1
+	$ROOTDIR/util/analyze_sde.py `echo $LOG | sed 's#profrun#bestrun#g'` ./oSDE >> $LOG 2>&1
+	rm -rf ./oSDE
 done
-echo "Best SW4lite run:"
-BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
-grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
-echo ""
 cd $ROOTDIR

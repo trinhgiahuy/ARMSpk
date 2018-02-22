@@ -23,7 +23,7 @@ fi
 
 # ============================ CCS QCD ========================================
 source conf/qcd.sh
-LOG="$ROOTDIR/log/bestrun/qcd.log"
+LOG="$ROOTDIR/log/profrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
@@ -38,8 +38,12 @@ for BEST in $BESTCONF; do
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		done
 	done
+	for P in `seq 0 $((NumMPI - 1))`; do
+		echo "SDE output of MPI process $P" >> $LOG 2>&1
+		cat ./oSDE/${P}.txt >> $LOG 2>&1
+	done
+	echo "=== SDE summary ===" >> $LOG 2>&1
+	$ROOTDIR/util/analyze_sde.py `echo $LOG | sed 's#profrun#bestrun#g'` ./oSDE >> $LOG 2>&1
+	rm -rf ./oSDE
 done
-echo "Best QCD run:"
-BEST="`grep 'BiCGStab Total FLOPS:' $LOG | awk -F 'FLOPS:' '{print $2}' | sort -r -g | head -1`"
-grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 cd $ROOTDIR

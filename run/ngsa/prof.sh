@@ -42,7 +42,7 @@ fi
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
-LOG="$ROOTDIR/log/bestrun/ngsa.log"
+LOG="$ROOTDIR/log/profrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
@@ -62,9 +62,12 @@ for BEST in $BESTCONF; do
 			rm -rf $INPUTDIR/00-read-rank
 		fi
 	done
+	for P in `seq 0 $((NumMPI - 1))`; do
+		echo "SDE output of MPI process $P" >> $LOG 2>&1
+		cat ./oSDE/${P}.txt >> $LOG 2>&1
+	done
+	echo "=== SDE summary ===" >> $LOG 2>&1
+	$ROOTDIR/util/analyze_sde.py `echo $LOG | sed 's#profrun#bestrun#g'` ./oSDE >> $LOG 2>&1
+	rm -rf ./oSDE
 done
-echo "Best NGS Analyzer run:"
-BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
-grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
-echo ""
 cd $ROOTDIR
