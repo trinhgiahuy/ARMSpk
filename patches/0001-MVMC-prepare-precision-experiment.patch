@@ -1,0 +1,119 @@
+From c403f85e754b0877bffac3536d51e586100d13e7 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 04:17:42 +0900
+Subject: [PATCH 1/1] MVMC: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore                 |  3 +++
+ src/Makefile_intel         |  4 ++--
+ src/pfapack/Makefile_intel |  2 +-
+ src/sfmt/Makefile_intel    |  2 +-
+ src/vmcmain.c              | 12 ++++++++++++
+ 5 files changed, 19 insertions(+), 4 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..cf13c30
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++*.dat
++*.o
++*.a
+diff --git a/src/Makefile_intel b/src/Makefile_intel
+index 532e5e4..d5fcb37 100644
+--- a/src/Makefile_intel
++++ b/src/Makefile_intel
+@@ -17,9 +17,9 @@ MKL = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
+ 
+ LIB = $(MKL) 
+ 
+-CFLAGS = -xHost -O3 -openmp -opt-prefetch=3 -nofor-main
++CFLAGS = -O3 -ipo -xHost -fopenmp -qopt-prefetch=3 -nofor-main
+ #	REPORT = 
+-#	REPORT = -vec-report -openmp-report
++#	REPORT = -vec-report -fopenmp-report
+ REPORT = -vec-report 
+ OPTION = -D_mpi_use
+ 
+diff --git a/src/pfapack/Makefile_intel b/src/pfapack/Makefile_intel
+index 78266dd..52a5b13 100644
+--- a/src/pfapack/Makefile_intel
++++ b/src/pfapack/Makefile_intel
+@@ -18,7 +18,7 @@ OBJECTS = dlasktrd.o dlasktrf.o \
+ 	 dsktf2.o dsktrd.o dsktrf.o
+ 
+ FORT = ifort
+-FFLAGS = -O3 -implicitnone -xSSE2
++FFLAGS = -O3 -ipo -xHost -fopenmp -implicitnone
+ 
+ all: $(OBJECTS)
+ 	$(AR) rvu libpfapack.a $(OBJECTS)
+diff --git a/src/sfmt/Makefile_intel b/src/sfmt/Makefile_intel
+index 5b78e62..2a57661 100644
+--- a/src/sfmt/Makefile_intel
++++ b/src/sfmt/Makefile_intel
+@@ -1,6 +1,6 @@
+ OBJ = SFMT.o
+ CC = icc
+-CFLAGS = -O3 -no-ansi-alias -xSSE2
++CFLAGS = -O3 -ipo -xHost -fopenmp -no-ansi-alias
+ OPTION = -DMEXP=19937 -DHAVE_SSE2
+ 
+ $(OBJ): SFMT.c
+diff --git a/src/vmcmain.c b/src/vmcmain.c
+index 304da8b..8553f63 100644
+--- a/src/vmcmain.c
++++ b/src/vmcmain.c
+@@ -7,6 +7,9 @@
+ /* #include "fjcoll.h" */
+ #include "vmcmain.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ int VMCParaOpt(MPI_Comm comm_parent, MPI_Comm comm_child1, MPI_Comm comm_child2);
+ int VMCPhysCal(MPI_Comm comm_parent, MPI_Comm comm_child1, MPI_Comm comm_child2);
+ void outputData();
+@@ -17,6 +20,9 @@ void initMultiDef(char *fileMultiDef, char *fileDefList, char *fileInitPara,
+ /*main program*/
+ int main(int argc, char* argv[])
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+   /* input file name */
+   char fileDefList[D_FileNameMax];
+   char fileInitPara[D_FileNameMax];
+@@ -104,6 +110,8 @@ int main(int argc, char* argv[])
+ 
+   StopTimer(1);
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
+   if(NVMCCalMode==0) {
+     StartTimer(2);
+     /*-- VMC Parameter Optimization --*/
+@@ -118,6 +126,9 @@ int main(int argc, char* argv[])
+     info=1;
+     if(rank0==0) fprintf(stderr,"error: NVMCCalMode must be 0 or 1.\n");
+   }
++STOPSDE;
++mkrte = MPI_Wtime();
++if(rank0==0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+ 
+   StopTimer(0);
+   if(rank0==0) {
+@@ -135,6 +146,7 @@ int main(int argc, char* argv[])
+   FreeMemoryDef();
+   MPI_Finalize();
+ 
++STARTSDE;
+   return info;
+ }
+ 
+-- 
+1.8.3.1
+

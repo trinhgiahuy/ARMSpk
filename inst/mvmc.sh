@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
-	sed -i -e 's/-openmp/-fopenmp/g' -e 's/-opt-prefetch=3/-qopt-prefetch=3/g' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g"  Makefile_intel
+	sed -i -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g"  Makefile_intel
 	make intel
 	cd $ROOTDIR
 fi
