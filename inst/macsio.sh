@@ -19,7 +19,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 	if [ ! -f $ROOTDIR/dep/json-cwx/lib/libjson-cwx.a ]; then
 		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
-		./configure --prefix=`pwd`/../
+		./configure --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"
 		make install
 		cd $ROOTDIR/$BM/
 	fi
@@ -28,12 +28,12 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
 		tar xzf silo-4.10.2.tar.gz
 		cd silo-4.10.2/
-		./configure --prefix=`pwd`
+		./configure --prefix=`pwd` CC=icc CFLAGS="-O2 -ipo -xHost" CXX=icpc CXXFLAGS="-O2 -ipo -xHost" FC=ifort FCFLAGS="-O2 -ipo -xHost" F77=ifort FFLAGS="-O2 -ipo -xHost"
 		make install
 		cd $ROOTDIR/$BM/
 	fi
 	mkdir -p build; cd build
-	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CC_COMPILER=mpicc -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+	cmake -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_C_FLAGS="-O3 -ipo -xHost" -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_CXX_FLAGS="-O3 -ipo -xHost" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
 	make
 	make install
 	cd $ROOTDIR

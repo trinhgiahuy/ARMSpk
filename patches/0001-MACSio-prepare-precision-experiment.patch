@@ -1,0 +1,96 @@
+From 14a8c7b93ef280b60558205839580313a3deb1e7 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 04:09:52 +0900
+Subject: [PATCH 1/1] MACSio: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore             |  4 +++-
+ macsio/macsio_clargs.c |  2 +-
+ macsio/macsio_main.c   | 12 ++++++++++++
+ 3 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index cd1cc91..d87bc0c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,5 @@
++macsio/macsio
++
+ #CMAKE
+ CMakeCache.txt
+ CMakeFiles
+@@ -12,4 +14,4 @@ compile_commands.json
+ CTestTestfile.cmake
+ 
+ # Docs
+-doc/MACSio_User_Guide
+\ No newline at end of file
++doc/MACSio_User_Guide
+diff --git a/macsio/macsio_clargs.c b/macsio/macsio_clargs.c
+index 9983c26..779fcfa 100644
+--- a/macsio/macsio_clargs.c
++++ b/macsio/macsio_clargs.c
+@@ -226,12 +226,12 @@ MACSIO_CLARGS_ProcessCmdline(
+    knownArgs = NULL;
+    firstArg = 1;
+    depth = 1;
++   MACSIO_KnownArgInfo_t *newArg, *oldArg;
+    while (1)
+    {
+       int n, paramCount, argNameLength;
+       char *fmtStr, *defStr, *helpStr, *p, *paramTypes, *paramFlags;
+       void **paramPtrs;
+-      MACSIO_KnownArgInfo_t *newArg, *oldArg;
+       int isgroup_begin, isgroup_end;
+ 
+       /* get this arg's format specifier string */
+diff --git a/macsio/macsio_main.c b/macsio/macsio_main.c
+index 2fd4dfd..2d15352 100644
+--- a/macsio/macsio_main.c
++++ b/macsio/macsio_main.c
+@@ -769,9 +769,15 @@ main_read(int argi, int argc, char **argv, json_object *main_obj)
+     }
+ }
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ int
+ main(int argc, char *argv[])
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+     json_object *main_obj = json_object_new_object();
+     json_object *parallel_obj = json_object_new_object();
+     json_object *problem_obj = 0;
+@@ -803,6 +809,8 @@ main(int argc, char *argv[])
+ 
+     main_grp = MACSIO_TIMING_GroupMask("MACSIO main()");
+     main_tid = MT_StartTimer("main", main_grp, MACSIO_TIMING_ITER_AUTO);
++mkrts = MPI_Wtime();
++STARTSDE;
+ 
+     MACSIO_LOG_StdErr = MACSIO_LOG_LogInit(MACSIO_MAIN_Comm, 0, 0, 0, 0);
+ 
+@@ -837,6 +845,9 @@ main(int argc, char *argv[])
+     else
+         main_write(argi, argc, argv, main_obj);
+ 
++STOPSDE;
++mkrte = MPI_Wtime();
++if (MACSIO_MAIN_Rank == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+     /* stop total timer */
+     MT_StopTimer(main_tid);
+ 
+@@ -870,5 +881,6 @@ main(int argc, char *argv[])
+ #endif
+ 
+ ////#warning FIX RETVAL OF MAIN TO BE NON-ZERO WHEN ERRORS OCCUR
++STARTSDE;
+     return (0);
+ }
+-- 
+1.8.3.1
+
