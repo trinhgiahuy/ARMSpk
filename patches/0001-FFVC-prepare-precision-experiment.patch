@@ -1,0 +1,81 @@
+From 24b7fd97fbac442d3d7784752df053f889a29cbc Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 02:56:34 +0900
+Subject: [PATCH 1/1] FFVC: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore             |  1 +
+ src/FFV/main.C         | 11 +++++++++++
+ src/make_setting.intel |  4 ++--
+ 3 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index a1bdd17..5e50c78 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,4 @@
++*.a
+ *.o
+ *.lo
+ *.la
+diff --git a/src/FFV/main.C b/src/FFV/main.C
+index 3495ec1..cf1c9cc 100644
+--- a/src/FFV/main.C
++++ b/src/FFV/main.C
+@@ -19,11 +19,16 @@
+ #include "ffv.h"
+ #include "timing.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
+ 
+ // return; 0 - normal
+ //         1 - others
+ int main( int argc, char **argv )
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+   // FFV classのインスタンス
+   FFV ffv;
+ 
+@@ -67,7 +72,12 @@ int main( int argc, char **argv )
+   // タイムステップループ
+ 
+   TIME_START(tm_MAIN);
++mkrts = MPI_Wtime();
++STARTSDE;
+   int loop_ret = ffv.MainLoop();
++STOPSDE;
++mkrte = MPI_Wtime();
++if ( ffv.IsMaster() ) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+   TIME_STOP(tm_MAIN);
+   
+   switch (loop_ret) 
+@@ -97,5 +107,6 @@ int main( int argc, char **argv )
+ 
+   if ( loop_ret != 1 ) return -1;
+   
++STARTSDE;
+   return 0;
+ }
+diff --git a/src/make_setting.intel b/src/make_setting.intel
+index 5a63d26..13c2f17 100644
+--- a/src/make_setting.intel
++++ b/src/make_setting.intel
+@@ -3,9 +3,9 @@
+ #
+ 
+ CXX         = mpicxx
+-CXXFLAGS    = -O3 -xHost -openmp -DMPICH_IGNORE_CXX_SEEK
++CXXFLAGS    = -O3 -ipo -xHost -fopenmp -DMPICH_IGNORE_CXX_SEEK
+ F90         = mpif90
+-F90FLAGS    = -O3 -xHost -openmp -fpp -D_STATIC -Warn unused
++F90FLAGS    = -O3 -ipo -xHost -fopenmp -fpp -D_STATIC -Warn unused
+ LDFLAGS     =
+ LIBS        = -lifport -lifcore
+ 
+-- 
+1.8.3.1
+

@@ -29,6 +29,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		tar xzf $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz
 		cd ./REVOCAP_Refiner-1.1.01
 		rm ./MakefileConfig.in; ln -s ./MakefileConfig.LinuxIntelCompiler ./MakefileConfig.in
+		sed -i -e 's/O2 -w2 -wd1782/O2 -w2 -ipo -xHost -wd1782/g' ./MakefileConfig.in
 		sed -i '/#include <sstream>/a #include <stdlib.h>' ./RevocapIO/kmbHecmwIO_V3.cpp
 		make
 		cd $ROOTDIR/$BM/src

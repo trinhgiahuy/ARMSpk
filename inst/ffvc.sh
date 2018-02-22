@@ -17,7 +17,6 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
-	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
 	rm make_setting; ln -s make_setting.intel make_setting
 	make
 	cd $ROOTDIR
