@@ -27,23 +27,19 @@ LOG="$ROOTDIR/log/profrun/swfft.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
+	mkdir -p ./oSDE
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	# test if Decomposition is valid
 	INSIZE="`echo $INPUT | awk '{print $2}'`"
 	`dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
 	if [ "x$?" = "x0" ]; then
-		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 	else
-		echo "INVALID Decomposition: mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		echo "INVALID Decomposition: mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		continue
 	fi
-	for i in `seq 1 $NumRunsBEST`; do
-		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		ENDED="`date +%s.%N`"
-		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-	done
+	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
 	for P in `seq 0 $((NumMPI - 1))`; do
 		echo "SDE output of MPI process $P" >> $LOG 2>&1
 		cat ./oSDE/${P}.txt >> $LOG 2>&1

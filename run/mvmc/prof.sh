@@ -34,15 +34,11 @@ for BEST in $BESTCONF; do
 	sed -i -e 's/^Lx = Ly = 12/Lx = Ly = 4 #12/' -e 's/^NTotalSample = 4096/NTotalSample = 512 #4096/' -e 's/^NOuterMPI = 64/NOuterMPI = 2 #64/' ./makeDef/makeDef_large.py
 	./makeDef/makeDef_large.py ${NumMPI}
 	cd ./job_mpi${NumMPI}
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRunsBEST`; do
-		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		ENDED="`date +%s.%N`"
-		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
-		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-		rm -f Lx*Ly*/zvo_*
-	done
+	mkdir -p ./oSDE
+	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
+	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+	cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
+	rm -f Lx*Ly*/zvo_*
 	for P in `seq 0 $((NumMPI - 1))`; do
 		echo "SDE output of MPI process $P" >> $LOG 2>&1
 		cat ./oSDE/${P}.txt >> $LOG 2>&1

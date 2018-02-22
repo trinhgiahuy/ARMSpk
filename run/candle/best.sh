@@ -14,10 +14,13 @@ mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
 	for BINARY in $BINARYS; do
+		NumMPI=1
+		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
+		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsBEST`; do
 			START="`date +%s.%N`"
-			python $BINARY >> $LOG 2>&1
+			mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT >> $LOG 2>&1
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		done

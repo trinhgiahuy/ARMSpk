@@ -20,20 +20,22 @@ else
 	exit
 fi
 
+echo "Stoping here: SDE crashes with python+keras for unknown reason"
+exit
+
 # ============================ CANDLE =========================================
 source conf/candle.sh
 LOG="$ROOTDIR/log/profrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
+	mkdir -p ./oSDE
 	for BINARY in $BINARYS; do
+		NumMPI=1
+		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
-		for i in `seq 1 $NumRunsBEST`; do
-			START="`date +%s.%N`"
-			python $BINARY >> $LOG 2>&1
-			ENDED="`date +%s.%N`"
-			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-		done
+		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE python $BINARY $INPUT\"": >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE python $BINARY $INPUT" >> $LOG 2>&1
 		popd
 	done
 	for P in `seq 0 $((NumMPI - 1))`; do

@@ -38,15 +38,10 @@ for BEST in $BESTCONF; do
 	FLOAT=`echo "e((1/3)*l($MAXDCZ / $NumMPI))" | bc -l`
 	DCZ=`echo "($FLOAT+0.5)/1" | bc`
 	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRunsBEST`; do
-		mkdir ./tmp; sleep 1; cd ./tmp
-		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
-		ENDED="`date +%s.%N`"
-		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-		cd ../; rm -rf ./tmp; sleep 1
-	done
+	mkdir ./tmp; sleep 1; cd ./tmp
+	mkdir -p ./oSDE
+	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE ../$BINARY $INPUT\"" >> $LOG 2>&1
+	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE ../$BINARY $INPUT" >> $LOG 2>&1
 	for P in `seq 0 $((NumMPI - 1))`; do
 		echo "SDE output of MPI process $P" >> $LOG 2>&1
 		cat ./oSDE/${P}.txt >> $LOG 2>&1
@@ -54,5 +49,6 @@ for BEST in $BESTCONF; do
 	echo "=== SDE summary ===" >> $LOG 2>&1
 	$ROOTDIR/util/analyze_sde.py `echo $LOG | sed 's#profrun#bestrun#g'` ./oSDE >> $LOG 2>&1
 	rm -rf ./oSDE
+	cd ../; rm -rf ./tmp; sleep 1
 done
 cd $ROOTDIR
