@@ -1,0 +1,47 @@
+From 43179213788c208a4b9ec427522b4a05fb016e0d Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 03:20:22 +0900
+Subject: [PATCH 1/1] mfem: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ config/defaults.mk | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/config/defaults.mk b/config/defaults.mk
+index 8ed1bd5..b5a4bba 100644
+--- a/config/defaults.mk
++++ b/config/defaults.mk
+@@ -18,10 +18,10 @@
+ # Some choices below are based on the OS type:
+ NOTMAC := $(subst Darwin,,$(shell uname -s))
+ 
+-CXX = g++
++CXX = icpc
+ MPICXX = mpicxx
+ 
+-OPTIM_FLAGS = -O3
++OPTIM_FLAGS = -O3 -ipo -xHost -fopenmp
+ DEBUG_FLAGS = -g -Wall
+ 
+ # Destination location of make install
+@@ -88,14 +88,14 @@ LIBUNWIND_OPT = -g
+ LIBUNWIND_LIB = $(if $(NOTMAC),-lunwind -ldl,)
+ 
+ # HYPRE library configuration (needed to build the parallel version)
+-HYPRE_DIR = @MFEM_DIR@/../hypre-2.10.0b/src/hypre
++HYPRE_DIR = @MFEM_DIR@/../../Laghos/hypre-2.10.0b/src/hypre
+ HYPRE_OPT = -I$(HYPRE_DIR)/include
+ HYPRE_LIB = -L$(HYPRE_DIR)/lib -lHYPRE
+ 
+ # METIS library configuration
+ ifeq ($(MFEM_USE_SUPERLU)$(MFEM_USE_STRUMPACK),NONO)
+    ifeq ($(MFEM_USE_METIS_5),NO)
+-     METIS_DIR = @MFEM_DIR@/../metis-4.0
++     METIS_DIR = @MFEM_DIR@/../../Laghos/metis-4.0.3
+      METIS_OPT =
+      METIS_LIB = -L$(METIS_DIR) -lmetis
+    else
+-- 
+1.8.3.1
+

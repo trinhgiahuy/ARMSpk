@@ -20,7 +20,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz
 		tar xzf hypre-2.10.0b.tar.gz
 		cd ./hypre-2.10.0b/src
-		./configure --disable-fortran -with-openmp
+		./configure --disable-fortran -with-openmp CC=mpicc CFLAGS="-O3 -ipo -xHost" CXX=mpicxx CXXFLAGS="-O3 -ipo -xHost" F77=mpif77 FFLAGS="-O3 -ipo -xHost"
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
 		make -j
 		cd $ROOTDIR/$BM/
@@ -29,21 +29,18 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
 		tar xzf metis-4.0.3.tar.gz
 		cd ./metis-4.0.3/
+		sed -i -e 's/CC = cc/CC = icc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -ipo -xHost/g' ./Makefile.in
 		make
 		cd $ROOTDIR/$BM/
 	fi
 	if [ ! -f $ROOTDIR/dep/mfem/libmfem.a ]; then
 		cd $ROOTDIR/dep/mfem/
 		git checkout laghos-v1.0
-		sed -i -e 's#^OPTIM_FLAGS = -O3#OPTIM_FLAGS = -O3 -fopenmp#' config/defaults.mk
-		sed -i -e "s#@MFEM_DIR@/../hypre#@MFEM_DIR@/../../$BM/hypre#" config/defaults.mk
-		sed -i -e "s#@MFEM_DIR@/../metis-4.0#@MFEM_DIR@/../../$BM/metis-4.0.3#" config/defaults.mk
+		git apply --check $ROOTDIR/patches/*1-mfem*.patch
+		if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-mfem*.patch; fi
 		make parallel -j
 		cd $ROOTDIR/$BM/
 	fi
-	sed -i -e 's#^CXXFLAGS = \$(MFEM_CXXFLAGS)$#CXXFLAGS = \$(MFEM_CXXFLAGS) -fopenmp#' makefile
-	sed -i -e 's#MFEM_DIR = ../mfem$#MFEM_DIR = ../dep/mfem#' makefile
-	sed -i -e 's#LAGHOS_LIBS = $(MFEM_LIBS)$#LAGHOS_LIBS = $(MFEM_LIBS) -lirc -lsvml#' makefile
 	make
 	cd $ROOTDIR
 fi
