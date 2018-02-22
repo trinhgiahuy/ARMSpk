@@ -17,6 +17,7 @@ for TEST in $TESTCONF; do
 		NumMPI=1
 		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
+		make libssc.so
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsTEST`; do
 			START="`date +%s.%N`"

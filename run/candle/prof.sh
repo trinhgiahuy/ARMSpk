@@ -34,6 +34,7 @@ for BEST in $BESTCONF; do
 		NumMPI=1
 		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
+		make libssc.so
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE python $BINARY $INPUT\"": >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE python $BINARY $INPUT" >> $LOG 2>&1
 		popd

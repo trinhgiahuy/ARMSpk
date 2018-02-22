@@ -1,0 +1,699 @@
+From aa3f6c81f9ec6aba0d7673447311e3a0d55da940 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Thu, 22 Feb 2018 22:34:00 +0900
+Subject: [PATCH 1/1] CANDLE: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore                          |  4 ++++
+ Pilot1/P1B1/Makefile                | 20 ++++++++++++++++++++
+ Pilot1/P1B1/p1b1_baseline_keras2.py | 26 +++++++++++++++++++++-----
+ Pilot1/P1B1/ssc.c                   |  6 ++++++
+ Pilot1/P1B2/Makefile                | 20 ++++++++++++++++++++
+ Pilot1/P1B2/p1b2_baseline_keras2.py | 18 ++++++++++++++++++
+ Pilot1/P1B2/ssc.c                   |  6 ++++++
+ Pilot1/P1B3/Makefile                | 20 ++++++++++++++++++++
+ Pilot1/P1B3/p1b3_baseline_keras2.py | 17 +++++++++++++++++
+ Pilot1/P1B3/ssc.c                   |  6 ++++++
+ Pilot2/P2B1/Makefile                | 20 ++++++++++++++++++++
+ Pilot2/P2B1/p2b1_baseline_keras2.py | 22 +++++++++++++++++++---
+ Pilot2/P2B1/ssc.c                   |  6 ++++++
+ Pilot2/P2B2/Makefile                | 20 ++++++++++++++++++++
+ Pilot2/P2B2/p2b2_baseline_keras2.py | 22 ++++++++++++++++++----
+ Pilot2/P2B2/ssc.c                   |  6 ++++++
+ Pilot3/P3B1/Makefile                | 20 ++++++++++++++++++++
+ Pilot3/P3B1/p3b1_baseline_keras2.py | 20 +++++++++++++++++++-
+ Pilot3/P3B1/ssc.c                   |  6 ++++++
+ Pilot3/P3B2/Makefile                | 20 ++++++++++++++++++++
+ Pilot3/P3B2/p3b2_baseline_keras2.py | 18 ++++++++++++++++++
+ Pilot3/P3B2/ssc.c                   |  6 ++++++
+ 22 files changed, 316 insertions(+), 13 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 Pilot1/P1B1/Makefile
+ create mode 100644 Pilot1/P1B1/ssc.c
+ create mode 100644 Pilot1/P1B2/Makefile
+ create mode 100644 Pilot1/P1B2/ssc.c
+ create mode 100644 Pilot1/P1B3/Makefile
+ create mode 100644 Pilot1/P1B3/ssc.c
+ create mode 100644 Pilot2/P2B1/Makefile
+ create mode 100644 Pilot2/P2B1/ssc.c
+ create mode 100644 Pilot2/P2B2/Makefile
+ create mode 100644 Pilot2/P2B2/ssc.c
+ create mode 100644 Pilot3/P3B1/Makefile
+ create mode 100644 Pilot3/P3B1/ssc.c
+ create mode 100644 Pilot3/P3B2/Makefile
+ create mode 100644 Pilot3/P3B2/ssc.c
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..7b7ff05
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,4 @@
++*.pyc
++*.o
++*.so
++Data/
+diff --git a/Pilot1/P1B1/Makefile b/Pilot1/P1B1/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot1/P1B1/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot1/P1B1/p1b1_baseline_keras2.py b/Pilot1/P1B1/p1b1_baseline_keras2.py
+index 4f13f2f..90af8d5 100644
+--- a/Pilot1/P1B1/p1b1_baseline_keras2.py
++++ b/Pilot1/P1B1/p1b1_baseline_keras2.py
+@@ -1,11 +1,22 @@
+ from __future__ import print_function
+ 
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import pandas as pd
+ import numpy as np
++import time
+ 
+-from keras.models import Model, Sequential
+-from keras.layers import Dense, Dropout, Input
+-from keras.callbacks import Callback, ModelCheckpoint
++from keras.models import Model
++from keras.layers import Dense, Input
+ 
+ import p1b1
+ 
+@@ -27,12 +38,10 @@ output_dim = input_dim
+ 
+ input_vector = Input(shape=(input_dim,))
+ x = Dense(N1, activation='sigmoid')(input_vector)
+-# x = Dropout(DR)(x)
+ x = Dense(NE, activation='sigmoid')(x)
+ encoded = x
+ 
+ x = Dense(N1, activation='sigmoid')(encoded)
+-# x = Dropout(DR)(x)
+ x = Dense(output_dim, activation='sigmoid')(x)
+ decoded = x
+ 
+@@ -52,10 +61,15 @@ decoder = Model(encoded_input, ae.layers[-1](ae.layers[-2](encoded_input)))
+ 
+ ae.compile(optimizer='rmsprop', loss='mean_squared_error')
+ 
++t0 = time.time()
++libssc.ssc_mark_start()
+ ae.fit(X_train, X_train,
+        batch_size=BATCH,
+        epochs=EPOCH,
+        validation_split=0.2)
++libssc.ssc_mark_stop()
++t1 = time.time()
++print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 
+ encoded_image = encoder.predict(X_test)
+ decoded_image = decoder.predict(encoded_image)
+@@ -72,3 +86,5 @@ import matplotlib.pyplot as plt
+ plt.hist(diffs, bins='auto')
+ plt.title("Histogram of Errors with 'auto' bins")
+ plt.savefig('histogram.png')
++
++libssc.ssc_mark_start()
+diff --git a/Pilot1/P1B1/ssc.c b/Pilot1/P1B1/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot1/P1B1/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot1/P1B2/Makefile b/Pilot1/P1B2/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot1/P1B2/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot1/P1B2/p1b2_baseline_keras2.py b/Pilot1/P1B2/p1b2_baseline_keras2.py
+index 2c7a900..f717f24 100644
+--- a/Pilot1/P1B2/p1b2_baseline_keras2.py
++++ b/Pilot1/P1B2/p1b2_baseline_keras2.py
+@@ -1,6 +1,18 @@
+ from __future__ import print_function
+ 
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import numpy as np
++import time
+ 
+ from keras.models import Model, Sequential
+ from keras.layers import Dense, Dropout, Input
+@@ -83,11 +95,16 @@ def main():
+     checkpointer = ModelCheckpoint(filepath='model'+ext+'.h5', save_best_only=True)
+     history = BestLossHistory()
+ 
++    t0 = time.time()
++    libssc.ssc_mark_start()
+     model.fit(X_train, y_train,
+               batch_size=BATCH_SIZE,
+               epochs=NB_EPOCH,
+               validation_split=0.2,
+               callbacks=[history, checkpointer])
++    libssc.ssc_mark_stop()
++    t1 = time.time()
++    print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 
+     y_pred = history.best_model.predict(X_test)
+ 
+@@ -107,3 +124,4 @@ def main():
+ 
+ if __name__ == '__main__':
+     main()
++    libssc.ssc_mark_start()
+diff --git a/Pilot1/P1B2/ssc.c b/Pilot1/P1B2/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot1/P1B2/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot1/P1B3/Makefile b/Pilot1/P1B3/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot1/P1B3/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot1/P1B3/p1b3_baseline_keras2.py b/Pilot1/P1B3/p1b3_baseline_keras2.py
+index 1d2b1b4..3da1e9b 100644
+--- a/Pilot1/P1B3/p1b3_baseline_keras2.py
++++ b/Pilot1/P1B3/p1b3_baseline_keras2.py
+@@ -4,6 +4,16 @@
+ 
+ from __future__ import division, print_function
+ 
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
+ import argparse
+ import csv
+ import logging
+@@ -11,6 +21,7 @@ import sys
+ 
+ import numpy as np
+ import pandas as pd
++import time
+ 
+ from itertools import tee, islice
+ 
+@@ -429,6 +440,8 @@ def main():
+                             metric=args.loss, category_cutoffs=args.category_cutoffs,
+                             ext=ext, pre=args.save)
+ 
++    t0 = time.time()
++    libssc.ssc_mark_start()
+     model.fit_generator(train_gen, train_steps,
+                         epochs=args.epochs,
+                         validation_data=val_gen,
+@@ -437,6 +450,9 @@ def main():
+                         callbacks=[checkpointer, history, progbar],
+                         pickle_safe=True,
+                         workers=args.workers)
++    libssc.ssc_mark_stop()
++    t1 = time.time()
++    print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 
+ 
+ if __name__ == '__main__':
+@@ -445,3 +461,4 @@ if __name__ == '__main__':
+         K.clear_session()
+     except AttributeError:      # theano does not have this function
+         pass
++    libssc.ssc_mark_start()
+diff --git a/Pilot1/P1B3/ssc.c b/Pilot1/P1B3/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot1/P1B3/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot2/P2B1/Makefile b/Pilot2/P2B1/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot2/P2B1/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot2/P2B1/p2b1_baseline_keras2.py b/Pilot2/P2B1/p2b1_baseline_keras2.py
+index e2e43b9..09011dc 100644
+--- a/Pilot2/P2B1/p2b1_baseline_keras2.py
++++ b/Pilot2/P2B1/p2b1_baseline_keras2.py
+@@ -1,5 +1,17 @@
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import theano
+ import numpy as np
++import time
+ import scipy as sp
+ import pickle
+ import sys,os
+@@ -100,6 +112,8 @@ if __name__=="__main__":
+ 	
+ #### Train the Model
+ 	if opts.train_bool:
++		t0 = time.time()
++		libssc.ssc_mark_start()
+ 		if not str2bool(GP['cool']):
+ 			effec_epochs=GP['epochs']
+ 			ct=hf.Candle_Train(datagen,model,data_files,effec_epochs,case=opts.case)
+@@ -115,7 +129,9 @@ if __name__=="__main__":
+ 					ct.print_data=False
+ 					print 'Cooling Learning Rate by factor of 10...'
+ 				loss.extend(ct.train_ac())
+-				
++		libssc.ssc_mark_stop()
++		t1 = time.time()
++		print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 		if opts.save_path!=None:
+ 			loss_file='%s/%s.pkl'%(opts.save_path,memo)
+ 			model_file='%s/%s.hdf5'%(opts.save_path,memo)
+@@ -123,5 +139,5 @@ if __name__=="__main__":
+ 			pickle.dump(loss,o)
+ 			o.close()
+ 			model.save_weights(model_file)
+-			
+-	
++
++	libssc.ssc_mark_start()
+diff --git a/Pilot2/P2B1/ssc.c b/Pilot2/P2B1/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot2/P2B1/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot2/P2B2/Makefile b/Pilot2/P2B2/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot2/P2B2/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot2/P2B2/p2b2_baseline_keras2.py b/Pilot2/P2B2/p2b2_baseline_keras2.py
+index 7e8a043..0b53e6a 100644
+--- a/Pilot2/P2B2/p2b2_baseline_keras2.py
++++ b/Pilot2/P2B2/p2b2_baseline_keras2.py
+@@ -1,5 +1,17 @@
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import theano
+ import numpy as np
++import time
+ import scipy as sp
+ import pickle
+ import sys,os
+@@ -113,6 +125,8 @@ if __name__=="__main__":
+ 
+ #### Train the Model
+ 	if opts.train_bool:
++		t0 = time.time()
++		libssc.ssc_mark_start()
+ 		if not str2bool(GP['cool']):
+ 			effec_epochs=GP['epochs']
+ 			ct=hf.Candle_Train(datagen,model,data_files,effec_epochs,case=opts.case,look_back=GP['look_back'],look_forward=GP['look_forward'])
+@@ -130,6 +144,9 @@ if __name__=="__main__":
+ 					ct.print_data=False
+ 					print 'Cooling Learning Rate by factor of 10...'
+ 				loss.extend(ct.train_ac())
++		libssc.ssc_mark_stop()
++		t1 = time.time()
++		print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 
+ 		if opts.save_path!=None:
+ 			loss_file='%s/%s.pkl'%(opts.save_path,memo)
+@@ -147,7 +164,4 @@ if __name__=="__main__":
+ 			py.figure();py.plot(ytn.mean(axis=1))
+ 			py.hold('on');py.plot(yf.mean(axis=1))
+ 
+-
+-
+-	
+-	
++	libssc.ssc_mark_start()
+diff --git a/Pilot2/P2B2/ssc.c b/Pilot2/P2B2/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot2/P2B2/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot3/P3B1/Makefile b/Pilot3/P3B1/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot3/P3B1/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot3/P3B1/p3b1_baseline_keras2.py b/Pilot3/P3B1/p3b1_baseline_keras2.py
+index 1a56edf..632ccf7 100644
+--- a/Pilot3/P3B1/p3b1_baseline_keras2.py
++++ b/Pilot3/P3B1/p3b1_baseline_keras2.py
+@@ -1,4 +1,16 @@
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import numpy as np
++import time
+ import os, sys, gzip
+ import urllib, zipfile
+ from MTL_run import run_mtl
+@@ -42,6 +54,7 @@ def do_10_fold():
+     data_path = os.path.dirname(data_loc)
+     print data_path
+ 
++    t0, t1 = 0.0, 0.0
+     for fold in range( 1 ):
+ 
+         feature_train_0 = np.genfromtxt( data_path + '/task0_' + str( fold ) + '_train_feature.csv', delimiter= ',' )
+@@ -65,6 +78,8 @@ def do_10_fold():
+         truths_test = [ truth_test_0, truth_test_1, truth_test_2 ]
+ 
+ 
++        t0 = time.time()
++	libssc.ssc_mark_start()
+         ret = run_mtl(
+             features_train= features_train,
+             truths_train= truths_train,
+@@ -77,6 +92,8 @@ def do_10_fold():
+             n_epochs= n_epochs,
+             dropout= dropout
+         )
++	libssc.ssc_mark_stop()
++        t1 = t1 + (time.time() - t0)
+ 
+         truth0.extend( ret[ 0 ][ 0 ] )
+         pred0.extend( ret[ 0 ][ 1 ] )
+@@ -86,7 +103,7 @@ def do_10_fold():
+ 
+         truth2.extend( ret[ 2 ][ 0 ] )
+         pred2.extend( ret[ 2 ][ 1 ] )
+-
++    print("Walltime of the main kernel: %s sec" % t1)
+ 
+     print 'Task 1: Primary site - Macro F1 score', f1_score( truth0, pred0, average= 'macro' )
+     print 'Task 1: Primary site - Micro F1 score', f1_score( truth0, pred0, average= 'micro' )
+@@ -101,3 +118,4 @@ def do_10_fold():
+ 
+ if __name__  == "__main__":
+     do_10_fold()
++    libssc.ssc_mark_start()
+diff --git a/Pilot3/P3B1/ssc.c b/Pilot3/P3B1/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot3/P3B1/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/Pilot3/P3B2/Makefile b/Pilot3/P3B2/Makefile
+new file mode 100644
+index 0000000..628424e
+--- /dev/null
++++ b/Pilot3/P3B2/Makefile
+@@ -0,0 +1,20 @@
++m.PHONY : libssc.so testC.exe testF.exe
++
++testC.exe : test.c
++	mpicc -O3 -fopenmp -o testC.exe test.c
++
++testF.exe : test.f90
++	icc -c ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++
++libssc.so : ssc.c
++	icc -c -fPIC ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++
++clean :
++	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
++
++run : libssc.so testC.exe testF.exe
++	mpirun -n 2 ./testC.exe
++	mpirun -n 2 ./testF.exe
++	python ./test.py
+diff --git a/Pilot3/P3B2/p3b2_baseline_keras2.py b/Pilot3/P3B2/p3b2_baseline_keras2.py
+index 2fed890..e51d19a 100644
+--- a/Pilot3/P3B2/p3b2_baseline_keras2.py
++++ b/Pilot3/P3B2/p3b2_baseline_keras2.py
+@@ -1,9 +1,21 @@
++import numpy.ctypeslib as npct
++# load the library, using numpy mechanisms
++libssc = npct.load_library("libssc", ".")
++# setup the return types and argument types
++libssc.ssc_mark_start.restype = None
++libssc.ssc_mark_start.argtypes = None
++libssc.ssc_mark_stop.restype = None
++libssc.ssc_mark_stop.argtypes = None
++
++libssc.ssc_mark_stop()
++
+ import keras
+ from keras.models import Sequential
+ from keras.layers import Dense, Activation, Dropout
+ from keras.layers import LSTM
+ from keras.optimizers import RMSprop
+ import numpy as np
++import time
+ import os
+ 
+ import datetime
+@@ -177,6 +189,8 @@ def char_rnn(
+             model.summary()
+ 
+ 
++        t0 = time.time()
++	libssc.ssc_mark_start()
+         for iteration in range( 1, n_epochs ):
+             if verbose:
+                 print()
+@@ -259,6 +273,9 @@ def char_rnn(
+                 outtext.write( "\n" )
+ 
+             outtext.close()
++	libssc.ssc_mark_stop()
++        t1 = time.time()
++        print("Walltime of the main kernel: %s sec" % (t1 - t0))
+ 
+ 
+ if __name__  == "__main__":
+@@ -300,3 +317,4 @@ if __name__  == "__main__":
+         primetext= args.primetext,
+         length= args.length
+     )
++    libssc.ssc_mark_start()
+diff --git a/Pilot3/P3B2/ssc.c b/Pilot3/P3B2/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/Pilot3/P3B2/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+-- 
+1.8.3.1
+
