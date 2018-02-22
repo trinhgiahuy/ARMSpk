@@ -8,16 +8,20 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile MACSio
-if [ ! -f $ROOTDIR/MACSio/macsio/macsio ]; then
-	cd $ROOTDIR/MACSio/
+BM="MACSio"
+if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/dep/json-cwx/lib/libjson-cwx.a ]; then
 		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
 		./configure --prefix=`pwd`/../
 		make install
-		cd $ROOTDIR/MACSio/
+		cd $ROOTDIR/$BM/
 	fi
 	if [ ! -f $ROOTDIR/dep/silo-4.10.2/bin/silofile ]; then
 		cd $ROOTDIR/dep/
@@ -26,7 +30,7 @@ if [ ! -f $ROOTDIR/MACSio/macsio/macsio ]; then
 		cd silo-4.10.2/
 		./configure --prefix=`pwd`
 		make install
-		cd $ROOTDIR/MACSio/
+		cd $ROOTDIR/$BM/
 	fi
 	mkdir -p build; cd build
 	cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_CC_COMPILER=mpicc -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..

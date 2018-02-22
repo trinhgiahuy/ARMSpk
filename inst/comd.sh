@@ -8,10 +8,15 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile CoMD
-if [ ! -f $ROOTDIR/CoMD/bin/CoMD-openmp-mpi ]; then
-	cd $ROOTDIR/CoMD/src-openmp/
+BM="CoMD"
+if [ ! -f $ROOTDIR/$BM/bin/CoMD-openmp-mpi ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	cd $ROOTDIR/$BM/src-openmp/
 	cp Makefile.vanilla Makefile
 	make
 	cd $ROOTDIR

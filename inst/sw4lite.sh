@@ -8,10 +8,14 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile SW4lite
-if [ ! -f $ROOTDIR/SW4lite/optimize_mp_kiev/sw4lite ]; then
-	cd $ROOTDIR/SW4lite
+BM="SW4lite"
+if [ ! -f $ROOTDIR/$BM/optimize_mp_kiev/sw4lite ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	sed -i -e "s/^HOSTNAME := /HOSTNAME := kiev #/g" Makefile
 	sed -i -e "s/quadknl/kiev/g" -e "s#/opt/intel/compilers_and_libraries_2017/linux#`dirname $MKLROOT`#g"  Makefile
 	sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" Makefile

@@ -8,10 +8,14 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile CANDLE
+BM="CANDLE"
 if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
-	cd $ROOTDIR/CANDLE/
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	curl -o Anaconda2-5.1.0-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-5.1.0-Linux-x86_64.sh
 	chmod u+x ./Anaconda2-5.1.0-Linux-x86_64.sh
 	./Anaconda2-5.1.0-Linux-x86_64.sh -b -p $ROOTDIR/dep/anaconda2

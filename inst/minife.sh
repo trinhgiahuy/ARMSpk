@@ -8,14 +8,19 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile miniFE
-if [ ! -f $ROOTDIR/MiniFE/mkl/src/miniFE.x ]; then
-	cd $ROOTDIR/MiniFE/mkl/src
+BM="MiniFE"
+if [ ! -f $ROOTDIR/$BM/mkl/src/miniFE.x ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	cd $ROOTDIR/$BM/mkl/src
 	make
-	cd $ROOTDIR/MiniFE/openmp-opt/src
+	cd $ROOTDIR/$BM/openmp-opt/src
 	make
-	cd $ROOTDIR/MiniFE/openmp-opt-knl/src
+	cd $ROOTDIR/$BM/openmp-opt-knl/src
 	make
 	cd $ROOTDIR
 fi

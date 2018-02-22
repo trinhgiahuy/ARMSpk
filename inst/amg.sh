@@ -8,10 +8,14 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile AMG -> comes w/ 2 problems
-if [ ! -f $ROOTDIR/AMG/test/amg ]; then
-	cd $ROOTDIR/AMG/
+BM="AMG"
+if [ ! -f $ROOTDIR/$BM/test/amg ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	make
 	cd $ROOTDIR
 fi

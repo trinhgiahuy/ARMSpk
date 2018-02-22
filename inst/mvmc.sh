@@ -8,10 +8,15 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile mVMC
-if [ ! -f $ROOTDIR/MVMC/src/vmc.out ]; then
-	cd $ROOTDIR/MVMC/src
+BM="MVMC"
+if [ ! -f $ROOTDIR/$BM/src/vmc.out ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	cd $ROOTDIR/$BM/src
 	sed -i -e 's/-openmp/-fopenmp/g' -e 's/-opt-prefetch=3/-qopt-prefetch=3/g' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g"  Makefile_intel
 	make intel
 	cd $ROOTDIR

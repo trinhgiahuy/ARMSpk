@@ -8,10 +8,15 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile FFVC
-if [ ! -f $ROOTDIR/FFVC/bin/ffvc_mini ]; then
-	cd $ROOTDIR/FFVC/src
+BM="FFVC"
+if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	cd $ROOTDIR/$BM/src
 	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
 	rm make_setting; ln -s make_setting.intel make_setting
 	make

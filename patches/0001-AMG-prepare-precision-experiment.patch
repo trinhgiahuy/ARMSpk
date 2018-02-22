@@ -1,0 +1,130 @@
+From 7e28ff54586c893fbe07993e2425fc24809cb132 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Thu, 22 Feb 2018 21:41:17 +0900
+Subject: [PATCH 1/1] AMG: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore       |  3 +++
+ Makefile.include |  4 ++--
+ test/amg.c       | 25 +++++++++++++++++++++----
+ 3 files changed, 26 insertions(+), 6 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..a624fcd
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++*.a
++*.o
++test/amg
+diff --git a/Makefile.include b/Makefile.include
+index b73ccce..a971588 100644
+--- a/Makefile.include
++++ b/Makefile.include
+@@ -43,11 +43,11 @@ CC = mpicc
+ #INCLUDE_CFLAGS = -g -DTIMER_USE_MPI 
+ #INCLUDE_CFLAGS = -g -DTIMER_USE_MPI -DHYPRE_USING_OPENMP
+ #INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -DHYPRE_BIGINT -fopenmp
+-INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -fopenmp -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
++INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -ipo -xHost -fopenmp -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
+ #INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -qsmp=omp -qmaxmem=-1 -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
+ 
+ # set link flags here
+ #INCLUDE_LFLAGS = -lm -qsmp=omp
+-INCLUDE_LFLAGS = -lm -fopenmp
++INCLUDE_LFLAGS = -lm -ipo -xHost -fopenmp
+ #INCLUDE_LFLAGS = -lm 
+ 
+diff --git a/test/amg.c b/test/amg.c
+index 68b67c5..54e5162 100644
+--- a/test/amg.c
++++ b/test/amg.c
+@@ -37,6 +37,9 @@
+ 
+ #include <time.h>
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -56,6 +59,9 @@ hypre_int
+ main( hypre_int argc,
+       char *argv[] )
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+    HYPRE_Int           arg_index;
+    HYPRE_Int           print_usage;
+    HYPRE_Int           build_rhs_type;
+@@ -412,10 +418,15 @@ main( hypre_int argc,
+       time_index = hypre_InitializeTiming("PCG Solve");
+       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
+       hypre_BeginTiming(time_index);
+- 
++
++mkrts = MPI_Wtime();
++STARTSDE;
+       HYPRE_PCGSolve(pcg_solver, (HYPRE_Matrix)parcsr_A, 
+                      (HYPRE_Vector)b, (HYPRE_Vector)x);
+- 
++STOPSDE;
++mkrte = MPI_Wtime();
++if (myid == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
++
+       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
+       hypre_EndTiming(time_index);
+       hypre_PrintTiming("Problem 1: AMG-PCG Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
+@@ -450,7 +461,6 @@ main( hypre_int argc,
+    /*-----------------------------------------------------------
+     * Problem 2: simulate time-dependent problem AMG-GMRES
+     *-----------------------------------------------------------*/
+-
+    if (problem_id == 2)
+    {
+       HYPRE_Real eps;
+@@ -459,6 +469,9 @@ main( hypre_int argc,
+       time_index = hypre_InitializeTiming("GMRES Solve");
+       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
+       hypre_BeginTiming(time_index);
++mkrts = MPI_Wtime();
++STARTSDE;
++
+       for (j=0; j < time_steps; j++)
+       {
+  
+@@ -552,6 +565,10 @@ main( hypre_int argc,
+          }
+       }
+       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
++STOPSDE;
++mkrte = MPI_Wtime();
++if (myid == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
++
+       hypre_EndTiming(time_index);
+       hypre_PrintTiming("Problem 2: Cumulative AMG-GMRES Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
+       hypre_FinalizeTiming(time_index);
+@@ -569,7 +586,6 @@ main( hypre_int argc,
+          hypre_printf("\n");
+       }
+    }
+- 
+ 
+    /*-----------------------------------------------------------
+     * Print the solution
+@@ -595,6 +611,7 @@ main( hypre_int argc,
+ */
+    hypre_MPI_Finalize();
+ 
++STARTSDE;
+    return (0);
+ }
+ 
+-- 
+1.8.3.1
+

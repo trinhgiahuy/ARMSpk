@@ -8,10 +8,14 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile SWFFT
-if [ ! -f $ROOTDIR/SWFFT/build.xeon/TestDfft ]; then
-	cd $ROOTDIR/SWFFT
+BM="SWFFT"
+if [ ! -f $ROOTDIR/$BM/build.xeon/TestDfft ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/fftw-3.3.4/bin/fftw-wisdom ]; then
 		wget http://fftw.org/fftw-3.3.4.tar.gz
 		tar xzf fftw-3.3.4.tar.gz
@@ -23,7 +27,7 @@ if [ ! -f $ROOTDIR/SWFFT/build.xeon/TestDfft ]; then
 		./configure --prefix=`pwd`/../fftw-xeon --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
 		make -j CFLAGS="-O3 -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
 		make install
-		cd $ROOTDIR/SWFFT
+		cd $ROOTDIR/$BM/
 	fi
 	# fortran version is 5-10% faster in my tests
 	sed -i -e 's/^default: nativec/default: fortran/' GNUmakefile

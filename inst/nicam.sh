@@ -8,10 +8,15 @@ export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
 export I_MPI_F90=ifort
+alias ar=`which xiar`
+alias ld=`which xild`
 
-# compile NICAM
-if [ ! -f $ROOTDIR/NICAM/bin/nhm_driver ]; then
-	cd $ROOTDIR/NICAM/src
+BM="NICAM"
+if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
+	cd $ROOTDIR/$BM/
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	cd $ROOTDIR/$BM/src
 	export NICAM_SYS=Linux64-intel-impi
 	make
 	cd '../test/case/jablonowski'
