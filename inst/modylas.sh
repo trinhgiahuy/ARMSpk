@@ -15,10 +15,9 @@ BM="MODYLAS" # (req. license agreement on website)
 if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	mkdir -p $ROOTDIR/$BM/
 	tar xzf $ROOTDIR/dep/modylas-mini-1.0.0.tar.gz -C $ROOTDIR/$BM --strip-components 1
+	cd $ROOTDIR/$BM/
+	patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
 	cd $ROOTDIR/$BM/src
-	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
-	sed -i -e 's/-openmp/-fopenmp/' make_setting.intel
 	rm make_setting; ln -s make_setting.intel make_setting
 	make
 	cd $ROOTDIR

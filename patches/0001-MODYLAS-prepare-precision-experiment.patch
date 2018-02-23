@@ -1,0 +1,92 @@
+diff -Nur --no-dereference MODYLAS.old/src/main_f90.f MODYLAS/src/main_f90.f
+--- MODYLAS.old/src/main_f90.f	2014-10-02 21:51:23.000000000 +0900
++++ MODYLAS/src/main_f90.f	2018-02-22 15:50:22.623053041 +0900
+@@ -45,8 +45,22 @@
+       use trj_mpi
+       use shakerattleroll
+ #include "timing.h90"
++      use, intrinsic :: iso_c_binding
+       implicit none
++      interface
++      subroutine SSC_MARK_START ( ) bind ( c )
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++      end subroutine
++      subroutine SSC_MARK_STOP ( ) bind ( c )
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++      end subroutine
++      end interface
++      include 'mpif.h'
+       integer(4) :: i0,k0
++
++      real(8) :: mkrts, mkrte
++      call SSC_MARK_STOP()
++
+       call mpistart()
+       call init_openmp
+ 
+@@ -88,6 +102,8 @@
+ c
+       if (myrank == 0) write(*,'(/,a)') '**** start main loop'
+       TIME_START(TM_MAIN_LOOP)
++      mkrts = MPI_WTIME()
++      call SSC_MARK_START()
+       do while (mdstep<md_condition__howmany_steps)
+ 
+         call nve_integrate()
+@@ -103,6 +119,10 @@
+         TIME_STOP(TM_OUTPUT)
+ 
+       enddo
++      call SSC_MARK_STOP()
++      mkrte = MPI_WTIME()
++      if (myrank == 0) write(*,"(A,F10.6,A)")
++     & "Walltime of the main kernel: ", mkrte - mkrts, " sec"
+       TIME_STOP(TM_MAIN_LOOP)
+ 
+       if (myrank == 0) call cleanup()
+@@ -112,6 +132,9 @@
+       call closing()
+ 
+       call mpiend()
++
++      call SSC_MARK_START()
++
+       stop
+       end
+ c----------------------------------------------------------------------
+diff -Nur --no-dereference MODYLAS.old/src/Makefile MODYLAS/src/Makefile
+--- MODYLAS.old/src/Makefile	2014-10-02 21:51:23.000000000 +0900
++++ MODYLAS/src/Makefile	2018-02-23 16:20:48.101361446 +0900
+@@ -15,9 +15,9 @@
+ 
+ FFLAGS += -DMODYLAS_MINI_VERSION=\"$(VERSION)\"
+ 
+-CFLAGS = -DUSE_MPI
++CFLAGS += -DUSE_MPI
+ 
+-OBJS = fmodules.o main_f90.o app_f90.o \
++OBJS = fmodules.o main_f90.o ssc.o app_f90.o \
+   md_charmm_f90.o md_fmm_f90.o md_direct_f90.o \
+   nve_integrate.o k_energy.o cell_edge.o \
+   mt19937ar.o mpitool.o domain_div.o assign2subcell.o \
+diff -Nur --no-dereference MODYLAS.old/src/make_setting.intel MODYLAS/src/make_setting.intel
+--- MODYLAS.old/src/make_setting.intel	2014-10-02 21:51:23.000000000 +0900
++++ MODYLAS/src/make_setting.intel	2018-02-23 16:35:16.073401173 +0900
+@@ -3,5 +3,6 @@
+ #
+ 
+ FC = mpif90
+-FFLAGS = -fpp -openmp -O3 -xHost
++FFLAGS = -fpp -fopenmp -O3 -ipo -xHost
+ CC = mpicc
++CFLAGS = -fopenmp -O3 -ipo -xHost
+diff -Nur --no-dereference MODYLAS.old/src/ssc.c MODYLAS/src/ssc.c
+--- MODYLAS.old/src/ssc.c	1970-01-01 09:00:00.000000000 +0900
++++ MODYLAS/src/ssc.c	2018-02-19 14:21:38.665224522 +0900
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
