@@ -16,15 +16,8 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 	cd $ROOTDIR/$BM/
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
-	sed -i -e 's/^N_THREADS=1/N_THREADS=$OMP_NUM_THREADS/' ./workflow/workflow_01.sh
-	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./makefile.x86_64_gcc
-	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./SNP_indel_caller/Makefile
 	# bwa w/ intel breaks
-	#sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./bwa-0.5.9rc1_kei/bwt_gen/Makefile
-	sed -i -e 's/^BWA_OPT.*= CC=$(CC) CXX=$(CXX)/BWA_OPT = CC=gcc CXX=g++/g' ./makefile.x86_64_gcc
-	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/examples/Makefile
-	sed -i -e 's/CC.*=.*gcc/CC=icc/g' -e 's/CXX.*=.*g++/CXX=icpc/g' ./samtools-0.1.8_kei/misc/Makefile
-	make -f makefile.x86_64_gcc
+	make -f makefile.x86_64_intel
 	# we also need to get an input data set
 	if [ ! -f $ROOTDIR/$BM/ngsa_mini_input/reference.fa ]; then
 		echo "Creating $BM input may take 1h or more (stay tuned) ..."
