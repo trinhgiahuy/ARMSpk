@@ -1,0 +1,142 @@
+From c621d19bd0450dbae87f81349183de5352df1afd Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 15:11:24 +0900
+Subject: [PATCH 1/1] NICAM: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore                        |  5 +++++
+ src/Makefile                      |  1 +
+ src/nhm/prg_driver-dc.f90         | 20 ++++++++++++++++++++
+ src/ssc.c                         |  6 ++++++
+ sysdep/Makedef.Linux64-intel-impi |  6 +++---
+ 5 files changed, 35 insertions(+), 3 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 src/ssc.c
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..7fd0c9c
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,5 @@
++*.o
++*.mod
++*.a
++bin/
++lib/
+diff --git a/src/Makefile b/src/Makefile
+index f70d8e5..7e9809d 100755
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -48,6 +48,7 @@ MODS =	\
+ 	mod_adm.o	\
+ 	$(mod_misc).o	\
+ 	mod_debug.o	\
++	ssc.o           \
+ 	mod_cnst.o	\
+ 	mod_fio.o	\
+ 	mod_calendar.o	\
+diff --git a/src/nhm/prg_driver-dc.f90 b/src/nhm/prg_driver-dc.f90
+index b38148b..51849f1 100755
+--- a/src/nhm/prg_driver-dc.f90
++++ b/src/nhm/prg_driver-dc.f90
+@@ -127,11 +127,24 @@ program prg_driver
+   use mod_embudget, only: &
+        embudget_setup, &
+        embudget_monitor
++  use, intrinsic :: iso_c_binding
+   implicit none
++  interface
++  subroutine SSC_MARK_START ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++  end subroutine
++  subroutine SSC_MARK_STOP ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++  end subroutine
++  end interface
++  include 'mpif.h'
+ 
+   character(len=14) :: cdate
+ 
+   integer :: n
++
++  real(8) :: mkrts, mkrte
++  call SSC_MARK_STOP()
+   !-----------------------------------------------------------------------------
+ 
+   call ADM_proc_init(ADM_MULTI_PRC)
+@@ -244,6 +257,8 @@ program prg_driver
+      call history_out
+   endif
+ 
++  mkrts = MPI_WTIME()
++  call SSC_MARK_START()
+   do n = 1, TIME_LSTEP_MAX
+ 
+      call DEBUG_rapstart('+Atmos')
+@@ -267,6 +282,10 @@ program prg_driver
+      call DEBUG_rapend  ('+History')
+ 
+   enddo
++  call SSC_MARK_STOP()
++  mkrte = MPI_WTIME()
++  if (ADM_prc_me == ADM_prc_run_master) write(*,"(A,F10.6,A)") &
++ & "Walltime of the main kernel: ", mkrte - mkrts, " sec"
+ 
+   write(ADM_LOG_FID,*) '##### finish main loop #####'
+   if ( ADM_prc_me == ADM_prc_run_master ) then
+@@ -285,6 +304,7 @@ program prg_driver
+   !--- all processes stop
+   call ADM_proc_stop
+ 
++  call SSC_MARK_START()
+   stop
+ end program prg_driver
+ !-------------------------------------------------------------------------------
+diff --git a/src/ssc.c b/src/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/src/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/sysdep/Makedef.Linux64-intel-impi b/sysdep/Makedef.Linux64-intel-impi
+index 48b7da5..07faaf2 100644
+--- a/sysdep/Makedef.Linux64-intel-impi
++++ b/sysdep/Makedef.Linux64-intel-impi
+@@ -4,7 +4,7 @@
+ 
+ ##### for computation
+ 
+-FFLAGS_FAST = -fpp3 -O3 -xHost -ip                 \
++FFLAGS_FAST = -fpp3 -O3 -ipo -xHost -ip                 \
+               -assume byterecl -convert big_endian \
+               -ftz -fp-model precise -pc 80        \
+               -shared-intel        \
+@@ -30,7 +30,7 @@ FFLAGS = $(FFLAGS_FAST)
+ #FFLAGS = $(FFLAGS_SOSO)	# somewhat good one for vtune analysis
+ 
+ ifneq ($(ENABLE_OPENMP),)
+-      FFLAGS += -openmp -openmp-report
++      FFLAGS += -fopenmp
+ endif
+ ifneq ($(ENABLE_PAPI),)
+       FFLAGS += -D_PAPI_
+@@ -41,7 +41,7 @@ endif
+ MODDIROPT ?= -module
+ 
+ CC     = mpiicc
+-CFLAGS = -O3 -xHost -ip -ftz -shared-intel
++CFLAGS = -O3 -ipo -xHost -ip -ftz -shared-intel
+ 
+ LD     = $(FC)
+ LFLAGS = $(FFLAGS)
+-- 
+1.8.3.1
+

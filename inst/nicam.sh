@@ -18,9 +18,9 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
 	export NICAM_SYS=Linux64-intel-impi
-	make
+	make ENABLE_OPENMP=1
 	cd '../test/case/jablonowski'
-	make
+	make ENABLE_OPENMP=1
 	cd $ROOTDIR
 fi
 

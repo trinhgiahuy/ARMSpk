@@ -31,9 +31,9 @@ for BEST in $BESTCONF; do
 	mkdir -p ./oSDE
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	X="`echo $TEST | cut -d '|' -f3`"
-	Y="`echo $TEST | cut -d '|' -f4`"
-	Z="`echo $TEST | cut -d '|' -f5`"
+	X="`echo $BEST | cut -d '|' -f3`"
+	Y="`echo $BEST | cut -d '|' -f4`"
+	Z="`echo $BEST | cut -d '|' -f5`"
 	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
