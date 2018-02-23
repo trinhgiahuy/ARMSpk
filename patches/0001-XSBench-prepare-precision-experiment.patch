@@ -1,0 +1,106 @@
+From bcd3ec64d329b1eddfe46468babdd56e18ed1cce Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 16:08:51 +0900
+Subject: [PATCH 1/1] XSBench: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore   |  2 ++
+ src/Main.c   | 15 +++++++++++++++
+ src/Makefile |  6 +++---
+ 3 files changed, 20 insertions(+), 3 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..4e66ee9
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++*.o
++src/XSBench
+diff --git a/src/Main.c b/src/Main.c
+index acd2e71..7154de3 100644
+--- a/src/Main.c
++++ b/src/Main.c
+@@ -4,8 +4,14 @@
+ #include<mpi.h>
+ #endif
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ int main( int argc, char* argv[] )
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+ 	// =====================================================================
+ 	// Initialization & Command Line Read-In
+ 	// =====================================================================
+@@ -114,6 +120,7 @@ int main( int argc, char* argv[] )
+ 	if( mype == 0 ) printf("Dumping data to binary file...\n");
+ 	binary_dump(in.n_isotopes, in.n_gridpoints, nuclide_grids, energy_grid, in.grid_type);
+ 	if( mype == 0 ) printf("Binary file \"XS_data.dat\" written! Exiting...\n");
++	STARTSDE;
+ 	return 0;
+ 	#endif
+ 
+@@ -147,6 +154,9 @@ int main( int argc, char* argv[] )
+ 	}
+ 	#endif	
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
++
+ 	// OpenMP compiler directives - declaring variables as shared or private
+ 	#pragma omp parallel default(none) \
+ 	private(i, thread, p_energy, mat, seed) \
+@@ -244,6 +254,10 @@ int main( int argc, char* argv[] )
+ 
+ 	}
+ 
++STOPSDE;
++mkrte = MPI_Wtime();
++if(mype == 0) printf("\nWalltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
++
+ 	#ifndef PAPI
+ 	if( mype == 0)	
+ 	{	
+@@ -265,5 +279,6 @@ int main( int argc, char* argv[] )
+ 	MPI_Finalize();
+ 	#endif
+ 
++STARTSDE;
+ 	return 0;
+ }
+diff --git a/src/Makefile b/src/Makefile
+index 0eb9b1c..7c1e903 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -2,11 +2,11 @@
+ # User Options
+ #===============================================================================
+ 
+-COMPILER    = gnu
++COMPILER    = intel
+ OPTIMIZE    = yes
+ DEBUG       = no
+ PROFILE     = no
+-MPI         = no
++MPI         = yes
+ PAPI        = no
+ VEC_INFO    = no
+ VERIFY      = no
+@@ -49,7 +49,7 @@ endif
+ # Intel Compiler
+ ifeq ($(COMPILER),intel)
+   CC = icc
+-  CFLAGS += -openmp 
++  CFLAGS += -ipo -xHost -fopenmp
+ endif
+ 
+ # BG/Q gcc Cross-Compiler
+-- 
+1.8.3.1
+

@@ -17,7 +17,6 @@ if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
-	sed -i -e 's/^COMPILER.*= gnu/COMPILER = intel/' -e 's/^MPI.* = no/MPI = yes/' -e 's/-openmp/-fopenmp/' Makefile
 	make
 	cd $ROOTDIR
 fi

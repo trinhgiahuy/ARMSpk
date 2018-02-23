@@ -11,7 +11,7 @@ export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
 
-BM="SWFFT"
+BM="SWFFT"  # fortran version is 5-10% faster in my tests
 if [ ! -f $ROOTDIR/$BM/build.xeon/TestDfft ]; then
 	cd $ROOTDIR/$BM/
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
@@ -21,16 +21,14 @@ if [ ! -f $ROOTDIR/$BM/build.xeon/TestDfft ]; then
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
 		./configure --prefix=`pwd`/../fftw-xmic --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
-		make -j CFLAGS="-O3 -xMIC-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		make -j CFLAGS="-O3 -ipo -xHost -xMIC-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
 		make install
 		make distclean
 		./configure --prefix=`pwd`/../fftw-xeon --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
-		make -j CFLAGS="-O3 -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
 		make install
 		cd $ROOTDIR/$BM/
 	fi
-	# fortran version is 5-10% faster in my tests
-	sed -i -e 's/^default: nativec/default: fortran/' GNUmakefile
 	oldPATH=$PATH
 	export PATH=$oldPATH:`pwd`/fftw-xeon/bin
 	make -f GNUmakefile.openmp

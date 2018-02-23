@@ -1,0 +1,153 @@
+From 9fe20b8711f131cdcbb18a9856db4a8235234bb0 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 16:03:54 +0900
+Subject: [PATCH 1/1] SWFFT: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore         |  4 ++++
+ GNUmakefile        | 10 +++++-----
+ GNUmakefile.openmp |  6 +++---
+ TestFDfft.f90      | 18 +++++++++++++++++-
+ ssc.c              |  6 ++++++
+ 5 files changed, 35 insertions(+), 9 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 ssc.c
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..2d27a78
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,4 @@
++build.*
++fftw-*
++*.mod
++*.o
+diff --git a/GNUmakefile b/GNUmakefile
+index 01a0050..f7de6d0 100644
+--- a/GNUmakefile
++++ b/GNUmakefile
+@@ -66,15 +66,15 @@ DFFT_MPI_FC ?= mpif90
+ DFFT_MPI_CPPFLAGS ?= -DDFFT_TIMING=2
+ 
+ # C flags
+-DFFT_MPI_CFLAGS ?= -g -O3 -Wall -Wno-deprecated -std=gnu99
++DFFT_MPI_CFLAGS ?= -g -O3 -ipo -xHost -Wall -Wno-deprecated -std=gnu99
+ 
+ # C++ flags
+-DFFT_MPI_CXXFLAGS ?= -g -O3 -Wall
++DFFT_MPI_CXXFLAGS ?= -g -O3 -ipo -xHost -Wall
+ 
+ # Fortran flags
+ # -cpp seems to work with GNU and Intel
+ # though -fpp might be more correct for Intel
+-DFFT_MPI_FFLAGS ?= -g -O3 -cpp
++DFFT_MPI_FFLAGS ?= -g -O3 -ipo -xHost -cpp
+ 
+ # linker flags
+ DFFT_MPI_LDFLAGS ?= 
+@@ -96,7 +96,7 @@ DFFT_MPI_LDFLAGS += $(DFFT_FFTW_LDFLAGS)
+ 
+ 
+ 
+-default: nativec utilities
++default: fortran utilities
+ 
+ all: nativec utilities fortran
+ 
+@@ -140,5 +140,5 @@ $(DFFT_MPI_DIR)/FDfft.o: $(DFFT_MPI_DIR)/FDistribution.o
+ 
+ $(DFFT_MPI_DIR)/TestFDfft.o: TestFDfft.f90 $(DFFT_MPI_DIR)/FDistribution.o $(DFFT_MPI_DIR)/FDfft.o
+ 
+-$(DFFT_MPI_DIR)/TestFDfft: $(DFFT_MPI_DIR)/TestFDfft.o $(DFFT_MPI_DIR)/FDistribution.o $(DFFT_MPI_DIR)/FDfft.o $(DFFT_MPI_DIR)/DistributionC.o $(DFFT_MPI_DIR)/DfftC.o $(DFFT_MPI_DIR)/distribution.o
++$(DFFT_MPI_DIR)/TestFDfft: $(DFFT_MPI_DIR)/TestFDfft.o $(DFFT_MPI_DIR)/ssc.o $(DFFT_MPI_DIR)/FDistribution.o $(DFFT_MPI_DIR)/FDfft.o $(DFFT_MPI_DIR)/DistributionC.o $(DFFT_MPI_DIR)/DfftC.o $(DFFT_MPI_DIR)/distribution.o
+ 	$(DFFT_MPI_FC) $(DFFT_MPI_FFLAGS) -o $@ $^ $(DFFT_MPI_LDFLAGS) $(DFFT_MPI_FLDFLAGS)
+diff --git a/GNUmakefile.openmp b/GNUmakefile.openmp
+index cbb94e5..ce9262a 100644
+--- a/GNUmakefile.openmp
++++ b/GNUmakefile.openmp
+@@ -54,13 +54,13 @@
+ DFFT_MPI_DIR ?= build.openmp
+ 
+ # C flags
+-DFFT_MPI_CFLAGS ?= -g -O3 -fopenmp -Wall -Wno-deprecated -std=gnu99
++DFFT_MPI_CFLAGS ?= -g -O3 -ipo -xHost -fopenmp -Wall -Wno-deprecated -std=gnu99
+ 
+ # C++ flags
+-DFFT_MPI_CXXFLAGS ?= -g -O3 -fopenmp -Wall
++DFFT_MPI_CXXFLAGS ?= -g -O3 -ipo -xHost -fopenmp -Wall
+ 
+ # Fortran flags
+-DFFT_MPI_FFLAGS ?= -g -O3 -fopenmp -cpp
++DFFT_MPI_FFLAGS ?= -g -O3 -ipo -xHost -fopenmp -cpp
+ 
+ # FFTW3
+ DFFT_FFTW_HOME ?= $(shell dirname $(shell dirname $(shell which fftw-wisdom)))
+diff --git a/TestFDfft.f90 b/TestFDfft.f90
+index e589d90..dc114b8 100644
+--- a/TestFDfft.f90
++++ b/TestFDfft.f90
+@@ -62,13 +62,24 @@ program main
+ 
+   implicit none
+ 
++  interface
++  subroutine SSC_MARK_START ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++  end subroutine
++  subroutine SSC_MARK_STOP ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++  end subroutine
++  end interface
++
+   include 'fftw3.f03'
+ 
+   integer :: rank, nproc, ierr
+   integer :: repetitions
+   integer :: ng(3)
+   integer :: omt
+-  real(8) :: t1, t2 
++  real(8) :: t1, t2
++
++  call SSC_MARK_STOP()
+ 
+   !
+   ! Initialize MPI communicators
+@@ -102,9 +113,13 @@ program main
+   !
+ 
+   t1 = MPI_Wtime()
++  call SSC_MARK_START()
+   call test
++  call SSC_MARK_STOP()
+   t2 = MPI_Wtime()
+   if (rank == 0) write(*,*) " TEST TIME: ", t2-t1
++  if (rank == 0) write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", &
++ &               t2 - t1, " sec"
+ 
+   !
+   ! Finalize MPI communicators and exit 
+@@ -112,6 +127,7 @@ program main
+ 
+   call MPI_Finalize(ierr)
+ 
++  call SSC_MARK_START()
+ contains
+ 
+ !! -------------------------------------------------------------------------- !!
+diff --git a/ssc.c b/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+-- 
+1.8.3.1
+
