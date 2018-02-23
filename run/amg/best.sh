@@ -17,9 +17,9 @@ cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	X="`echo $TEST | cut -d '|' -f3`"
-	Y="`echo $TEST | cut -d '|' -f4`"
-	Z="`echo $TEST | cut -d '|' -f5`"
+	X="`echo $BEST | cut -d '|' -f3`"
+	Y="`echo $BEST | cut -d '|' -f4`"
+	Z="`echo $BEST | cut -d '|' -f5`"
 	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	X=$(($MAXXYZ / $X))
 	Y=$(($MAXXYZ / $Y))

@@ -19,8 +19,6 @@ if [ ! -f $ROOTDIR/$BM/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 	cd $ROOTDIR/$BM/miniTri/linearAlgebra/MPI
 	make
 	cd $ROOTDIR/$BM/miniTri/linearAlgebra/openmp
-	sed -i -e 's/= g++/= icpc/' Makefile
-	sed -i -r '/Time to compute miniTri/ s#^(.*)$#//\1#' miniTri.cc
 	make
 	# get an valid input
 	if [ ! -f $ROOTDIR/$BM/bcsstk30.mtx ]; then

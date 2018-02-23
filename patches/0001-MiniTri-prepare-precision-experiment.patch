@@ -1,0 +1,144 @@
+From 39960c0e72fed79ec41af027c89a70e0a4af17d5 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 14:00:47 +0900
+Subject: [PATCH 1/1] MiniTri: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore                              |  3 +++
+ miniTri/linearAlgebra/MPI/Makefile      |  2 +-
+ miniTri/linearAlgebra/MPI/miniTri.cpp   | 12 ++++++++++++
+ miniTri/linearAlgebra/openmp/Makefile   |  4 ++--
+ miniTri/linearAlgebra/openmp/miniTri.cc | 18 +++++++++++++++++-
+ 5 files changed, 35 insertions(+), 4 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..f378ad4
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,3 @@
++*.o
++*.a
++*.exe
+diff --git a/miniTri/linearAlgebra/MPI/Makefile b/miniTri/linearAlgebra/MPI/Makefile
+index 8eb0838..6905ef3 100644
+--- a/miniTri/linearAlgebra/MPI/Makefile
++++ b/miniTri/linearAlgebra/MPI/Makefile
+@@ -12,7 +12,7 @@
+ UTILDIR = ../../utils/
+ INCDIRS = -I. -I$(UTILDIR)
+ CCC = mpicxx
+-CCFLAGS = -O3 -Wall -DNDEBUG -DUSE_MPI -std=c++11
++CCFLAGS = -O3 -ipo -xHost -Wall -DNDEBUG -DUSE_MPI -std=c++11
+ LIBPATH = -L. 
+ 
+ #--------------------------------------------------
+diff --git a/miniTri/linearAlgebra/MPI/miniTri.cpp b/miniTri/linearAlgebra/MPI/miniTri.cpp
+index ff8c6c8..999f807 100644
+--- a/miniTri/linearAlgebra/MPI/miniTri.cpp
++++ b/miniTri/linearAlgebra/MPI/miniTri.cpp
+@@ -57,10 +57,16 @@
+ 
+ #include "Graph.hpp"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ //////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////
+ int main(int argc, char *argv[])
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+   MPI_Init(&argc,&argv);
+ 
+   int myrank;
+@@ -98,6 +104,8 @@ int main(int argc, char *argv[])
+ 
+   Graph g(mat,isBinFile,MPI_COMM_WORLD);
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
+   g.triangleEnumerate();
+   if(myrank==0)
+   {
+@@ -107,10 +115,14 @@ int main(int argc, char *argv[])
+ 
+   g.calculateTriangleDegrees();
+   g.calculateKCounts();
++STOPSDE;
++mkrte = MPI_Wtime();
++if(myrank==0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+   g.printKCounts();
+ 
+   MPI_Finalize();
+ 
++STARTSDE;
+ }
+ //////////////////////////////////////////////////////////////////////////////
+ 
+diff --git a/miniTri/linearAlgebra/openmp/Makefile b/miniTri/linearAlgebra/openmp/Makefile
+index 6a0992a..82769bd 100644
+--- a/miniTri/linearAlgebra/openmp/Makefile
++++ b/miniTri/linearAlgebra/openmp/Makefile
+@@ -10,8 +10,8 @@
+ ##############################################################################
+ UTILDIRS = ../../utils/
+ INCDIRS = -I. -I$(UTILDIRS)
+-CCC = g++ 
+-CCFLAGS = -O3 -Wall -DNDEBUG -fopenmp -std=c++11 
++CCC = icpc 
++CCFLAGS = -O3 -ipo -xHost -Wall -DNDEBUG -fopenmp -std=c++11 
+ LIBPATH = -L. 
+ 
+ 
+diff --git a/miniTri/linearAlgebra/openmp/miniTri.cc b/miniTri/linearAlgebra/openmp/miniTri.cc
+index 40bb240..3ff6edc 100644
+--- a/miniTri/linearAlgebra/openmp/miniTri.cc
++++ b/miniTri/linearAlgebra/openmp/miniTri.cc
+@@ -60,11 +60,23 @@
+ 
+ #include "Graph.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
++double MPI_Wtime() {
++	struct timeval t;
++	gettimeofday(&t, NULL);
++	return t.tv_sec + (t.tv_usec / 1000000.0);
++}
++
+ //////////////////////////////////////////////////////////////////////////////
+ // Main
+ //////////////////////////////////////////////////////////////////////////////
+ int main(int argc, char *argv[])
+ {
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
++
+   struct timeval t1, t2;
+ 
+  
+@@ -105,10 +117,14 @@ int main(int argc, char *argv[])
+ 
+   Graph g(mat,isBinFile,blockSize);
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
+   g.triangleEnumerate();
+   g.calculateTriangleDegrees();
+   g.calculateKCounts();
+-
++STOPSDE;
++mkrte = MPI_Wtime();
++printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+ 
+   gettimeofday(&t2, NULL);
+ 
+-- 
+1.8.3.1
+

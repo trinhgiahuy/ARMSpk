@@ -1,0 +1,293 @@
+From 20358fbdc8b410de9e6bc80d1af92e0a3ecfd5b1 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 13:57:15 +0900
+Subject: [PATCH 1/1] MiniFE: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ mkl/src/Makefile              |  2 +-
+ mkl/src/driver.hpp            | 10 ++++++++++
+ mkl/src/main.cpp              |  5 +++++
+ openmp-opt-knl/src/Makefile   |  4 ++--
+ openmp-opt-knl/src/driver.hpp | 10 ++++++++++
+ openmp-opt-knl/src/main.cpp   |  5 +++++
+ openmp-opt/src/Makefile       |  6 +++---
+ openmp-opt/src/driver.hpp     | 10 ++++++++++
+ openmp-opt/src/main.cpp       |  5 +++++
+ 9 files changed, 51 insertions(+), 6 deletions(-)
+
+diff --git a/mkl/src/Makefile b/mkl/src/Makefile
+index d81bbcf..ce5f5e8 100644
+--- a/mkl/src/Makefile
++++ b/mkl/src/Makefile
+@@ -10,7 +10,7 @@ MINIFE_MATRIX_TYPE = -DMINIFE_CSR_MATRIX
+ 
+ #-----------------------------------------------------------------------
+ 
+-CFLAGS = -O3 -mkl -DMINIFE_MKL_DOUBLE -fopenmp -DUSE_MKL_DAXPBY -mavx
++CFLAGS = -O3 -ipo -xHost -mkl -DMINIFE_MKL_DOUBLE -fopenmp -DUSE_MKL_DAXPBY -mavx
+ CXXFLAGS = $(CFLAGS)
+ 
+ # For debugging, the macro MINIFE_DEBUG will cause miniFE to dump a log file
+diff --git a/mkl/src/driver.hpp b/mkl/src/driver.hpp
+index 6c0f0f0..a954d28 100644
+--- a/mkl/src/driver.hpp
++++ b/mkl/src/driver.hpp
+@@ -88,6 +88,9 @@
+   }                                 \
+ }
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ //This program assembles finite-element matrices into a global matrix and
+ //vector, then solves the linear-system using Conjugate Gradients.
+ //Each finite-element is a hexahedron with 8 vertex-nodes.
+@@ -125,6 +128,8 @@ int
+ driver(const Box& global_box, Box& my_box,
+        Parameters& params, YAML_Doc& ydoc)
+ {
++double mkrts, mkrte; // my kernel run-time
++
+   int global_nx = global_box[0][1];
+   int global_ny = global_box[1][1];
+   int global_nz = global_box[2][1];
+@@ -275,6 +280,8 @@ driver(const Box& global_box, Box& my_box,
+   if (myproc==0) {
+     std::cout << "Starting CG solver ... " << std::endl;
+   }
++mkrts = MPI_Wtime();
++STARTSDE;
+ 
+   if (matvec_with_comm_overlap) {
+ #ifdef MINIFE_CSR_MATRIX
+@@ -305,6 +312,9 @@ driver(const Box& global_box, Box& my_box,
+       verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
+     }
+   }
++STOPSDE;
++mkrte = MPI_Wtime();
++if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+ 
+ #ifdef MINIFE_DEBUG
+   write_vector("x.vec", x);
+diff --git a/mkl/src/main.cpp b/mkl/src/main.cpp
+index 16e27e1..9c8b2fe 100644
+--- a/mkl/src/main.cpp
++++ b/mkl/src/main.cpp
+@@ -65,6 +65,9 @@
+ #define MINIFE_GLOBAL_ORDINAL int
+ #endif
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ // ************************************************************************
+ 
+ void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
+@@ -92,6 +95,7 @@ inline void print_box(int myproc, const char* name, const Box& box,
+ //
+ 
+ int main(int argc, char** argv) {
++STOPSDE;
+   miniFE::Parameters params;
+   miniFE::get_parameters(argc, argv, params);
+ 
+@@ -150,6 +154,7 @@ int main(int argc, char** argv) {
+ 
+   miniFE::finalize_mpi();
+ 
++STARTSDE;
+   return return_code;
+ }
+ 
+diff --git a/openmp-opt-knl/src/Makefile b/openmp-opt-knl/src/Makefile
+index 629af96..773cdaf 100644
+--- a/openmp-opt-knl/src/Makefile
++++ b/openmp-opt-knl/src/Makefile
+@@ -12,14 +12,14 @@ MINIFE_MATRIX_TYPE = -DMINIFE_CSR_MATRIX
+ 
+ #-----------------------------------------------------------------------
+ 
+-CFLAGS = -O3 -fopenmp -xMIC-AVX512
++CFLAGS = -O3 -ipo -xMIC-AVX512 -fopenmp
+ 
+ CXXFLAGS = $(CFLAGS) 
+ 
+ CPPFLAGS = -I. -I../utils -I../fem $(MINIFE_TYPES) \
+ 	$(MINIFE_MATRIX_TYPE) \
+ 	-DMINIFE_RESTRICT=__restrict__ \
+-	-DHAVE_MPI -DMPICH_IGNORE_CXX_SEEK
++	-DHAVE_MPI
+ 
+ LDFLAGS=$(CFLAGS)
+ LIBS=
+diff --git a/openmp-opt-knl/src/driver.hpp b/openmp-opt-knl/src/driver.hpp
+index b24bdac..16ea160 100644
+--- a/openmp-opt-knl/src/driver.hpp
++++ b/openmp-opt-knl/src/driver.hpp
+@@ -87,6 +87,9 @@
+   }                                 \
+ }
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ //This program assembles finite-element matrices into a global matrix and
+ //vector, then solves the linear-system using Conjugate Gradients.
+ //Each finite-element is a hexahedron with 8 vertex-nodes.
+@@ -124,6 +127,8 @@ int
+ driver(const Box& global_box, Box& my_box,
+        Parameters& params, YAML_Doc& ydoc)
+ {
++double mkrts, mkrte; // my kernel run-time
++
+   int global_nx = global_box[0][1];
+   int global_ny = global_box[1][1];
+   int global_nz = global_box[2][1];
+@@ -275,6 +280,8 @@ driver(const Box& global_box, Box& my_box,
+     std::cout << "Starting CG solver ... " << std::endl;
+   }
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
+   if (matvec_with_comm_overlap) {
+ #ifdef MINIFE_CSR_MATRIX
+     rearrange_matrix_local_external(A);
+@@ -304,6 +311,9 @@ driver(const Box& global_box, Box& my_box,
+       verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
+     }
+   }
++STOPSDE;
++mkrte = MPI_Wtime();
++if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+ 
+ #ifdef MINIFE_DEBUG
+   write_vector("x.vec", x);
+diff --git a/openmp-opt-knl/src/main.cpp b/openmp-opt-knl/src/main.cpp
+index 290e661..4059acf 100644
+--- a/openmp-opt-knl/src/main.cpp
++++ b/openmp-opt-knl/src/main.cpp
+@@ -69,6 +69,9 @@
+ #define MINIFE_GLOBAL_ORDINAL int
+ #endif
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ // ************************************************************************
+ 
+ void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
+@@ -83,6 +86,7 @@ void add_timestring_to_yaml(YAML_Doc& doc);
+ //
+ 
+ int main(int argc, char** argv) {
++STOPSDE;
+   miniFE::Parameters params;
+   miniFE::get_parameters(argc, argv, params);
+ 
+@@ -184,6 +188,7 @@ int main(int argc, char** argv) {
+ 
+   miniFE::finalize_mpi();
+ 
++STARTSDE;
+   return return_code;
+ }
+ 
+diff --git a/openmp-opt/src/Makefile b/openmp-opt/src/Makefile
+index bd271ec..b8ad346 100644
+--- a/openmp-opt/src/Makefile
++++ b/openmp-opt/src/Makefile
+@@ -12,14 +12,14 @@ MINIFE_MATRIX_TYPE = -DMINIFE_CSR_MATRIX
+ 
+ #-----------------------------------------------------------------------
+ 
+-CFLAGS = -O3 -fopenmp -mavx
++CFLAGS = -O3 -ipo -xHost -fopenmp -mavx
+ 
+-CXXFLAGS = $(CFLAGS) 
++CXXFLAGS = $(CFLAGS)
+ 
+ CPPFLAGS = -I. -I../utils -I../fem $(MINIFE_TYPES) \
+ 	$(MINIFE_MATRIX_TYPE) \
+ 	-DMINIFE_RESTRICT=__restrict__ \
+-	-DHAVE_MPI -DMPICH_IGNORE_CXX_SEEK
++	-DHAVE_MPI
+ 
+ LDFLAGS=$(CFLAGS)
+ LIBS=
+diff --git a/openmp-opt/src/driver.hpp b/openmp-opt/src/driver.hpp
+index b38887f..aa92de4 100644
+--- a/openmp-opt/src/driver.hpp
++++ b/openmp-opt/src/driver.hpp
+@@ -87,6 +87,9 @@
+   }                                 \
+ }
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ //This program assembles finite-element matrices into a global matrix and
+ //vector, then solves the linear-system using Conjugate Gradients.
+ //Each finite-element is a hexahedron with 8 vertex-nodes.
+@@ -124,6 +127,8 @@ int
+ driver(const Box& global_box, Box& my_box,
+        Parameters& params, YAML_Doc& ydoc)
+ {
++double mkrts, mkrte; // my kernel run-time
++
+   int global_nx = global_box[0][1];
+   int global_ny = global_box[1][1];
+   int global_nz = global_box[2][1];
+@@ -275,6 +280,8 @@ driver(const Box& global_box, Box& my_box,
+     std::cout << "Starting CG solver ... " << std::endl;
+   }
+ 
++mkrts = MPI_Wtime();
++STARTSDE;
+   if (matvec_with_comm_overlap) {
+ #ifdef MINIFE_CSR_MATRIX
+     rearrange_matrix_local_external(A);
+@@ -304,6 +311,9 @@ driver(const Box& global_box, Box& my_box,
+       verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
+     }
+   }
++STOPSDE;
++mkrte = MPI_Wtime();
++if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+ 
+ #ifdef MINIFE_DEBUG
+   write_vector("x.vec", x);
+diff --git a/openmp-opt/src/main.cpp b/openmp-opt/src/main.cpp
+index 7983fc1..3ddf8b8 100644
+--- a/openmp-opt/src/main.cpp
++++ b/openmp-opt/src/main.cpp
+@@ -69,6 +69,9 @@
+ #define MINIFE_GLOBAL_ORDINAL int
+ #endif
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ // ************************************************************************
+ 
+ void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
+@@ -83,6 +86,7 @@ void add_timestring_to_yaml(YAML_Doc& doc);
+ //
+ 
+ int main(int argc, char** argv) {
++STOPSDE;
+   miniFE::Parameters params;
+   miniFE::get_parameters(argc, argv, params);
+ 
+@@ -185,6 +189,7 @@ int main(int argc, char** argv) {
+ 
+   miniFE::finalize_mpi();
+ 
++STARTSDE;
+   return return_code;
+ }
+ 
+-- 
+1.8.3.1
+
