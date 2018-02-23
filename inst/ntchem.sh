@@ -18,8 +18,6 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	TOP_DIR=`pwd`
 	TYPE=intel
-	cp platforms/config_mine.${TYPE} ./config_mine
-	sed -i -e 's/-openmp/-fopenmp/g' ./config/linux64_mpif90_omp_intel_proto.makeconfig.in
 	./config_mine
 	mkdir -p $ROOTDIR/$BM/bin
 	make CC=mpicc CXX=mpicxx F77C=mpif77 F90C=mpif90
