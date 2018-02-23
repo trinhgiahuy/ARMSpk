@@ -1,0 +1,123 @@
+From 25b16a8e1e1597f52e2e8d008758ce76a23677af Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 15:35:10 +0900
+Subject: [PATCH 1/1] Nekbone: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ src/driver.f           | 20 ++++++++++++++++++++
+ src/makefile.template  |  3 ++-
+ src/ssc.c              |  6 ++++++
+ test/nek_mgrid/makenek |  2 +-
+ 4 files changed, 29 insertions(+), 2 deletions(-)
+ create mode 100644 src/ssc.c
+
+diff --git a/src/driver.f b/src/driver.f
+index 75c2dca..087d80f 100755
+--- a/src/driver.f
++++ b/src/driver.f
+@@ -1,6 +1,16 @@
+ c-----------------------------------------------------------------------
+       program nekbone
+       
++      use, intrinsic :: iso_c_binding
++      interface
++      subroutine SSC_MARK_START ( ) bind ( c )
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++      end subroutine
++      subroutine SSC_MARK_STOP ( ) bind ( c )
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++      end subroutine
++      end interface
++
+       include 'SIZE'
+       include 'TOTAL'
+       include 'SEMHAT'
+@@ -21,6 +31,8 @@ c-----------------------------------------------------------------------
+       integer npx,npy,npz      ! processor decomp
+       integer mx ,my ,mz       ! element decomp
+ 
++      real(8) :: mkrts = 0.0, mkrte = 0.0
++      call SSC_MARK_STOP()
+ 
+       call iniproc(mpi_comm_world)    ! has nekmpi common block
+       call init_delay
+@@ -56,7 +68,11 @@ c     SET UP and RUN NEKBONE
+            call nekgsync()
+ 
+            call set_timer_flop_cnt(0)
++           mkrts = MPI_WTIME()
++           call SSC_MARK_START()
+            call cg(x,f,g,c,r,w,p,z,n,niter,flop_cg)
++           call SSC_MARK_STOP()
++           mkrte = mkrte + (MPI_WTIME() - mkrts)
+            call set_timer_flop_cnt(1)
+ 
+            call gs_free(gsh)
+@@ -65,6 +81,8 @@ c     SET UP and RUN NEKBONE
+            mfloplist(icount) = mflops*np
+          enddo
+       enddo
++      if(nid.eq.0) write(*,"(A,F10.6,A)")
++     &     "Walltime of the main kernel: ", mkrte, " sec"
+ 
+       avmflop = 0.0
+       do i = 1,icount
+@@ -81,6 +99,8 @@ c     SET UP and RUN NEKBONE
+ c     TEST BANDWIDTH BISECTION CAPACITY
+ c     call xfer(np,cr_h)
+ 
++      call SSC_MARK_START()
++
+       call exitt0
+ 
+       end
+diff --git a/src/makefile.template b/src/makefile.template
+index c686e46..257451e 100755
+--- a/src/makefile.template
++++ b/src/makefile.template
+@@ -27,7 +27,7 @@ PPS_F = $(patsubst %,$(PPPO)-D%,$(PPS))
+ PPS_C = $(patsubst %,-D%,$(PPS))
+ 
+ #NEW #########################################################################
+-BONE = cg.o driver.o math.o mxm_wrapper.o prox_dssum.o\
++BONE = cg.o driver.o ssc.o math.o mxm_wrapper.o prox_dssum.o\
+ prox_setup.o semhat.o speclib.o 
+ 
+ ifeq ($(IFNEKCOMM),true)
+@@ -129,6 +129,7 @@ $(OBJDIR)/hsmg_dum.o    :$S/hsmg_dum.f;                 $(F77) -c $(FL2) $< -o $
+ $(OBJDIR)/ssygv.o       :$S/ssygv.f;                    $(F77) -c $(FL2i4) $< -o $@
+ $(OBJDIR)/dsygv.o       :$S/dsygv.f;                    $(F77) -c $(FL2i4) $< -o $@
+ $(OBJDIR)/driver.o      :$S/driver.f;                   $(F77) -c $(FL2) $< -o $@
++$(OBJDIR)/ssc.o         :$S/ssc.c;                      $(CC)  -c $(cFL2) $(JL) $< -o $@
+ $(OBJDIR)/driver_comm.o	:$S/driver_comm.f;		$(F77) -c $(FL2) $< -o $@
+ $(OBJDIR)/math.o	:$S/math.f;			$(F77) -c $(FL4) $< -o $@
+ $(OBJDIR)/semhat.o	:$S/semhat.f;			$(F77) -c $(FL4) $< -o $@
+diff --git a/src/ssc.c b/src/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/src/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+diff --git a/test/nek_mgrid/makenek b/test/nek_mgrid/makenek
+index 00118aa..3d84375 100755
+--- a/test/nek_mgrid/makenek
++++ b/test/nek_mgrid/makenek
+@@ -35,7 +35,7 @@ PPLIST="MGRID"
+ #G="-g"
+ 
+ # optimization flags
+-#OPT_FLAGS_STD=""
++OPT_FLAGS_STD="-ipo -xHost"
+ #OPT_FLAGS_MAG=""
+ 
+ ###############################################################################
+-- 
+1.8.3.1
+

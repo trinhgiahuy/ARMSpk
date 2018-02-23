@@ -1,0 +1,129 @@
+From 7a67c7b2e208b7de262bbc7665d8dd1bb0eb9cd7 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 15:54:32 +0900
+Subject: [PATCH 1/1] SW4lite: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ Makefile    | 8 ++++----
+ src/EW-dg.C | 9 +++++++++
+ src/EW.C    | 6 ++++++
+ src/main.C  | 6 ++++++
+ 4 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 506c443..c7b759f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -70,13 +70,13 @@ else ifeq ($(findstring quadknl,$(HOSTNAME)),quadknl)
+   FC = mpiifort
+   CXX = mpiicpc
+   CC = icc
+-  OMPOPT = -qopenmp
++  OMPOPT = -fopenmp
+   MKL_PATH = /opt/intel/compilers_and_libraries_2017/linux/mkl/lib/intel64
+   OTHER_PATH = /opt/intel/compilers_and_libraries_2017/linux/lib/intel64
+   BASIC_PATH = /opt/intel/lib/intel64
+-  EXTRA_CXX_FLAGS = -xmic-avx512
+-  EXTRA_C_FLAGS = -xmic-avx512
+-  EXTRA_FORT_FLAGS = -xmic-avx512 
++  EXTRA_CXX_FLAGS = -ipo -xHost -xmic-avx512
++  EXTRA_C_FLAGS = -ipo -xHost -xmic-avx512
++  EXTRA_FORT_FLAGS = -ipo -xHost -xmic-avx512
+   EXTRA_LINK_FLAGS = -Wl,-rpath=${MKL_PATH} -Wl,-rpath=${BASIC_PATH} -L${MKL_PATH} -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm -ldl -Wl,-rpath=${OTHER_PATH} -L${OTHER_PATH} -lifcore -L${BASIC_PATH} -limf -lsvml -lintlc
+ # for building testil
+ #  EXTRA_LINK_FLAGS = -Wl,-rpath=${OTHER_PATH} -L${OTHER_PATH} -lifcore -L${BASIC_PATH} -limf -lsvml -lintlc -lm -ldl 
+diff --git a/src/EW-dg.C b/src/EW-dg.C
+index 643933c..593cdc8 100644
+--- a/src/EW-dg.C
++++ b/src/EW-dg.C
+@@ -56,6 +56,9 @@
+ 
+ #include "DG_FUNC.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ void EW::set_dg_orders( int qu, int qv)
+ {
+     m_qu = qu;
+@@ -68,6 +71,9 @@ void EW::timeStepLoopdGalerkin()
+ {
+         // DG timestepping routine
+    float_sw4 time_begin_solve = MPI_Wtime();
++double mkrts, mkrte; // my kernel run-time
++mkrts = MPI_Wtime();
++STARTSDE;
+ #ifdef SW4_CROUTINES
+    std::cout << "ERROR, DG requires compilation with fortran" << endl;
+    exit(2);
+@@ -441,6 +447,9 @@ void EW::timeStepLoopdGalerkin()
+ 
+     if(m_myrank == 0){cout << "checking errors at final time: " << mTmax <<  endl;}
+     computeError(udg,vdg,t);
++STOPSDE;
++mkrte = MPI_Wtime();
++if( m_myrank == 0 ) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+     if( m_myrank == 0 ){
+         float_sw4 time_end_solve = MPI_Wtime();
+         cout << endl << "***** Solver execution time: " << time_end_solve - time_begin_solve <<
+diff --git a/src/EW.C b/src/EW.C
+index b66c849..4c6af27 100644
+--- a/src/EW.C
++++ b/src/EW.C
+@@ -61,6 +61,9 @@
+ #include "F77_FUNC.h"
+ #include "EWCuda.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ #ifndef SW4_CROUTINES
+ extern "C" {
+    void F77_FUNC(rhs4th3fortsgstr,RHS4TH3FORTSGSTR)( int*, int*, int*, int*, int*, int*, int*, int*, 
+@@ -2345,6 +2348,7 @@ void EW::timesteploop( vector<Sarray>& U, vector<Sarray>& Um )
+ 
+    // Do all timing in double, time differences have to much cancellation for float.
+    double time_start_solve = MPI_Wtime();
++STARTSDE;
+    bool saveerror = false;
+ 
+    // Define local arrays
+@@ -2772,7 +2776,9 @@ void EW::timesteploop( vector<Sarray>& U, vector<Sarray>& Um )
+ 	    trdata[s+12*(currentTimeStep-beginCycle)]= time_measure[s];
+ 
+    } // end time stepping loop
++STOPSDE;
+    double time_end_solve = MPI_Wtime();
++if (m_myrank == 0) printf("Walltime of the main kernel: %.6lf sec\n", time_end_solve - time_start_solve);
+    print_execution_time( time_start_solve, time_end_solve, "solver phase" );
+    if( m_output_detailed_timing )
+       print_execution_times( time_sum );
+diff --git a/src/main.C b/src/main.C
+index 9df8036..70d392a 100644
+--- a/src/main.C
++++ b/src/main.C
+@@ -35,8 +35,13 @@
+ using namespace std;
+ #include "EW.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ int main( int argc, char** argv )
+ {
++STOPSDE;
++
+    //MPI_Init(&argc, &argv);
+    int myRank;
+    double  time_start, time_end;
+@@ -72,5 +77,6 @@ int main( int argc, char** argv )
+ 
+    MPI_Finalize();
+ 
++STARTSDE;
+    return 0;
+ }
+-- 
+1.8.3.1
+

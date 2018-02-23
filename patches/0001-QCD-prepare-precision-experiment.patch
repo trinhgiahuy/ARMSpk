@@ -1,0 +1,134 @@
+From 1053d2cd261a3bd863d43f231f527a2f5eb9cfb0 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Fri, 23 Feb 2018 15:44:02 +0900
+Subject: [PATCH 1/1] QCD: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ .gitignore                   |  1 +
+ src/Makefile                 |  4 ++--
+ src/ccs_qcd_solver_bench.F90 | 25 +++++++++++++++++++++++++
+ src/make.ifort.inc           |  5 +++--
+ src/ssc.c                    |  6 ++++++
+ 5 files changed, 37 insertions(+), 4 deletions(-)
+ create mode 100644 src/ssc.c
+
+diff --git a/.gitignore b/.gitignore
+index 63a7748..2f32fc0 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1 +1,2 @@
+ *.mod
++*.o
+diff --git a/src/Makefile b/src/Makefile
+index eed872c..0654bef 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -22,7 +22,7 @@ FFLAGS += -Ima_prof/src
+ LDFLAGS += -Lma_prof/src
+ LIBS += -lmaprof_f
+ 
+-OBJ     = $(SOURCE:%.F90=%.o)
++OBJ     = $(SOURCE:%.F90=%.o) ssc.o
+ 
+ PROGRAM = ccs_qcd_solver_bench_class$(CLASS)
+ 
+@@ -53,7 +53,7 @@ ccs_qcd_solver_bench_class.o : bicgstab_hmc.h90 clover.h90 clover_f1f2.h90 clvin
+ ccs_qcd_solver_bench_class.o : clvinv_ldl.h90 copy_u.h90 copy_y.h90 expp_u.h90 full2linear_clv.h90 gauss_y.h90
+ ccs_qcd_solver_bench_class.o : init_p.h90 init_u_and_y.h90 initset.h90 mult.h90 mult_eo_tzyx.h90
+ ccs_qcd_solver_bench_class.o : mult_fclinv.h90 mult_mb_pre.h90 output.h90 xrand.h90
+-ccs_qcd_solver_bench.o : ccs_qcd_solver_bench.F90 comlib.o ccs_qcd_solver_bench_class.o lattice_class.o config.h
++ccs_qcd_solver_bench.o : ccs_qcd_solver_bench.F90 ssc.o comlib.o ccs_qcd_solver_bench_class.o lattice_class.o config.h
+ 
+ 
+ .PHONY: CONFIG_GEN
+diff --git a/src/ccs_qcd_solver_bench.F90 b/src/ccs_qcd_solver_bench.F90
+index 6786209..cc63f35 100644
+--- a/src/ccs_qcd_solver_bench.F90
++++ b/src/ccs_qcd_solver_bench.F90
+@@ -14,7 +14,17 @@ program ccs_qcd_solver_bench
+   use lattice_class
+   use ccs_qcd_solver_bench_class
+   use mod_maprof
++  use, intrinsic :: iso_c_binding
+   implicit none
++  interface
++  subroutine SSC_MARK_START ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++  end subroutine
++  subroutine SSC_MARK_STOP ( ) bind ( c )
++  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++  end subroutine
++  end interface
++  include 'mpif.h'
+ !***********************************************************************
+   complex(8) ::  ye_t(COL,SPIN,0:NTH,0:NZ1,0:NY1,0:NX1)
+   complex(8) ::  yo_t(COL,SPIN,0:NTH,0:NZ1,0:NY1,0:NX1)
+@@ -46,6 +56,9 @@ program ccs_qcd_solver_bench
+   integer, parameter :: SEC_BICGSTAB = 0
+   integer, parameter :: SEC_CLOVER = 1
+ 
++  real(8) :: mkrts, mkrte
++  call SSC_MARK_STOP()
++
+   call initset
+ 
+   mult_iter=0
+@@ -143,8 +156,18 @@ program ccs_qcd_solver_bench
+ !************************
+   call xclock(etime0,8)
+   call maprof_time_start(SEC_BICGSTAB)
++
++  mkrts = MPI_WTIME()
++  call SSC_MARK_START()
++
+   call bicgstab_hmc(tol,iiter,flop,stops, ldops, etime2,  &
+       &                    kappa,ye_t_,yde_t_,ue_t_,uo_t_,0,fclinve_t_,fclinvo_t_)
++
++  call SSC_MARK_STOP()
++  mkrte = MPI_WTIME()
++  if (nodeid==0) write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", &
++      &   mkrte- mkrts, " sec"
++
+   call xclock(etime1,8)
+   call maprof_time_stop(SEC_BICGSTAB)
+   bicg_dp_flop = bicg_dp_flop + flop
+@@ -280,5 +303,7 @@ program ccs_qcd_solver_bench
+   call comlib_finalize
+ #endif
+ 
++  call SSC_MARK_START()
++
+   stop
+ end program
+diff --git a/src/make.ifort.inc b/src/make.ifort.inc
+index 5660987..af9ab62 100644
+--- a/src/make.ifort.inc
++++ b/src/make.ifort.inc
+@@ -9,8 +9,9 @@ REVISION = -D_REVISION_='"$(shell cat .svnrevision)"'
+ # example: Intel fortran for Core2Duo CPU (-xT), OpenMP enabled
+ FC      = mpif90
+ CC      = mpicc
+-FFLAGS  = -shared-intel -mcmodel=medium -O3 -xhost -align all -traceback -openmp -openmp-report2 -complex-limited-range -finline-limit=10000 -vec-report
+-LDFLAGS = $(FFLAGS) -openmp
++CFLAGS  = -O2 -ipo -xHost
++FFLAGS  = -shared-intel -mcmodel=medium -O3 -ipo -xHost -align all -traceback -fopenmp -openmp-report2 -complex-limited-range -finline-limit=10000 -vec-report
++LDFLAGS = $(FFLAGS) -fopenmp
+ 
+ #LIBS = 
+ 
+diff --git a/src/ssc.c b/src/ssc.c
+new file mode 100644
+index 0000000..a5f324d
+--- /dev/null
++++ b/src/ssc.c
+@@ -0,0 +1,6 @@
++void ssc_mark_start (void) {
++	__SSC_MARK(0x111);
++}
++void ssc_mark_stop (void) {
++	__SSC_MARK(0x222);
++}
+-- 
+1.8.3.1
+
