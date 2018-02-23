@@ -141,3 +141,10 @@ print('TOTAL GFLOPS (dp):       %f GFLOP' % (result['double']/1.0/1000/1000/1000
 f.close()
 f2.close()
 ```
+
+
+git clone --recurse-submodules git@gitlab.m.gsic.titech.ac.jp:Jens/precision.git
+./inst/amg.sh
+sudo tuned-adm profile latency-performance; tuned-adm verify
+./run/amg/test.sh
+

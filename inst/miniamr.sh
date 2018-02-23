@@ -17,7 +17,6 @@ if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/ref
-	sed -i -e 's#= cc#= mpicc#' Makefile
 	make
 	cd $ROOTDIR
 fi
