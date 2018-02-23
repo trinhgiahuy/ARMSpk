@@ -46,7 +46,7 @@ for BEST in $BESTCONF; do
 		cat ./oSDE/${P}.txt >> $LOG 2>&1
 	done
 	echo "=== SDE summary ===" >> $LOG 2>&1
-	$ROOTDIR/util/analyze_sde.py `echo $LOG | sed -e 's#profrun#bestrun#g'` ./oSDE >> $LOG 2>&1
+	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed -e 's#profrun#bestrun#g'` >> $LOG 2>&1
 	rm -rf ./oSDE
 done
 cd $ROOTDIR
