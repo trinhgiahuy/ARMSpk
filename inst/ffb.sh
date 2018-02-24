@@ -32,6 +32,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		sed -i -e 's/O2 -w2 -wd1782/O2 -w2 -ipo -xHost -wd1782/g' ./MakefileConfig.in
 		sed -i '/#include <sstream>/a #include <stdlib.h>' ./RevocapIO/kmbHecmwIO_V3.cpp
 		make
+		ln -s ./Refiner include
 		cd $ROOTDIR/$BM/src
 	fi
 	sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
