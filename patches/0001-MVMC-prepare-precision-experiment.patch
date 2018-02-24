@@ -1,16 +1,16 @@
-From c403f85e754b0877bffac3536d51e586100d13e7 Mon Sep 17 00:00:00 2001
+From 5cf1782f4e13244e46cf2c4598c9e6cb8d4c8bc9 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 04:17:42 +0900
 Subject: [PATCH 1/1] MVMC: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- .gitignore                 |  3 +++
- src/Makefile_intel         |  4 ++--
+ .gitignore                 |  3 ++
+ src/Makefile_intel         | 90 +++++++++++++++++++++++-----------------------
  src/pfapack/Makefile_intel |  2 +-
  src/sfmt/Makefile_intel    |  2 +-
- src/vmcmain.c              | 12 ++++++++++++
- 5 files changed, 19 insertions(+), 4 deletions(-)
+ src/vmcmain.c              | 12 +++++++
+ 5 files changed, 62 insertions(+), 47 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -23,21 +23,100 @@ index 0000000..cf13c30
 +*.o
 +*.a
 diff --git a/src/Makefile_intel b/src/Makefile_intel
-index 532e5e4..d5fcb37 100644
+index 532e5e4..c40518f 100644
 --- a/src/Makefile_intel
 +++ b/src/Makefile_intel
-@@ -17,9 +17,9 @@ MKL = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
- 
- LIB = $(MKL) 
- 
+@@ -1,45 +1,45 @@
+-FC = mpif90
+-CC = mpicc
+-
+-# perhaps we can link MKL here
+-#	MKL_DIR  = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
+-#	BLAS = -lmkl_intel_thread -lmkl_core -lmkl_avx -lmkl_intel_lp64
+-#	LAPACK =
+-#	SCALAPACK = -lmkl_intel_lp64 -lmkl_scalapack_lp64
+-#	LIB = $(MKL_DIR) $(SCALAPACK) $(LAPACK) $(BLAS)
+-
+-MKL = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
+--Wl,--start-group \
+--lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_scalapack_lp64 \
+--lmkl_blacs_intelmpi_lp64 \
+--Wl,--end-group \
+--lpthread
+-
+-LIB = $(MKL) 
+-
 -CFLAGS = -xHost -O3 -openmp -opt-prefetch=3 -nofor-main
-+CFLAGS = -O3 -ipo -xHost -fopenmp -qopt-prefetch=3 -nofor-main
- #	REPORT = 
+-#	REPORT = 
 -#	REPORT = -vec-report -openmp-report
-+#	REPORT = -vec-report -fopenmp-report
- REPORT = -vec-report 
- OPTION = -D_mpi_use
- 
+-REPORT = -vec-report 
+-OPTION = -D_mpi_use
+-
+-OUT = vmc.out
+-SRC = vmcmain.c
+-PFAPACK = pfapack/libpfapack.a
+-SFMT = sfmt/SFMT.o
+-OBJS = vmcmain.o $(PFAPACK) $(SFMT)
+-
+-.PHONY : all pfapack sfmt
+-all : vmc.out
+-
+-vmc.out : vmcmain.o pfapack sfmt
+-	$(FC) -o $(OUT) $(OBJS) $(CFLAGS) $(LIB)
+-
+-vmcmain.o : *.c *.h
+-	$(CC) -c $(SRC) $(OPTION) $(CFLAGS) $(REPORT)
+-
+-pfapack :
+-	$(MAKE) -C pfapack -f Makefile_intel
+-sfmt :
+-	$(MAKE) -C sfmt -f Makefile_intel
+-
++FC = mpif90
++CC = mpicc
++
++# perhaps we can link MKL here
++#	MKL_DIR  = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
++#	BLAS = -lmkl_intel_thread -lmkl_core -lmkl_avx -lmkl_intel_lp64
++#	LAPACK =
++#	SCALAPACK = -lmkl_intel_lp64 -lmkl_scalapack_lp64
++#	LIB = $(MKL_DIR) $(SCALAPACK) $(LAPACK) $(BLAS)
++
++MKL = -L/usr/local/intel/composer_xe_2013/mkl/lib/intel64 \
++-Wl,--start-group \
++-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_scalapack_lp64 \
++-lmkl_blacs_intelmpi_lp64 \
++-Wl,--end-group \
++-lpthread
++
++LIB = $(MKL) 
++
++CFLAGS = -O3 -ipo -xHost -fopenmp -qopt-prefetch=3 -nofor-main
++#	REPORT = 
++#	REPORT = -vec-report -openmp-report
++REPORT = -vec-report 
++OPTION = -D_mpi_use
++
++OUT = vmc.out
++SRC = vmcmain.c
++PFAPACK = pfapack/libpfapack.a
++SFMT = sfmt/SFMT.o
++OBJS = vmcmain.o $(PFAPACK) $(SFMT)
++
++.PHONY : all pfapack sfmt
++all : vmc.out
++
++vmc.out : vmcmain.o pfapack sfmt
++	$(FC) -o $(OUT) $(OBJS) $(CFLAGS) $(LIB)
++
++vmcmain.o : *.c *.h
++	$(CC) -c $(SRC) $(OPTION) $(CFLAGS) $(REPORT)
++
++pfapack :
++	$(MAKE) -C pfapack -f Makefile_intel
++sfmt :
++	$(MAKE) -C sfmt -f Makefile_intel
++
 diff --git a/src/pfapack/Makefile_intel b/src/pfapack/Makefile_intel
 index 78266dd..52a5b13 100644
 --- a/src/pfapack/Makefile_intel

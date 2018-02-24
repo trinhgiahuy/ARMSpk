@@ -12,7 +12,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="MVMC"
-if [ ! -f $ROOTDIR/$BM/src/vmc.out ]; then
+if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | awk '{print $1}'`" = "x0" ]; then
 	cd $ROOTDIR/$BM/
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
