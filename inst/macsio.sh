@@ -20,6 +20,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
 		./configure --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"
+		make
 		make install
 		cd $ROOTDIR/$BM/
 	fi
@@ -32,7 +33,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		make install
 		cd $ROOTDIR/$BM/
 	fi
-	mkdir -p build; cd build
+	rm -rf build; mkdir -p build; cd build
 	cmake -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_C_FLAGS="-O3 -ipo -xHost" -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_CXX_FLAGS="-O3 -ipo -xHost" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
 	make
 	make install
