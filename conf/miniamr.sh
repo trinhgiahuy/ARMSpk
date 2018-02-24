@@ -8,8 +8,8 @@ export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
-	export TESTCONF="6|1|3|2|1 12|1|3|2|2 24|1|4|3|2 32|1|4|4|2 48|1|4|4|3 96|1|6|4|4"
-	export BESTCONF=""
+	export TESTCONF="2|1|2|1|1 4|1|2|2|1 6|1|3|2|1 12|1|3|2|2 24|1|4|3|2 32|1|4|4|2 48|1|4|4|3 96|1|6|4|4"
+	export BESTCONF="48|1|4|4|3"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF=""
