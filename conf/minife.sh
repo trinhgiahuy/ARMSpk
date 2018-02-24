@@ -18,7 +18,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 			 32|1 32|2
 			 48|1
 			 96|1"
-	export BESTCONF=""
+	export BESTCONF="24|1"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF=""

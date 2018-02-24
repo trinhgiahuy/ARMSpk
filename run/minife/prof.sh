@@ -34,7 +34,6 @@ for BEST in $BESTCONF; do
 		NumOMP="`echo $BEST | cut -d '|' -f2`"
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
-		cat miniFE*.yaml >> $LOG; rm miniFE*.yaml
 	done
 	for P in `seq 0 $((NumMPI - 1))`; do
 		echo "SDE output of MPI process $P" >> $LOG 2>&1
