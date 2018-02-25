@@ -9,7 +9,15 @@ export NumRunsBEST=10
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
-	export TESTCONF="1|96 1|48 1|32 1|24 1|12 1|6"
+	# all classes low perf (<10%) when used w/ MPI, fokus: MPI=1 and OMP>1
+	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
+			 2|12
+			 4|6
+			 6|4
+			 12|2
+			 24|1
+			 32|1
+			 48|1"
 	export BESTCONF=""
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
