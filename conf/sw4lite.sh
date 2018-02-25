@@ -17,7 +17,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 			 32|1 32|2
 			 48|1
 			 96|1"
-	export BESTCONF=""
+	export BESTCONF="24|2"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
 	export BINARY="./optimize_mp_mill/sw4lite"
