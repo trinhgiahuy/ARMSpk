@@ -10,7 +10,7 @@ export ielN=1024
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="6|1 12|1 16|1 24|1 32|1 48|1 96|1"
-	export BESTCONF=""
+	export BESTCONF="24|1"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF=""
