@@ -36,7 +36,7 @@ for TEST in $TESTCONF; do
 	done
 done
 echo "Best FFB run:"
-grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
+grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR
