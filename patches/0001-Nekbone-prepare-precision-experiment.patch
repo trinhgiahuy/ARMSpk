@@ -1,4 +1,4 @@
-From 35f1346d8759092ce586eb158381dd1a1359df0b Mon Sep 17 00:00:00 2001
+From 04e27f73a603cba45659dd4f538a2783803c7ec7 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:35:10 +0900
 Subject: [PATCH 1/1] Nekbone: prepare precision experiment
@@ -14,7 +14,7 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  create mode 100644 src/ssc.c
 
 diff --git a/src/driver.f b/src/driver.f
-index 75c2dca..89da1b0 100755
+index 75c2dca..74f0c3b 100755
 --- a/src/driver.f
 +++ b/src/driver.f
 @@ -1,6 +1,18 @@
@@ -41,8 +41,8 @@ index 75c2dca..89da1b0 100755
        integer mx ,my ,mz       ! element decomp
  
 +      real(8) :: mkrts = 0.0, mkrte = 0.0
-+      integer(4) :: tmp = 1
-+      tmp = SSC_MARK_STOP(tmp)
++      integer(4) :: sscfake = 1
++      sscfake = SSC_MARK_STOP(sscfake)
  
        call iniproc(mpi_comm_world)    ! has nekmpi common block
        call init_delay
@@ -51,9 +51,9 @@ index 75c2dca..89da1b0 100755
  
             call set_timer_flop_cnt(0)
 +           mkrts = MPI_WTIME()
-+           tmp = SSC_MARK_START(tmp)
++           sscfake = SSC_MARK_START(sscfake)
             call cg(x,f,g,c,r,w,p,z,n,niter,flop_cg)
-+           tmp = SSC_MARK_STOP(tmp)
++           sscfake = SSC_MARK_STOP(sscfake)
 +           mkrte = mkrte + (MPI_WTIME() - mkrts)
             call set_timer_flop_cnt(1)
  
@@ -71,8 +71,8 @@ index 75c2dca..89da1b0 100755
  c     TEST BANDWIDTH BISECTION CAPACITY
  c     call xfer(np,cr_h)
  
-+      tmp = SSC_MARK_START(tmp)
-+      if(nid.eq.0) write(*,*) tmp
++      sscfake = SSC_MARK_START(sscfake)
++      if(nid.eq.0) write(*,*) sscfake
 +
        call exitt0
  
