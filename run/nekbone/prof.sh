@@ -27,6 +27,7 @@ source conf/nekbone.sh
 LOG="$ROOTDIR/log/profrun/nekbone.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
+if [ ! -f ./data.rea.bak ]; then cp ./data.rea ./data.rea.bak; fi
 for BEST in $BESTCONF; do
 	mkdir -p ./oSDE
 	NumMPI="`echo $BEST | cut -d '|' -f1`"

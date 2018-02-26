@@ -13,6 +13,7 @@ source conf/nekbone.sh
 LOG="$ROOTDIR/log/bestrun/nekbone.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
+if [ ! -f ./data.rea.bak ]; then cp ./data.rea ./data.rea.bak; fi
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
