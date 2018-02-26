@@ -7,8 +7,8 @@ source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/n
 ulimit -s unlimited
 ulimit -n 4096
 
-export PATH=$ROOTDIR/dep/sde-external-8.16.0-2018-01-30-lin:$PATH
-if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please intel-sde-external-8.16.0-2018-01-30-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
+export PATH=$ROOTDIR/dep/sde-external-8.12.0-2017-10-23-lin:$PATH
+if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please sde-external-8.12.0-2017-10-23-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	SDE="$SDE -bdw -- "
@@ -20,9 +20,6 @@ else
 	echo "Unsupported host"
 	exit
 fi
-
-echo "Stoping here: SDE crashes with python+keras for unknown reason"
-exit
 
 # ============================ CANDLE =========================================
 source conf/candle.sh

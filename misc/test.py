@@ -2,6 +2,11 @@
 import numpy as np
 import time
 
+# somehow the newest sde breaks with keras
+#import pandas as pd
+#from keras.models import Model
+#from keras.layers import Dense, Input
+
 import numpy.ctypeslib as npct
 # load the library, using numpy mechanisms
 libssc = npct.load_library("libssc", ".")
