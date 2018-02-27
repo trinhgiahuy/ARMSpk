@@ -27,22 +27,22 @@ LOG="$ROOTDIR/log/profrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
-	mkdir -p ./oSDE
 	for BINARY in $BINARYS; do
 		NumMPI=1
 		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
+		mkdir -p ./oSDE
 		make libssc.so
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE python $BINARY $INPUT\"": >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE python $BINARY $INPUT" >> $LOG 2>&1
+		for P in `seq 0 $((NumMPI - 1))`; do
+			echo "SDE output of MPI process $P" >> $LOG 2>&1
+			cat ./oSDE/${P}.txt >> $LOG 2>&1
+		done
+		echo "=== SDE summary ===" >> $LOG 2>&1
+		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
+		rm -rf ./oSDE
 		popd
 	done
-	for P in `seq 0 $((NumMPI - 1))`; do
-		echo "SDE output of MPI process $P" >> $LOG 2>&1
-		cat ./oSDE/${P}.txt >> $LOG 2>&1
-	done
-	echo "=== SDE summary ===" >> $LOG 2>&1
-	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
-	rm -rf ./oSDE
 done
 cd $ROOTDIR
