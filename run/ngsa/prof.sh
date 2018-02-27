@@ -63,6 +63,11 @@ for BEST in $BESTCONF; do
 		echo "SDE output of MPI process $P" >> $LOG 2>&1
 		cat ./oSDE/${P}.txt >> $LOG 2>&1
 	done
+	echo "=== SDE dump all ===" >> $LOG 2>&1
+	for x in `ls ./oSDE/`; do
+		echo "dump of ./oSDE/$x" >> $LOG 2>&1
+		cat ./oSDE/$x >> $LOG 2>&1
+	done
 	echo "=== SDE summary ===" >> $LOG 2>&1
 	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
 	rm -rf ./oSDE
