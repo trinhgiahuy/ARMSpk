@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ FFB ============================================
 source conf/ffb.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/bestrun/ffb.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/ffb.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

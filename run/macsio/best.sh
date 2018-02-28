@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ MACSio =========================================
 source conf/macsio.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/bestrun/macsio.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

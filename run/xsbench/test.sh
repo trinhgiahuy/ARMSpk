@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ XSBench ========================================
 source conf/xsbench.sh
-LOG="$ROOTDIR/log/testrun/xsbench.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/xsbench.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT

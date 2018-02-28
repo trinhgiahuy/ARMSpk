@@ -24,7 +24,7 @@ fi
 
 # ============================ miniTri ========================================
 source conf/minitri.sh
-LOG="$ROOTDIR/log/profrun/minitri.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/minitri.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

@@ -24,7 +24,7 @@ fi
 
 # ============================ SWFFFT =========================================
 source conf/swfft.sh
-LOG="$ROOTDIR/log/profrun/swfft.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/swfft.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

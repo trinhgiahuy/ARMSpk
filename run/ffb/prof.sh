@@ -25,7 +25,7 @@ fi
 # ============================ FFB ============================================
 source conf/ffb.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/ffb.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/ffb.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

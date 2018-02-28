@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ MODYLAS ========================================
 source conf/modylas.sh
-LOG="$ROOTDIR/log/testrun/modylas.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/modylas.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

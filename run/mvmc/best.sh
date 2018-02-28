@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ mVMC ===========================================
 source conf/mvmc.sh
-LOG="$ROOTDIR/log/bestrun/mvmc.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/mvmc.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

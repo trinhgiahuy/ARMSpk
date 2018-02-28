@@ -24,7 +24,7 @@ fi
 
 # ============================ MODYLAS ========================================
 source conf/modylas.sh
-LOG="$ROOTDIR/log/profrun/modylas.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/modylas.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

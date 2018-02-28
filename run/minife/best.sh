@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniFE =========================================
 source conf/minife.sh
-LOG="$ROOTDIR/log/bestrun/minife.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/minife.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

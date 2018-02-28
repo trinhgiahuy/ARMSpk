@@ -24,7 +24,7 @@ fi
 
 # ============================ Nekbone ========================================
 source conf/nekbone.sh
-LOG="$ROOTDIR/log/profrun/nekbone.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/nekbone.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 if [ ! -f ./data.rea.bak ]; then cp ./data.rea ./data.rea.bak; fi

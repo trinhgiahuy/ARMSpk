@@ -25,7 +25,7 @@ fi
 # ============================ CoMD ===========================================
 source conf/comd.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/comd.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/comd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

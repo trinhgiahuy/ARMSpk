@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniTri ========================================
 source conf/minitri.sh
-LOG="$ROOTDIR/log/testrun/minitri.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/minitri.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

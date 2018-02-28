@@ -29,7 +29,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
-LOG="$ROOTDIR/log/testrun/ngsa.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

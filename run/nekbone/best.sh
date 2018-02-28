@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ Nekbone ========================================
 source conf/nekbone.sh
-LOG="$ROOTDIR/log/bestrun/nekbone.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/nekbone.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 if [ ! -f ./data.rea.bak ]; then cp ./data.rea ./data.rea.bak; fi

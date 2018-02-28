@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ CCS QCD ========================================
 source conf/qcd.sh
-LOG="$ROOTDIR/log/testrun/qcd.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

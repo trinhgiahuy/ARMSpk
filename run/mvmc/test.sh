@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ mVMC ===========================================
 source conf/mvmc.sh
-LOG="$ROOTDIR/log/testrun/mvmc.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/mvmc.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

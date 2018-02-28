@@ -24,7 +24,7 @@ fi
 
 # ============================ NICam ==========================================
 source conf/nicam.sh
-LOG="$ROOTDIR/log/profrun/nicam.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/nicam.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 

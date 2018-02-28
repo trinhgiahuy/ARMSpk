@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ AMG ============================================
 source conf/amg.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/bestrun/amg.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/amg.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

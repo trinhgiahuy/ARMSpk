@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ MODYLAS ========================================
 source conf/modylas.sh
-LOG="$ROOTDIR/log/bestrun/modylas.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/modylas.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

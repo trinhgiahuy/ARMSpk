@@ -9,7 +9,7 @@ ulimit -n 4096
 
 # ============================ CANDLE =========================================
 source conf/candle.sh
-LOG="$ROOTDIR/log/bestrun/candle.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

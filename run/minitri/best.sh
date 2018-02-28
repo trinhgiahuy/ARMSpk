@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniTri ========================================
 source conf/minitri.sh
-LOG="$ROOTDIR/log/bestrun/minitri.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/minitri.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

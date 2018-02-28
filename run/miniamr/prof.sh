@@ -25,7 +25,7 @@ fi
 # ============================ miniAMR ========================================
 source conf/miniamr.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/miniamr.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/miniamr.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

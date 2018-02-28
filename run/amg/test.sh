@@ -12,7 +12,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ AMG ============================================
 source conf/amg.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/amg.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/amg.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ Laghos =========================================
 source conf/laghos.sh
-LOG="$ROOTDIR/log/testrun/laghos.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/laghos.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

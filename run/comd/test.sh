@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ CoMD ===========================================
 source conf/comd.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/comd.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/comd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

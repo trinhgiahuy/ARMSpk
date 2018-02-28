@@ -23,7 +23,7 @@ fi
 
 # ============================ CANDLE =========================================
 source conf/candle.sh
-LOG="$ROOTDIR/log/profrun/candle.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

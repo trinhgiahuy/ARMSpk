@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ SWFFFT =========================================
 source conf/swfft.sh
-LOG="$ROOTDIR/log/testrun/swfft.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/swfft.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

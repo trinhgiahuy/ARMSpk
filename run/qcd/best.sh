@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ CCS QCD ========================================
 source conf/qcd.sh
-LOG="$ROOTDIR/log/bestrun/qcd.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

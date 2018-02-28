@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ miniAMR ========================================
 source conf/miniamr.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/bestrun/miniamr.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/miniamr.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

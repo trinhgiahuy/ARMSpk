@@ -44,7 +44,7 @@ fi
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
-LOG="$ROOTDIR/log/profrun/ngsa.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

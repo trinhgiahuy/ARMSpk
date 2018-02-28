@@ -24,7 +24,7 @@ fi
 
 # ============================ XSBench ========================================
 source conf/xsbench.sh
-LOG="$ROOTDIR/log/profrun/xsbench.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/xsbench.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT

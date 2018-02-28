@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ CoMD ===========================================
 source conf/comd.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/bestrun/comd.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/comd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

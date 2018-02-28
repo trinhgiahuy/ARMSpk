@@ -25,7 +25,7 @@ fi
 # ============================ FFVC ===========================================
 source conf/ffvc.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/ffvc.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/ffvc.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

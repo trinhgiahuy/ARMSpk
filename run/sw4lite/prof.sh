@@ -24,7 +24,7 @@ fi
 
 # ============================ SW4lite ========================================
 source conf/sw4lite.sh
-LOG="$ROOTDIR/log/profrun/sw4lite.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/sw4lite.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 sed -i -e 's/corder=1/corder=0/' $INPUT

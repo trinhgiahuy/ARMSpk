@@ -25,7 +25,7 @@ fi
 # ============================ AMG ============================================
 source conf/amg.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/amg.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/amg.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

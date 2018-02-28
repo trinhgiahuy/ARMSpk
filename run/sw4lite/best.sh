@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ SW4lite ========================================
 source conf/sw4lite.sh
-LOG="$ROOTDIR/log/bestrun/sw4lite.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/sw4lite.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 sed -i -e 's/corder=1/corder=0/' $INPUT

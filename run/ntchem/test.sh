@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NTChem =========================================
 source conf/ntchem.sh $ROOTDIR
-LOG="$ROOTDIR/log/testrun/ntchem.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/ntchem.log"
 mkdir -p `dirname $LOG`
 cd $DATA_DIR
 for TEST in $TESTCONF; do

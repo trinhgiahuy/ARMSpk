@@ -29,7 +29,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
-LOG="$ROOTDIR/log/bestrun/ngsa.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

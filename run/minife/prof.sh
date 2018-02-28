@@ -24,7 +24,7 @@ fi
 
 # ============================ miniFE =========================================
 source conf/minife.sh
-LOG="$ROOTDIR/log/profrun/minife.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/minife.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

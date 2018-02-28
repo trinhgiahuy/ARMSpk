@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ Laghos =========================================
 source conf/laghos.sh
-LOG="$ROOTDIR/log/bestrun/laghos.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/laghos.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

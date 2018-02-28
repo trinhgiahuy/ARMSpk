@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NTChem =========================================
 source conf/ntchem.sh $ROOTDIR
-LOG="$ROOTDIR/log/bestrun/ntchem.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/ntchem.log"
 mkdir -p `dirname $LOG`
 cd $DATA_DIR
 for BEST in $BESTCONF; do

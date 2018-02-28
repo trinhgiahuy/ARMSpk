@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ NICam ==========================================
 source conf/nicam.sh
-LOG="$ROOTDIR/log/bestrun/nicam.log"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/nicam.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 

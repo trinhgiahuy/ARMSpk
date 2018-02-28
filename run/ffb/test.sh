@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ FFB ============================================
 source conf/ffb.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/ffb.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/ffb.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

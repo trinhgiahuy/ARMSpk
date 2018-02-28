@@ -9,7 +9,7 @@ ulimit -n 4096
 
 # ============================ CANDLE =========================================
 source conf/candle.sh
-LOG="$ROOTDIR/log/testrun/candle.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/candle.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

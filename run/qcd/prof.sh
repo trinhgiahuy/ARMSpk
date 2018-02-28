@@ -24,7 +24,7 @@ fi
 
 # ============================ CCS QCD ========================================
 source conf/qcd.sh
-LOG="$ROOTDIR/log/profrun/qcd.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

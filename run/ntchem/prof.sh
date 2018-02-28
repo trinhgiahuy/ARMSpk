@@ -24,7 +24,7 @@ fi
 
 # ============================ NTChem =========================================
 source conf/ntchem.sh $ROOTDIR
-LOG="$ROOTDIR/log/profrun/ntchem.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/ntchem.log"
 mkdir -p `dirname $LOG`
 cd $DATA_DIR
 for BEST in $BESTCONF; do

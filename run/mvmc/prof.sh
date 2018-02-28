@@ -24,7 +24,7 @@ fi
 
 # ============================ mVMC ===========================================
 source conf/mvmc.sh
-LOG="$ROOTDIR/log/profrun/mvmc.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/mvmc.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

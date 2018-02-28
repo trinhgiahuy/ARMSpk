@@ -25,7 +25,7 @@ fi
 # ============================ MACSio =========================================
 source conf/macsio.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/profrun/macsio.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

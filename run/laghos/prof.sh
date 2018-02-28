@@ -24,7 +24,7 @@ fi
 
 # ============================ Laghos =========================================
 source conf/laghos.sh
-LOG="$ROOTDIR/log/profrun/laghos.log"
+LOG="$ROOTDIR/log/`hostname -s`/profrun/laghos.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do

@@ -11,7 +11,7 @@ MPIEXECOPT="-host `hostname`"
 # ============================ MACSio =========================================
 source conf/macsio.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/testrun/macsio.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/macsio.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do

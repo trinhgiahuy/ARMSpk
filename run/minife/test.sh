@@ -10,7 +10,7 @@ MPIEXECOPT="-host `hostname`"
 
 # ============================ miniFE =========================================
 source conf/minife.sh
-LOG="$ROOTDIR/log/testrun/minife.log"
+LOG="$ROOTDIR/log/`hostname -s`/testrun/minife.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for TEST in $TESTCONF; do
