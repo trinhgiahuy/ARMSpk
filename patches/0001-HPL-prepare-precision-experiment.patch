@@ -1,0 +1,371 @@
+diff -Nur --no-dereference HPL.old/include/hpl_ptest.h HPL.new/include/hpl_ptest.h
+--- HPL.old/include/hpl_ptest.h	2016-02-24 10:10:50.000000000 +0900
++++ HPL.new/include/hpl_ptest.h	2018-03-01 16:40:24.923848078 +0900
+@@ -142,7 +142,8 @@
+    HPL_T_grid *,
+    HPL_T_palg *,
+    const int,
+-   const int
++   const int,
++   double *
+ ) );
+ 
+ #endif
+diff -Nur --no-dereference HPL.old/Make.Linux_Intel64 HPL.new/Make.Linux_Intel64
+--- HPL.old/Make.Linux_Intel64	1970-01-01 09:00:00.000000000 +0900
++++ HPL.new/Make.Linux_Intel64	2018-03-01 16:05:21.236700377 +0900
+@@ -0,0 +1,193 @@
++#  
++#  -- High Performance Computing Linpack Benchmark (HPL)                
++#     HPL - 2.2 - February 24, 2016                          
++#     Antoine P. Petitet                                                
++#     University of Tennessee, Knoxville                                
++#     Innovative Computing Laboratory                                 
++#     (C) Copyright 2000-2008 All Rights Reserved                       
++#                                                                       
++#  -- Copyright notice and Licensing terms:                             
++#                                                                       
++#  Redistribution  and  use in  source and binary forms, with or without
++#  modification, are  permitted provided  that the following  conditions
++#  are met:                                                             
++#                                                                       
++#  1. Redistributions  of  source  code  must retain the above copyright
++#  notice, this list of conditions and the following disclaimer.        
++#                                                                       
++#  2. Redistributions in binary form must reproduce  the above copyright
++#  notice, this list of conditions,  and the following disclaimer in the
++#  documentation and/or other materials provided with the distribution. 
++#                                                                       
++#  3. All  advertising  materials  mentioning  features  or  use of this
++#  software must display the following acknowledgement:                 
++#  This  product  includes  software  developed  at  the  University  of
++#  Tennessee, Knoxville, Innovative Computing Laboratory.             
++#                                                                       
++#  4. The name of the  University,  the name of the  Laboratory,  or the
++#  names  of  its  contributors  may  not  be used to endorse or promote
++#  products  derived   from   this  software  without  specific  written
++#  permission.                                                          
++#                                                                       
++#  -- Disclaimer:                                                       
++#                                                                       
++#  THIS  SOFTWARE  IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#  ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,  INCLUDING,  BUT NOT
++#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY
++#  OR  CONTRIBUTORS  BE  LIABLE FOR ANY  DIRECT,  INDIRECT,  INCIDENTAL,
++#  SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL DAMAGES  (INCLUDING,  BUT NOT
++#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#  DATA OR PROFITS; OR BUSINESS INTERRUPTION)  HOWEVER CAUSED AND ON ANY
++#  THEORY OF LIABILITY, WHETHER IN CONTRACT,  STRICT LIABILITY,  OR TORT
++#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
++# ######################################################################
++#  
++# ----------------------------------------------------------------------
++# - shell --------------------------------------------------------------
++# ----------------------------------------------------------------------
++#
++SHELL        = /bin/sh
++#
++CD           = cd
++CP           = cp
++LN_S         = ln -fs
++MKDIR        = mkdir -p
++RM           = /bin/rm -f
++TOUCH        = touch
++#
++# ----------------------------------------------------------------------
++# - Platform identifier ------------------------------------------------
++# ----------------------------------------------------------------------
++#
++ARCH         = Linux_Intel64
++#
++# ----------------------------------------------------------------------
++# - HPL Directory Structure / HPL library ------------------------------
++# ----------------------------------------------------------------------
++#
++TOPdir       = $(HOME)/hpl
++INCdir       = $(TOPdir)/include
++BINdir       = $(TOPdir)/bin/$(ARCH)
++LIBdir       = $(TOPdir)/lib/$(ARCH)
++#
++HPLlib       = $(LIBdir)/libhpl.a 
++#
++# ----------------------------------------------------------------------
++# - Message Passing library (MPI) --------------------------------------
++# ----------------------------------------------------------------------
++# MPinc tells the  C  compiler where to find the Message Passing library
++# header files,  MPlib  is defined  to be the name of  the library to be
++# used. The variable MPdir is only used for defining MPinc and MPlib.
++#
++# MPdir        = /opt/intel/mpi/4.1.0
++# MPinc        = -I$(MPdir)/include64
++# MPlib        = $(MPdir)/lib64/libmpi.a
++#
++# ----------------------------------------------------------------------
++# - Linear Algebra library (BLAS or VSIPL) -----------------------------
++# ----------------------------------------------------------------------
++# LAinc tells the  C  compiler where to find the Linear Algebra  library
++# header files,  LAlib  is defined  to be the name of  the library to be
++# used. The variable LAdir is only used for defining LAinc and LAlib.
++#
++LAdir        = $(MKLROOT)
++ifndef  LAinc
++LAinc        = $(LAdir)/mkl/include
++endif
++ifndef  LAlib
++LAlib        = -L$(LAdir)/mkl/lib/intel64 \
++               -Wl,--start-group \
++               $(LAdir)/lib/intel64/libmkl_intel_lp64.a \
++               $(LAdir)/lib/intel64/libmkl_intel_thread.a \
++               $(LAdir)/lib/intel64/libmkl_core.a \
++               -Wl,--end-group -lpthread -ldl
++endif
++#
++# ----------------------------------------------------------------------
++# - F77 / C interface --------------------------------------------------
++# ----------------------------------------------------------------------
++# You can skip this section  if and only if  you are not planning to use
++# a  BLAS  library featuring a Fortran 77 interface.  Otherwise,  it  is
++# necessary  to  fill out the  F2CDEFS  variable  with  the  appropriate
++# options.  **One and only one**  option should be chosen in **each** of
++# the 3 following categories:
++#
++# 1) name space (How C calls a Fortran 77 routine)
++#
++# -DAdd_              : all lower case and a suffixed underscore  (Suns,
++#                       Intel, ...),                           [default]
++# -DNoChange          : all lower case (IBM RS6000),
++# -DUpCase            : all upper case (Cray),
++# -DAdd__             : the FORTRAN compiler in use is f2c.
++#
++# 2) C and Fortran 77 integer mapping
++#
++# -DF77_INTEGER=int   : Fortran 77 INTEGER is a C int,         [default]
++# -DF77_INTEGER=long  : Fortran 77 INTEGER is a C long,
++# -DF77_INTEGER=short : Fortran 77 INTEGER is a C short.
++#
++# 3) Fortran 77 string handling
++#
++# -DStringSunStyle    : The string address is passed at the string loca-
++#                       tion on the stack, and the string length is then
++#                       passed as  an  F77_INTEGER  after  all  explicit
++#                       stack arguments,                       [default]
++# -DStringStructPtr   : The address  of  a  structure  is  passed  by  a
++#                       Fortran 77  string,  and the structure is of the
++#                       form: struct {char *cp; F77_INTEGER len;},
++# -DStringStructVal   : A structure is passed by value for each  Fortran
++#                       77 string,  and  the  structure is  of the form:
++#                       struct {char *cp; F77_INTEGER len;},
++# -DStringCrayStyle   : Special option for  Cray  machines,  which  uses
++#                       Cray  fcd  (fortran  character  descriptor)  for
++#                       interoperation.
++#
++F2CDEFS      = -DAdd__ -DF77_INTEGER=int -DStringSunStyle
++#
++# ----------------------------------------------------------------------
++# - HPL includes / libraries / specifics -------------------------------
++# ----------------------------------------------------------------------
++#
++HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) -I$(LAinc) $(MPinc)
++HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib)
++#
++# - Compile time options -----------------------------------------------
++#
++# -DHPL_COPY_L           force the copy of the panel L before bcast;
++# -DHPL_CALL_CBLAS       call the cblas interface;
++# -DHPL_CALL_VSIPL       call the vsip  library;
++# -DHPL_DETAILED_TIMING  enable detailed timers;
++#
++# By default HPL will:
++#    *) not copy L before broadcast,
++#    *) call the BLAS Fortran 77 interface,
++#    *) not display detailed timing information.
++#
++HPL_OPTS     = -DHPL_DETAILED_TIMING -DHPL_PROGRESS_REPORT
++#
++# ----------------------------------------------------------------------
++#
++HPL_DEFS     = $(F2CDEFS) $(HPL_OPTS) $(HPL_INCLUDES)
++#
++# ----------------------------------------------------------------------
++# - Compilers / linkers - Optimization flags ---------------------------
++# ----------------------------------------------------------------------
++#
++CC       = mpiicc
++CCNOOPT  = $(HPL_DEFS)
++OMP_DEFS = -fopenmp
++CCFLAGS  = $(HPL_DEFS) -O3 -ipo -xHost -w -ansi-alias -i-static -z noexecstack -z relro -z now -nocompchk -Wall
++#
++# On some platforms,  it is necessary  to use the Fortran linker to find
++# the Fortran internals used in the BLAS library.
++#
++LINKER       = $(CC)
++LINKFLAGS    = $(CCFLAGS) $(OMP_DEFS) -mt_mpi
++#
++ARCHIVER     = ar
++ARFLAGS      = r
++RANLIB       = echo
++#
++# ----------------------------------------------------------------------
+diff -Nur --no-dereference HPL.old/testing/ptest/HPL.dat HPL.new/testing/ptest/HPL.dat
+--- HPL.old/testing/ptest/HPL.dat	2004-12-01 06:55:36.000000000 +0900
++++ HPL.new/testing/ptest/HPL.dat	2018-03-01 16:04:23.559041565 +0900
+@@ -1,31 +1,31 @@
+ HPLinpack benchmark input file
+ Innovative Computing Laboratory, University of Tennessee
+ HPL.out      output file name (if any)
+-6            device out (6=stdout,7=stderr,file)
+-4            # of problems sizes (N)
+-29 30 34 35  Ns
+-4            # of NBs
+-1 2 3 4      NBs
+-0            PMAP process mapping (0=Row-,1=Column-major)
+-3            # of process grids (P x Q)
+-2 1 4        Ps
+-2 4 1        Qs
++0            device out (6=stdout,7=stderr,file)
++1            # of problems sizes (N)
++PNS          Ns
++1            # of NBs
++PNB          NBs
++1            PMAP process mapping (0=Row-,1=Column-major)
++1            # of process grids (P x Q)
++PPP          Ps
++PPQ          Qs
+ 16.0         threshold
+-3            # of panel fact
+-0 1 2        PFACTs (0=left, 1=Crout, 2=Right)
+-2            # of recursive stopping criterium
+-2 4          NBMINs (>= 1)
++1            # of panel fact
++2 1 0        PFACTs (0=left, 1=Crout, 2=Right)
++1            # of recursive stopping criterium
++2            NBMINs (>= 1)
+ 1            # of panels in recursion
+ 2            NDIVs
+-3            # of recursive panel fact.
+-0 1 2        RFACTs (0=left, 1=Crout, 2=Right)
++1            # of recursive panel fact.
++1 0 2        RFACTs (0=left, 1=Crout, 2=Right)
+ 1            # of broadcast
+ 0            BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
+ 1            # of lookahead depth
+ 0            DEPTHs (>=0)
+-2            SWAP (0=bin-exch,1=long,2=mix)
+-64           swapping threshold
+-0            L1 in (0=transposed,1=no-transposed) form
+-0            U  in (0=transposed,1=no-transposed) form
+-1            Equilibration (0=no,1=yes)
++0            SWAP (0=bin-exch,1=long,2=mix)
++1            swapping threshold
++1            L1 in (0=transposed,1=no-transposed) form
++1            U  in (0=transposed,1=no-transposed) form
++0            Equilibration (0=no,1=yes)
+ 8            memory alignment in double (> 0)
+diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pddriver.c HPL.new/testing/ptest/HPL_pddriver.c
+--- HPL.old/testing/ptest/HPL_pddriver.c	2016-02-24 10:10:50.000000000 +0900
++++ HPL.new/testing/ptest/HPL_pddriver.c	2018-03-01 16:47:36.185792071 +0900
+@@ -49,6 +49,9 @@
+  */
+ #include "hpl.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ #ifdef STDC_HEADERS
+ int main
+ (
+@@ -67,6 +70,8 @@
+    char                       * * ARGV;
+ #endif
+ {
++double mkrts = 0.0, mkrte = 0.0; // my kernel run-time
++STOPSDE;
+ /* 
+  * Purpose
+  * =======
+@@ -220,7 +225,8 @@
+               algo.fswap = fswap; algo.fsthr = tswap;
+               algo.equil = equil; algo.align = align;
+ 
+-              HPL_pdtest( &test, &grid, &algo, nval[in], nbval[inb] );
++              HPL_pdtest( &test, &grid, &algo, nval[in], nbval[inb], &mkrts );
++mkrte += mkrts;
+ 
+              }
+             }
+@@ -233,6 +239,7 @@
+       (void) HPL_grid_exit( &grid );
+ label_end_of_npqs: ;
+    }
++if( rank == 0 ) printf("Walltime of the main kernel: %.6lf sec\n", mkrte);
+ /*
+  * Print ending messages, close output file, exit.
+  */
+@@ -284,6 +291,7 @@
+    vsip_finalize((void*)0);
+ #endif
+    MPI_Finalize();
++STARTSDE;
+    exit( 0 );
+ 
+    return( 0 );
+diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/ptest/HPL_pdtest.c
+--- HPL.old/testing/ptest/HPL_pdtest.c	2016-02-24 10:10:50.000000000 +0900
++++ HPL.new/testing/ptest/HPL_pdtest.c	2018-03-01 16:47:31.255735546 +0900
+@@ -49,6 +49,9 @@
+  */
+ #include "hpl.h"
+ 
++#define STARTSDE __SSC_MARK(0x111);
++#define STOPSDE __SSC_MARK(0x222);
++
+ #ifdef STDC_HEADERS
+ void HPL_pdtest
+ (
+@@ -56,7 +59,8 @@
+    HPL_T_grid *                     GRID,
+    HPL_T_palg *                     ALGO,
+    const int                        N,
+-   const int                        NB
++   const int                        NB,
++   double *                         wtimeout
+ )
+ #else
+ void HPL_pdtest
+@@ -66,6 +70,7 @@
+    HPL_T_palg *                     ALGO;
+    const int                        N;
+    const int                        NB;
++   double *                         wtimeout;
+ #endif
+ {
+ /* 
+@@ -194,7 +199,9 @@
+    HPL_ptimer_boot(); (void) HPL_barrier( GRID->all_comm );
+    time( &current_time_start );
+    HPL_ptimer( 0 );
++STARTSDE;
+    HPL_pdgesv( GRID, ALGO, &mat );
++STOPSDE;
+    HPL_ptimer( 0 );
+    time( &current_time_end );
+ #ifdef HPL_CALL_VSIPL
+@@ -247,6 +254,7 @@
+       else /* if( ALGO->btopo == HPL_BLONG_M ) */ ctop = '5';
+ 
+       if( wtime[0] > HPL_rzero ) {
++	 *wtimeout = wtime[0];
+          HPL_fprintf( TEST->outfp,
+              "W%c%1d%c%c%1d%c%1d%12d %5d %5d %5d %18.2f     %18.3e\n",
+              ( GRID->order == HPL_ROW_MAJOR ? 'R' : 'C' ),
+@@ -256,7 +264,7 @@
+              "HPL_pdgesv() start time %s\n", ctime( &current_time_start ) );
+          HPL_fprintf( TEST->outfp,
+              "HPL_pdgesv() end time   %s\n", ctime( &current_time_end ) );
+-      }
++      } else {*wtimeout = 0;}
+    }
+ #ifdef HPL_DETAILED_TIMING
+    HPL_ptimer_combine( GRID->all_comm, HPL_AMAX_PTIME, HPL_WALL_PTIME,
