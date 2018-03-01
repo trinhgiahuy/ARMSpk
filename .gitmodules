@@ -64,3 +64,6 @@
 [submodule "FFB"]
 	path = FFB
 	url = https://github.com/fiber-miniapp/ffb-mini.git
+[submodule "HPCG"]
+	path = HPCG
+	url = https://github.com/hpcg-benchmark/hpcg.git
