@@ -6,7 +6,11 @@ cd $ROOTDIR
 source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-MPIEXECOPT="-host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5"
+if [[ $HOSTNAME = *"kiev"* ]]; then
+	MPIEXECOPT="-host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=granularity=fine,compact,1,0"
+else
+	MPIEXECOPT="-host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=compact"
+fi
 
 # ============================ HPCG ===========================================
 source conf/hpcg.sh
@@ -17,11 +21,6 @@ cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	if [[ $HOSTNAME = *"kiev"* ]]; then
-		MPIEXECOPT="$MPIEXECOPT -genv KMP_AFFINITY=granularity=fine,compact,1,0 -genv OMP_NUM_THREADS=$NumOMP"
-	else
-		MPIEXECOPT="$MPIEXECOPT –u OMP_NUM_THREADS –u KMP_AFFINITY -genv MIC_OMP_NUM_THREADS=$NumOMP"
-	fi
 	# test to identify hpcg's internal dimensions
 	rm -f hpcg_log_* n*.yaml
 	mpiexec $MPIEXECOPT -n $NumMPI $BINARY -n 1 > /dev/null 2>&1
@@ -33,10 +32,10 @@ for BEST in $BESTCONF; do
 	Y=$(($MAXXYZ / $Y))
 	Z=$(($MAXXYZ / $Z))
 	INPUT="`echo $DEFINPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
-	echo "mpiexec $MPIEXECOPT -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
 		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 		ENDED="`date +%s.%N`"
 		cat hpcg_log_* >> $LOG 2>&1
 		cat n*.yaml >> $LOG 2>&1
