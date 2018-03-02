@@ -13,7 +13,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 			 2|6 2|12 2|18 2|24
 			 12|1 12|2 12|3 12|4
 			 24|1 24|2"
-	export BESTCONF=""
+	export BESTCONF="2|24"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF=""

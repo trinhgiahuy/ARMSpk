@@ -13,7 +13,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 			 2|6|2|1 2|12|2|1 2|18|2|1 2|24|2|1
 			 12|1|4|3 12|2|4|3 12|3|4|3 12|4|4|3
 			 24|1|6|4 24|2|6|4"
-	export BESTCONF=""
+	export BESTCONF="24|1|6|4"
 	export HPLNB="192"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
