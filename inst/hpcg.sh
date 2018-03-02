@@ -15,7 +15,7 @@ BM="HPCG"
 if [ ! -f $ROOTDIR/$BM/bin/build/xhpcg ]; then
 	cd $ROOTDIR/$BM/
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	mkdir -p build; cd build
 	if [[ $HOSTNAME = *"kiev"* ]]; then
 		CONF="IMPI_IOMP_AVX2"
