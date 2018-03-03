@@ -17,7 +17,15 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 	export HPLNB="192"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
-	export TESTCONF=""
+	export TESTCONF="1|48|1|1 1|64|1|1 1|96|1|1 1|128|1|1 1|256|1|1
+	                 2|32|2|1 2|64|2|1 2|96|2|1 2|128|2|1
+			 4|8|2|2 4|16|2|2 4|32|2|2 4|64|2|2
+			 8|4|4|2 8|8|4|2 8|16|4|2
+			 16|4|4|4 16|6|4|4 16|8|4|4
+			 32|1|8|4 32|2|8|4 32|3|8|4
+			 64|1|8|8 64|2|8|8
+			 128|1|16|8
+			 256|1|16|16"
 	export BESTCONF=""
 	export HPLNB="336"
 elif [[ $HOSTNAME = *"mill"* ]]; then
