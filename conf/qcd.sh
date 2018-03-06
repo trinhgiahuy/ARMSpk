@@ -2,7 +2,7 @@
 
 export APPDIR="./QCD/src"
 export BINARYS="./ccs_qcd_solver_bench_class1 ./ccs_qcd_solver_bench_class2 ./ccs_qcd_solver_bench_class3"
-export BBINARY="./ccs_qcd_solver_bench_class3"
+export BBINARY="./ccs_qcd_solver_bench_class2"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
@@ -30,7 +30,7 @@ elif [[ $HOSTNAME = *"lyon"* ]]; then
 			 128|1
 			 192|1
 			 256|1"
-	export BESTCONF=""
+	export BESTCONF="1|64"
 elif [[ $HOSTNAME = *"mill"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""

@@ -26,7 +26,7 @@ elif [[ $HOSTNAME = *"lyon"* ]]; then
 			 64|1|4|4|4 64|2|4|4|4 64|4|6|4|4 64|6|6|4|4
 			 128|1|8|4|4 128|2|8|4|4 128|3|8|4|4
 			 256|1|8|8|4 256|2|8|8|4"
-	export BESTCONF=""
+	export BESTCONF="64|1|4|4|4"
 elif [[ $HOSTNAME = *"mill"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""
