@@ -5,6 +5,7 @@ export BINARY="./XSBench"
 export INPUT="-t OMPNT -s large -l 15000000 -G unionized"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

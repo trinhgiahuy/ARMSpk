@@ -5,6 +5,7 @@ export BINARY="./bin/ffvc_mini"
 export INPUT="--scale=strong --size=144 --division=DXxDYxDZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

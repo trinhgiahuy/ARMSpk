@@ -6,6 +6,7 @@ export BBINARY="./mkl/src/miniFE.x"
 export INPUT="-nx 128 -ny 128"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

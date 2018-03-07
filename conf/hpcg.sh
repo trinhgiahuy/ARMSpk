@@ -6,6 +6,7 @@ export MAXXYZ=$((2*2*2*3*3*5))
 export INPUT="--nx=NX --ny=NY --nz=NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="5m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
@@ -25,7 +26,7 @@ elif [[ $HOSTNAME = *"lyon"* ]]; then
 			 128|1 128|2
 			 192|1
 			 256|1"
-	export BESTCONF=""
+	export BESTCONF="64|1"
 elif [[ $HOSTNAME = *"mill"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""

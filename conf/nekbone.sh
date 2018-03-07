@@ -6,6 +6,7 @@ export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
 export ielN=1024
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

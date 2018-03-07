@@ -6,6 +6,7 @@ export NICAM_SYS=Linux64-intel-impi
 export INPUT="./gl05rl00z40pe10"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="2m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

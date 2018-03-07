@@ -5,6 +5,7 @@ export BINARY="./laghos"
 export INPUT="-p 1 -m data/square01_quad.mesh -rs 3 -tf 0.8 -no-vis -pa"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

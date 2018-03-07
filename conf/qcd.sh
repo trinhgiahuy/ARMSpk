@@ -6,6 +6,7 @@ export BBINARY="./ccs_qcd_solver_bench_class2"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="1m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

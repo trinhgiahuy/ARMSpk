@@ -5,6 +5,7 @@ export BINARY="./ma.x"
 export INPUT="--num_refine 4 --max_blocks 9000 --npx PX --npy PY --npz PZ --nx 8 --ny 8 --nz 8 --num_objects 1 --object 2 0 -1.71 -1.71 -1.71 0.04 0.04 0.04 1.7 1.7 1.7 0.0 0.0 0.0 --num_tsteps 100 --checksum_freq 1"
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="7m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

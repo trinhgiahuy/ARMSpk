@@ -7,6 +7,7 @@ export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 export MKL_THREADING_LAYER=GNU
 export NumRunsTEST=3
 export NumRunsBEST=10
+export MAXTIME="40m"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
