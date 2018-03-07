@@ -35,7 +35,8 @@ for TEST in $TESTCONF; do
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsTEST`; do
 		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 		ENDED="`date +%s.%N`"
 		cat hpcg_log_* >> $LOG 2>&1
 		cat n*.yaml >> $LOG 2>&1

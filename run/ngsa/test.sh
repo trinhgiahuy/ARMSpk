@@ -40,7 +40,8 @@ for TEST in $TESTCONF; do
 		# prep input (dep on numMPI; up to 12 supported)
 		PreprocessInput $NumMPI $INPUTDIR
 		START="`date +%s.%N`"
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 		ENDED="`date +%s.%N`"
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		# clean up
