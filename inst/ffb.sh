@@ -11,6 +11,12 @@ export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
 
+if [ ! -f $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz ]; then
+	echo "ERR: Cannot find REVOCAP_Refiner-1.1.01.tgz"
+	echo "Please download from: http://www.ciss.iis.u-tokyo.ac.jp/dl/index.php?pScdownload_6 and place REVOCAP_Refiner-1.1.01.tgz in ./dep subfolder"
+	exit
+fi
+
 BM="FFB"
 if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	cd $ROOTDIR/$BM/

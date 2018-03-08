@@ -11,6 +11,12 @@ export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
 
+if [ ! -f $ROOTDIR/dep/modylas-mini-1.0.0.tar.gz ]; then
+	echo "ERR: Cannot find modylas-mini-1.0.0.tar.gz"
+	echo "Please download from: http://hpci-aplfs.aics.riken.jp/fiber/modylas-mini.html and place modylas-mini-1.0.0.tar.gz in ./dep subfolder"
+	exit
+fi
+
 BM="MODYLAS" # (req. license agreement on website)
 if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	mkdir -p $ROOTDIR/$BM/
