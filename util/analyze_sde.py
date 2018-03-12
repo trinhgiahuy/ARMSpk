@@ -20,6 +20,8 @@ fxfr_re = compile('^\*dataxfer_fp_(\w+)_(\d+)\s+(\d+)')
 real_re = compile('^\*elements_fp_single_(\d+)\s+(\d+)')
 dble_re = compile('^\*elements_fp_double_(\d+)\s+(\d+)')
 inte_re = compile('^\*elements_i(\d+)_(\d+)\s+(\d+)')
+vfms_re = compile('^VFM.*(SS|SD|PS).*(XMM|YMM|ZMM).*\s+(\d+)')
+mult = {'XMM': 2, 'YMM': 4, 'ZMM':8}
 
 mread_in_byte = 0
 mwrite_in_byte = 0
@@ -62,6 +64,16 @@ for _, _, files in walk(sdeout_dir):
 					m = inte_re.match(line)
 					num_ops_inte += int(m.group(2)) * int(m.group(3))
 					continue
+				if vfms_re.match(line):
+					m = vfms_re.match(line)
+					if 'SS' in m.group(1):
+						num_ops_real += int(m.group(3))
+					elif 'SD' in m.group(1):
+						num_ops_dble += int(m.group(3))
+					elif 'PS' in m.group(1):
+						num_ops_real += mult[m.group(2)] * int(m.group(3))
+					elif 'PD' in m.group(1):
+						num_ops_real += mult[m.group(2)] * int(m.group(3))
 	break
 
 total_rtime_re = compile('^Total running time:\s+([-+]?\d*\.\d+|\d+|-)')
