@@ -1,0 +1,14 @@
+\section{Introduction}
+
+Common wisdom in HPC is that double precision floating point calculations is what matters, with respect to both application requirements and performance.
+Accordingly, chip manufacturers in HPC have traditionally allocated a significant portion of chip area to double precision FPUs.
+Double precision FPUs, however, occupy larger chip area, i.e. provide less compute/silicon, and reduces the bandwidth utilization, i.e. less compute/bandwidth. One approach, that runs against the common wisdom in HPC, is to reduce the number of double precision units, and otherwise require the codes with heavy double precision requirements to emulate double precision with lower precision, which comes along with an obvious penalty.
+The goal of this study is to quantify the requirements of double precision and penalties of instead using lower precision units to emulate double precision.
+The results of this study can provide insight about the potential trade-off of different precision requirements to the practitioners, and vendors, of HPC.
+
+We conduct our study by using ECP proxy apps and Post-K miniapps that are used for procuring future top-tier supercomputers, in USA and Japan, respectively.
+For the hardware, we use Intel Xeon Phi Knights landing (KNL) and Xeon Phi Knights Mill (KNL).
+Both processors share the same architecture and memory hierarchy.
+With the only differences of: a) KNM having more cores, and b) KNM having less FP64 units (replaced with FP32 units and VNNI INT16 units, to cater for AI/ML workloads).
+The similarity in of the new processors provides a good chance to investigate the precision requirements and emulation penalties, while controlling for the differences in architecture.
+
