@@ -78,7 +78,7 @@ for _, _, files in walk(sdeout_dir):
 					elif 'SD' in m.group(1):
 						num_ops_dble += int(m.group(3))
 					elif 'PS' in m.group(1):
-						num_ops_real += mult[m.group(2)] * int(m.group(3))
+						num_ops_real += 2 * mult[m.group(2)] * int(m.group(3))
 					elif 'PD' in m.group(1):
 						num_ops_real += mult[m.group(2)] * int(m.group(3))
 	break
@@ -112,8 +112,8 @@ print("GBytes read:", mread_in_byte/(1000.0*1000*1000))
 print("GBytes written:", mwrite_in_byte/(1000.0*1000*1000))
 print("Number INT data transfers:", num_dataxfer_int)
 print("Number FLOAT data transfers:", num_dataxfer_flo)
-print("Total #(SP)GFLOP:", num_ops_real/(1000.0*1000*1000))
 print("Total #(DP)GFLOP:", num_ops_dble/(1000.0*1000*1000))
+print("Total #(SP)GFLOP:", num_ops_real/(1000.0*1000*1000))
 print("Total #GINTOP:", num_ops_inte/(1000.0*1000*1000))
 
 print("GFLOP/s (SP):", num_ops_real/(1000.0*1000*1000*kernel_rtime))
