@@ -4,8 +4,13 @@ from os import walk, path, chdir, getcwd, linesep
 from sys import argv, exit
 from re import compile
 
-if len(argv) == 3 and path.isdir(path.realpath(argv[1])) and path.isfile(path.realpath(argv[2])):
-	sdeout_dir = path.realpath(argv[1])
+if len(argv) == 3 and (path.isdir(path.realpath(argv[1])) or path.isfile(path.realpath(argv[1]))) and path.isfile(path.realpath(argv[2])):
+	if path.isdir(path.realpath(argv[1])):
+		must_match = None
+		sdeout_dir = path.realpath(argv[1])
+	elif path.isfile(path.realpath(argv[1])):
+		must_match = path.basename(path.realpath(argv[1]))
+		sdeout_dir = path.dirname(path.realpath(argv[1]))
 	bestbm_log = path.realpath(argv[2])
 else:
 	exit("ERROR: Incorrect input directory!" + linesep + linesep + "Usage: %s <folder-with-SDE-output> <log-of-best-run>" % __file__)
@@ -20,6 +25,8 @@ fxfr_re = compile('^\*dataxfer_fp_(\w+)_(\d+)\s+(\d+)')
 real_re = compile('^\*elements_fp_single_(\d+)\s+(\d+)')
 dble_re = compile('^\*elements_fp_double_(\d+)\s+(\d+)')
 inte_re = compile('^\*elements_i(\d+)_(\d+)\s+(\d+)')
+vfms_re = compile('^VFM.*(SS|SD|PS).*(XMM|YMM|ZMM).*\s+(\d+)')
+mult = {'XMM': 2, 'YMM': 4, 'ZMM':8}
 
 mread_in_byte = 0
 mwrite_in_byte = 0
@@ -32,6 +39,8 @@ num_ops_inte = 0
 # ignore subfolders
 for _, _, files in walk(sdeout_dir):
 	for fname in files:
+		if must_match and must_match != fname:
+			continue
 		with open(path.join(sdeout_dir, fname), 'r') as sdeout:
 			for line in sdeout:
 				if memr_re.match(line):
@@ -62,6 +71,16 @@ for _, _, files in walk(sdeout_dir):
 					m = inte_re.match(line)
 					num_ops_inte += int(m.group(2)) * int(m.group(3))
 					continue
+				if vfms_re.match(line):
+					m = vfms_re.match(line)
+					if 'SS' in m.group(1):
+						num_ops_real += int(m.group(3))
+					elif 'SD' in m.group(1):
+						num_ops_dble += int(m.group(3))
+					elif 'PS' in m.group(1):
+						num_ops_real += mult[m.group(2)] * int(m.group(3))
+					elif 'PD' in m.group(1):
+						num_ops_real += mult[m.group(2)] * int(m.group(3))
 	break
 
 total_rtime_re = compile('^Total running time:\s+([-+]?\d*\.\d+|\d+|-)')
