@@ -6,6 +6,7 @@ export INPUT="--num_refine 4 --max_blocks 9000 --npx PX --npy PY --npz PZ --nx 2
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="7m"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

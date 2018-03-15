@@ -7,6 +7,7 @@ export INPUT="--units_prefix_system decimal --num_dumps NDPP"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="2m"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

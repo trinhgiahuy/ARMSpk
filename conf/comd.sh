@@ -6,6 +6,7 @@ export INPUT="-iPX -jPY -kPZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

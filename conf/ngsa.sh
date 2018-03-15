@@ -7,6 +7,7 @@ export INPUT="$INPUTDIR/bwa_db/reference.fa $INPUTDIR/seq_contig.md $INPUTDIR/re
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="40m"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon
