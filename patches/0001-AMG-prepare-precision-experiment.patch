@@ -1,4 +1,4 @@
-From 7e28ff54586c893fbe07993e2425fc24809cb132 Mon Sep 17 00:00:00 2001
+From d4ca4c1bff5e35f5d15bfe8d9ddba7d3cef5e246 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 21:41:17 +0900
 Subject: [PATCH 1/1] AMG: prepare precision experiment
@@ -7,8 +7,8 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore       |  3 +++
  Makefile.include |  4 ++--
- test/amg.c       | 25 +++++++++++++++++++++----
- 3 files changed, 26 insertions(+), 6 deletions(-)
+ test/amg.c       | 26 ++++++++++++++++++++++----
+ 3 files changed, 27 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -21,7 +21,7 @@ index 0000000..a624fcd
 +*.o
 +test/amg
 diff --git a/Makefile.include b/Makefile.include
-index b73ccce..a971588 100644
+index b73ccce..15d0545 100644
 --- a/Makefile.include
 +++ b/Makefile.include
 @@ -43,11 +43,11 @@ CC = mpicc
@@ -29,30 +29,31 @@ index b73ccce..a971588 100644
  #INCLUDE_CFLAGS = -g -DTIMER_USE_MPI -DHYPRE_USING_OPENMP
  #INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -DHYPRE_BIGINT -fopenmp
 -INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -fopenmp -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
-+INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -ipo -xHost -fopenmp -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
++INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -ipo -xHost -fopenmp -I${ADVISOR_2018_DIR}/include -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
  #INCLUDE_CFLAGS = -O2 -DTIMER_USE_MPI -DHYPRE_USING_OPENMP -qsmp=omp -qmaxmem=-1 -DHYPRE_HOPSCOTCH -DHYPRE_USING_PERSISTENT_COMM -DHYPRE_BIGINT
  
  # set link flags here
  #INCLUDE_LFLAGS = -lm -qsmp=omp
 -INCLUDE_LFLAGS = -lm -fopenmp
-+INCLUDE_LFLAGS = -lm -ipo -xHost -fopenmp
++INCLUDE_LFLAGS = -lm -ipo -xHost -fopenmp -L${ADVISOR_2018_DIR}/lib64 -littnotify
  #INCLUDE_LFLAGS = -lm 
  
 diff --git a/test/amg.c b/test/amg.c
-index 68b67c5..54e5162 100644
+index 68b67c5..c9c73cb 100644
 --- a/test/amg.c
 +++ b/test/amg.c
-@@ -37,6 +37,9 @@
+@@ -37,6 +37,10 @@
  
  #include <time.h>
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  #ifdef __cplusplus
  extern "C" {
  #endif
-@@ -56,6 +59,9 @@ hypre_int
+@@ -56,6 +60,9 @@ hypre_int
  main( hypre_int argc,
        char *argv[] )
  {
@@ -62,7 +63,7 @@ index 68b67c5..54e5162 100644
     HYPRE_Int           arg_index;
     HYPRE_Int           print_usage;
     HYPRE_Int           build_rhs_type;
-@@ -412,10 +418,15 @@ main( hypre_int argc,
+@@ -412,10 +419,15 @@ main( hypre_int argc,
        time_index = hypre_InitializeTiming("PCG Solve");
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_BeginTiming(time_index);
@@ -80,7 +81,7 @@ index 68b67c5..54e5162 100644
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_EndTiming(time_index);
        hypre_PrintTiming("Problem 1: AMG-PCG Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
-@@ -450,7 +461,6 @@ main( hypre_int argc,
+@@ -450,7 +462,6 @@ main( hypre_int argc,
     /*-----------------------------------------------------------
      * Problem 2: simulate time-dependent problem AMG-GMRES
      *-----------------------------------------------------------*/
@@ -88,7 +89,7 @@ index 68b67c5..54e5162 100644
     if (problem_id == 2)
     {
        HYPRE_Real eps;
-@@ -459,6 +469,9 @@ main( hypre_int argc,
+@@ -459,6 +470,9 @@ main( hypre_int argc,
        time_index = hypre_InitializeTiming("GMRES Solve");
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_BeginTiming(time_index);
@@ -98,7 +99,7 @@ index 68b67c5..54e5162 100644
        for (j=0; j < time_steps; j++)
        {
   
-@@ -552,6 +565,10 @@ main( hypre_int argc,
+@@ -552,6 +566,10 @@ main( hypre_int argc,
           }
        }
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
@@ -109,7 +110,7 @@ index 68b67c5..54e5162 100644
        hypre_EndTiming(time_index);
        hypre_PrintTiming("Problem 2: Cumulative AMG-GMRES Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
        hypre_FinalizeTiming(time_index);
-@@ -569,7 +586,6 @@ main( hypre_int argc,
+@@ -569,7 +587,6 @@ main( hypre_int argc,
           hypre_printf("\n");
        }
     }
@@ -117,7 +118,7 @@ index 68b67c5..54e5162 100644
  
     /*-----------------------------------------------------------
      * Print the solution
-@@ -595,6 +611,7 @@ main( hypre_int argc,
+@@ -595,6 +612,7 @@ main( hypre_int argc,
  */
     hypre_MPI_Finalize();
  

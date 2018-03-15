@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <mpi.h>
 
-#define STARTSDE __SSC_MARK(0x111);
-#define STOPSDE __SSC_MARK(0x222);
+#include <ittnotify.h>
+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 
 int main() {
 double mkrts, mkrte; // my kernel run-time
