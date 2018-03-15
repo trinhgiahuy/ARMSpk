@@ -1,4 +1,4 @@
-From bcd3ec64d329b1eddfe46468babdd56e18ed1cce Mon Sep 17 00:00:00 2001
+From 073cc9ce1cd3f48440e3ec6e753370a97e1121fd Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 16:08:51 +0900
 Subject: [PATCH 1/1] XSBench: prepare precision experiment
@@ -6,9 +6,9 @@ Subject: [PATCH 1/1] XSBench: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore   |  2 ++
- src/Main.c   | 15 +++++++++++++++
- src/Makefile |  6 +++---
- 3 files changed, 20 insertions(+), 3 deletions(-)
+ src/Main.c   | 16 ++++++++++++++++
+ src/Makefile | 10 +++++-----
+ 3 files changed, 23 insertions(+), 5 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -20,15 +20,16 @@ index 0000000..4e66ee9
 +*.o
 +src/XSBench
 diff --git a/src/Main.c b/src/Main.c
-index acd2e71..7154de3 100644
+index acd2e71..8085025 100644
 --- a/src/Main.c
 +++ b/src/Main.c
-@@ -4,8 +4,14 @@
+@@ -4,8 +4,15 @@
  #include<mpi.h>
  #endif
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  int main( int argc, char* argv[] )
  {
@@ -38,7 +39,7 @@ index acd2e71..7154de3 100644
  	// =====================================================================
  	// Initialization & Command Line Read-In
  	// =====================================================================
-@@ -114,6 +120,7 @@ int main( int argc, char* argv[] )
+@@ -114,6 +121,7 @@ int main( int argc, char* argv[] )
  	if( mype == 0 ) printf("Dumping data to binary file...\n");
  	binary_dump(in.n_isotopes, in.n_gridpoints, nuclide_grids, energy_grid, in.grid_type);
  	if( mype == 0 ) printf("Binary file \"XS_data.dat\" written! Exiting...\n");
@@ -46,7 +47,7 @@ index acd2e71..7154de3 100644
  	return 0;
  	#endif
  
-@@ -147,6 +154,9 @@ int main( int argc, char* argv[] )
+@@ -147,6 +155,9 @@ int main( int argc, char* argv[] )
  	}
  	#endif	
  
@@ -56,7 +57,7 @@ index acd2e71..7154de3 100644
  	// OpenMP compiler directives - declaring variables as shared or private
  	#pragma omp parallel default(none) \
  	private(i, thread, p_energy, mat, seed) \
-@@ -244,6 +254,10 @@ int main( int argc, char* argv[] )
+@@ -244,6 +255,10 @@ int main( int argc, char* argv[] )
  
  	}
  
@@ -67,7 +68,7 @@ index acd2e71..7154de3 100644
  	#ifndef PAPI
  	if( mype == 0)	
  	{	
-@@ -265,5 +279,6 @@ int main( int argc, char* argv[] )
+@@ -265,5 +280,6 @@ int main( int argc, char* argv[] )
  	MPI_Finalize();
  	#endif
  
@@ -75,7 +76,7 @@ index acd2e71..7154de3 100644
  	return 0;
  }
 diff --git a/src/Makefile b/src/Makefile
-index 0eb9b1c..7c1e903 100644
+index 0eb9b1c..4233fa1 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -2,11 +2,11 @@
@@ -92,6 +93,19 @@ index 0eb9b1c..7c1e903 100644
  PAPI        = no
  VEC_INFO    = no
  VERIFY      = no
+@@ -35,10 +35,10 @@ obj = $(source:.c=.o)
+ #===============================================================================
+ 
+ # Standard Flags
+-CFLAGS := -std=gnu99
++CFLAGS := -std=gnu99 -I${ADVISOR_2018_DIR}/include
+ 
+ # Linker Flags
+-LDFLAGS = -lm
++LDFLAGS = -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify
+ 
+ # Regular gcc Compiler
+ ifeq ($(COMPILER),gnu)
 @@ -49,7 +49,7 @@ endif
  # Intel Compiler
  ifeq ($(COMPILER),intel)

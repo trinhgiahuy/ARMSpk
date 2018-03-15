@@ -1,4 +1,4 @@
-From aa3f6c81f9ec6aba0d7673447311e3a0d55da940 Mon Sep 17 00:00:00 2001
+From 0669b2213ba1eb04d3a68335a39d994d516305f6 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:34:00 +0900
 Subject: [PATCH 1/1] CANDLE: prepare precision experiment
@@ -8,26 +8,26 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  .gitignore                          |  4 ++++
  Pilot1/P1B1/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B1/p1b1_baseline_keras2.py | 26 +++++++++++++++++++++-----
- Pilot1/P1B1/ssc.c                   |  6 ++++++
+ Pilot1/P1B1/ssc.c                   | 12 ++++++++++++
  Pilot1/P1B2/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B2/p1b2_baseline_keras2.py | 18 ++++++++++++++++++
- Pilot1/P1B2/ssc.c                   |  6 ++++++
+ Pilot1/P1B2/ssc.c                   | 12 ++++++++++++
  Pilot1/P1B3/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B3/p1b3_baseline_keras2.py | 17 +++++++++++++++++
- Pilot1/P1B3/ssc.c                   |  6 ++++++
+ Pilot1/P1B3/ssc.c                   | 12 ++++++++++++
  Pilot2/P2B1/Makefile                | 20 ++++++++++++++++++++
  Pilot2/P2B1/p2b1_baseline_keras2.py | 22 +++++++++++++++++++---
- Pilot2/P2B1/ssc.c                   |  6 ++++++
+ Pilot2/P2B1/ssc.c                   | 12 ++++++++++++
  Pilot2/P2B2/Makefile                | 20 ++++++++++++++++++++
  Pilot2/P2B2/p2b2_baseline_keras2.py | 22 ++++++++++++++++++----
- Pilot2/P2B2/ssc.c                   |  6 ++++++
+ Pilot2/P2B2/ssc.c                   | 12 ++++++++++++
  Pilot3/P3B1/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B1/p3b1_baseline_keras2.py | 20 +++++++++++++++++++-
- Pilot3/P3B1/ssc.c                   |  6 ++++++
+ Pilot3/P3B1/ssc.c                   | 12 ++++++++++++
  Pilot3/P3B2/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B2/p3b2_baseline_keras2.py | 18 ++++++++++++++++++
- Pilot3/P3B2/ssc.c                   |  6 ++++++
- 22 files changed, 316 insertions(+), 13 deletions(-)
+ Pilot3/P3B2/ssc.c                   | 12 ++++++++++++
+ 22 files changed, 358 insertions(+), 13 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 Pilot1/P1B1/Makefile
  create mode 100644 Pilot1/P1B1/ssc.c
@@ -56,22 +56,22 @@ index 0000000..7b7ff05
 +Data/
 diff --git a/Pilot1/P1B1/Makefile b/Pilot1/P1B1/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot1/P1B1/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -147,34 +147,40 @@ index 4f13f2f..90af8d5 100644
 +libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B1/ssc.c b/Pilot1/P1B1/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot1/P1B1/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot1/P1B2/Makefile b/Pilot1/P1B2/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot1/P1B2/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -230,34 +236,40 @@ index 2c7a900..f717f24 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B2/ssc.c b/Pilot1/P1B2/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot1/P1B2/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot1/P1B3/Makefile b/Pilot1/P1B3/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot1/P1B3/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -321,34 +333,40 @@ index 1d2b1b4..3da1e9b 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B3/ssc.c b/Pilot1/P1B3/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot1/P1B3/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot2/P2B1/Makefile b/Pilot2/P2B1/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot2/P2B1/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -409,34 +427,40 @@ index e2e43b9..09011dc 100644
 +	libssc.ssc_mark_start()
 diff --git a/Pilot2/P2B1/ssc.c b/Pilot2/P2B1/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot2/P2B1/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot2/P2B2/Makefile b/Pilot2/P2B2/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot2/P2B2/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -497,34 +521,40 @@ index 7e8a043..0b53e6a 100644
 +	libssc.ssc_mark_start()
 diff --git a/Pilot2/P2B2/ssc.c b/Pilot2/P2B2/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot2/P2B2/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot3/P3B1/Makefile b/Pilot3/P3B1/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot3/P3B1/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -596,34 +626,40 @@ index 1a56edf..632ccf7 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot3/P3B1/ssc.c b/Pilot3/P3B1/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot3/P3B1/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 diff --git a/Pilot3/P3B2/Makefile b/Pilot3/P3B2/Makefile
 new file mode 100644
-index 0000000..628424e
+index 0000000..cda4825
 --- /dev/null
 +++ b/Pilot3/P3B2/Makefile
 @@ -0,0 +1,20 @@
 +m.PHONY : libssc.so testC.exe testF.exe
 +
 +testC.exe : test.c
-+	mpicc -O3 -fopenmp -o testC.exe test.c
++	mpicc -O3 -I${ADVISOR_2018_DIR}/include -fopenmp -o testC.exe test.c -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +testF.exe : test.f90
-+	icc -c ssc.c -o ssc.o
-+	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o
++	icc -c -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	mpif90 -O3 -fopenmp -o testF.exe test.f90 ssc.o -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +libssc.so : ssc.c
-+	icc -c -fPIC ssc.c -o ssc.o
-+	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o
++	icc -c -fPIC -I${ADVISOR_2018_DIR}/include ssc.c -o ssc.o
++	icc -shared -Wl,-soname,libssc.so -o libssc.so ssc.o ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 +
 +clean :
 +	-rm -vf testC.exe testF.exe libssc.so ssc.o ssc.pyc
@@ -684,15 +720,21 @@ index 2fed890..e51d19a 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot3/P3B2/ssc.c b/Pilot3/P3B2/ssc.c
 new file mode 100644
-index 0000000..a5f324d
+index 0000000..ad492cd
 --- /dev/null
 +++ b/Pilot3/P3B2/ssc.c
-@@ -0,0 +1,6 @@
-+void ssc_mark_start (void) {
-+	__SSC_MARK(0x111);
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
++int ssc_mark_start (int x) {
++	STARTSDE;
++	return (x << 0x1);
 +}
-+void ssc_mark_stop (void) {
-+	__SSC_MARK(0x222);
++int ssc_mark_stop (int y) {
++	STOPSDE;
++	return (y >> 0x2);
 +}
 -- 
 1.8.3.1

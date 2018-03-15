@@ -1,4 +1,4 @@
-From 662f04c48633928b321fb8c5d7fff515c566383e Mon Sep 17 00:00:00 2001
+From 6feceb8da01a2db72523c7ca4c5cf473c29639ca Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 13:38:02 +0900
 Subject: [PATCH 1/1] MiniAMR: prepare precision experiment
@@ -6,10 +6,10 @@ Subject: [PATCH 1/1] MiniAMR: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore   |  2 ++
- ref/Makefile |  6 +++---
- ref/driver.c | 10 ++++++++++
- ref/main.c   |  6 ++++++
- 4 files changed, 21 insertions(+), 3 deletions(-)
+ ref/Makefile |  8 ++++----
+ ref/driver.c | 11 +++++++++++
+ ref/main.c   |  7 +++++++
+ 4 files changed, 24 insertions(+), 4 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -21,30 +21,34 @@ index 0000000..b1f4ec5
 +*.o
 +ref/ma.x
 diff --git a/ref/Makefile b/ref/Makefile
-index 457fa58..fe36545 100644
+index 457fa58..fbd1090 100644
 --- a/ref/Makefile
 +++ b/ref/Makefile
-@@ -1,7 +1,7 @@
+@@ -1,9 +1,9 @@
 -CC   = cc
 -LD   = cc
 +CC   = mpicc
 +LD   = mpicc
  CPPFLAGS = -I.
 -CFLAGS = -O3
-+CFLAGS = -O3 -ipo -xHost
++CFLAGS = -O3 -ipo -xHost -I${ADVISOR_2018_DIR}/include
  LDFLAGS =
- LDLIBS = -lm
+-LDLIBS = -lm
++LDLIBS = -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify
+ 
+ EXEC = ma.x
  
 diff --git a/ref/driver.c b/ref/driver.c
-index 95b15ed..7601beb 100644
+index 95b15ed..6a81d5d 100644
 --- a/ref/driver.c
 +++ b/ref/driver.c
-@@ -33,9 +33,14 @@
+@@ -33,9 +33,15 @@
  #include "timer.h"
  #include "proto.h"
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  // Main driver for program.
  void driver(void)
@@ -54,7 +58,7 @@ index 95b15ed..7601beb 100644
     int ts, var, start, number, stage, comm_stage, calc_stage, done;
     double t1, t2, t3, t4;
     double sum, delta = 1.0, sim_time;
-@@ -59,6 +64,8 @@ void driver(void)
+@@ -59,6 +65,8 @@ void driver(void)
     nb_min = nb_max = global_active;
  
     if (use_time) delta = calc_time_step();
@@ -63,7 +67,7 @@ index 95b15ed..7601beb 100644
     for (sim_time = 0.0, done = comm_stage =calc_stage=0, ts = 1; !done; ts++) {
        for (stage=0; stage < stages_per_ts; stage++,comm_stage++,calc_stage++) {
           total_blocks += global_active;
-@@ -122,6 +129,9 @@ void driver(void)
+@@ -122,6 +130,9 @@ void driver(void)
           if (ts >= num_tsteps)
              done = 1;
     }
@@ -74,15 +78,16 @@ index 95b15ed..7601beb 100644
     end_time = sim_time;
     num_tsteps = ts - 1;
 diff --git a/ref/main.c b/ref/main.c
-index 034e300..ba5f240 100644
+index 034e300..6dfd273 100644
 --- a/ref/main.c
 +++ b/ref/main.c
-@@ -34,8 +34,13 @@
+@@ -34,8 +34,14 @@
  #include "timer.h"
  #include "proto.h"
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  int main(int argc, char** argv)
  {
@@ -91,7 +96,7 @@ index 034e300..ba5f240 100644
     int i, ierr, object_num;
     int params[37];
     double *objs;
-@@ -305,6 +310,7 @@ int main(int argc, char** argv)
+@@ -305,6 +311,7 @@ int main(int argc, char** argv)
  
     MPI_Finalize();
  

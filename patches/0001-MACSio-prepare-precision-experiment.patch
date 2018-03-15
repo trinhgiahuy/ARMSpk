@@ -1,4 +1,4 @@
-From 14a8c7b93ef280b60558205839580313a3deb1e7 Mon Sep 17 00:00:00 2001
+From 7d4f40086339018d67e11965a5b38bd02f2714ee Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 04:09:52 +0900
 Subject: [PATCH 1/1] MACSio: prepare precision experiment
@@ -7,8 +7,8 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore             |  4 +++-
  macsio/macsio_clargs.c |  2 +-
- macsio/macsio_main.c   | 12 ++++++++++++
- 3 files changed, 16 insertions(+), 2 deletions(-)
+ macsio/macsio_main.c   | 13 +++++++++++++
+ 3 files changed, 17 insertions(+), 2 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index cd1cc91..d87bc0c 100644
@@ -46,16 +46,21 @@ index 9983c26..779fcfa 100644
  
        /* get this arg's format specifier string */
 diff --git a/macsio/macsio_main.c b/macsio/macsio_main.c
-index 2fd4dfd..2d15352 100644
+index 2fd4dfd..c5dd8c5 100644
 --- a/macsio/macsio_main.c
 +++ b/macsio/macsio_main.c
-@@ -769,9 +769,15 @@ main_read(int argi, int argc, char **argv, json_object *main_obj)
-     }
- }
+@@ -60,6 +60,10 @@ extern "C" {
+ #include <mpi.h>
+ #endif
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
+ /*!
+  * \mainpage
+  *
+@@ -772,6 +776,9 @@ main_read(int argi, int argc, char **argv, json_object *main_obj)
  int
  main(int argc, char *argv[])
  {
@@ -65,7 +70,7 @@ index 2fd4dfd..2d15352 100644
      json_object *main_obj = json_object_new_object();
      json_object *parallel_obj = json_object_new_object();
      json_object *problem_obj = 0;
-@@ -803,6 +809,8 @@ main(int argc, char *argv[])
+@@ -803,6 +810,8 @@ main(int argc, char *argv[])
  
      main_grp = MACSIO_TIMING_GroupMask("MACSIO main()");
      main_tid = MT_StartTimer("main", main_grp, MACSIO_TIMING_ITER_AUTO);
@@ -74,7 +79,7 @@ index 2fd4dfd..2d15352 100644
  
      MACSIO_LOG_StdErr = MACSIO_LOG_LogInit(MACSIO_MAIN_Comm, 0, 0, 0, 0);
  
-@@ -837,6 +845,9 @@ main(int argc, char *argv[])
+@@ -837,6 +846,9 @@ main(int argc, char *argv[])
      else
          main_write(argi, argc, argv, main_obj);
  
@@ -84,7 +89,7 @@ index 2fd4dfd..2d15352 100644
      /* stop total timer */
      MT_StopTimer(main_tid);
  
-@@ -870,5 +881,6 @@ main(int argc, char *argv[])
+@@ -870,5 +882,6 @@ main(int argc, char *argv[])
  #endif
  
  ////#warning FIX RETVAL OF MAIN TO BE NON-ZERO WHEN ERRORS OCCUR

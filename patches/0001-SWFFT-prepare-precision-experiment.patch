@@ -1,4 +1,4 @@
-From 0bc72f4022e3bf176f4020ab0cbc0f68d2f2fa78 Mon Sep 17 00:00:00 2001
+From cf92588102708b8052aae0203b42ef71056650b4 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 16:03:54 +0900
 Subject: [PATCH 1/1] SWFFT: prepare precision experiment
@@ -6,11 +6,11 @@ Subject: [PATCH 1/1] SWFFT: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore         |  4 ++++
- GNUmakefile        | 10 +++++-----
+ GNUmakefile        | 14 +++++++-------
  GNUmakefile.openmp |  6 +++---
  TestFDfft.f90      | 22 +++++++++++++++++++++-
- ssc.c              |  8 ++++++++
- 5 files changed, 41 insertions(+), 9 deletions(-)
+ ssc.c              | 12 ++++++++++++
+ 5 files changed, 47 insertions(+), 11 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 ssc.c
 
@@ -25,15 +25,19 @@ index 0000000..2d27a78
 +*.mod
 +*.o
 diff --git a/GNUmakefile b/GNUmakefile
-index 01a0050..f7de6d0 100644
+index 01a0050..56d4684 100644
 --- a/GNUmakefile
 +++ b/GNUmakefile
-@@ -66,15 +66,15 @@ DFFT_MPI_FC ?= mpif90
- DFFT_MPI_CPPFLAGS ?= -DDFFT_TIMING=2
+@@ -63,21 +63,21 @@ DFFT_MPI_CXX ?= mpicxx
+ DFFT_MPI_FC ?= mpif90
+ 
+ # pre-processor flags
+-DFFT_MPI_CPPFLAGS ?= -DDFFT_TIMING=2
++DFFT_MPI_CPPFLAGS ?= -DDFFT_TIMING=2 -I${ADVISOR_2018_DIR}/include
  
  # C flags
 -DFFT_MPI_CFLAGS ?= -g -O3 -Wall -Wno-deprecated -std=gnu99
-+DFFT_MPI_CFLAGS ?= -g -O3 -ipo -xHost -Wall -Wno-deprecated -std=gnu99
++DFFT_MPI_CFLAGS ?= -g -O3 -ipo -xHost -Wall -Wno-deprecated -std=gnu99 -I${ADVISOR_2018_DIR}/include
  
  # C++ flags
 -DFFT_MPI_CXXFLAGS ?= -g -O3 -Wall
@@ -46,7 +50,11 @@ index 01a0050..f7de6d0 100644
 +DFFT_MPI_FFLAGS ?= -g -O3 -ipo -xHost -cpp
  
  # linker flags
- DFFT_MPI_LDFLAGS ?= 
+-DFFT_MPI_LDFLAGS ?= 
++DFFT_MPI_LDFLAGS ?= -L${ADVISOR_2018_DIR}/lib64 -littnotify
+ 
+ # additional Fortran linker flags
+ # sometimes this also needs -lmpi++, -lmpicxx, -lmpi_cxx, etc
 @@ -96,7 +96,7 @@ DFFT_MPI_LDFLAGS += $(DFFT_FFTW_LDFLAGS)
  
  
@@ -142,16 +150,20 @@ index e589d90..70da2d5 100644
  !! -------------------------------------------------------------------------- !!
 diff --git a/ssc.c b/ssc.c
 new file mode 100644
-index 0000000..e2b9981
+index 0000000..ad492cd
 --- /dev/null
 +++ b/ssc.c
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,12 @@
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++
 +int ssc_mark_start (int x) {
-+	__SSC_MARK(0x111);
++	STARTSDE;
 +	return (x << 0x1);
 +}
 +int ssc_mark_stop (int y) {
-+	__SSC_MARK(0x222);
++	STOPSDE;
 +	return (y >> 0x2);
 +}
 -- 

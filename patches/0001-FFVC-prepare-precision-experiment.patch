@@ -1,4 +1,4 @@
-From 24b7fd97fbac442d3d7784752df053f889a29cbc Mon Sep 17 00:00:00 2001
+From 064b26c2f055bb6a17bbeabbc425eee02760e5f6 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 02:56:34 +0900
 Subject: [PATCH 1/1] FFVC: prepare precision experiment
@@ -6,9 +6,9 @@ Subject: [PATCH 1/1] FFVC: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore             |  1 +
- src/FFV/main.C         | 11 +++++++++++
- src/make_setting.intel |  4 ++--
- 3 files changed, 14 insertions(+), 2 deletions(-)
+ src/FFV/main.C         | 12 ++++++++++++
+ src/make_setting.intel |  6 +++---
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index a1bdd17..5e50c78 100644
@@ -20,15 +20,16 @@ index a1bdd17..5e50c78 100644
  *.lo
  *.la
 diff --git a/src/FFV/main.C b/src/FFV/main.C
-index 3495ec1..cf1c9cc 100644
+index 3495ec1..a3ca315 100644
 --- a/src/FFV/main.C
 +++ b/src/FFV/main.C
-@@ -19,11 +19,16 @@
+@@ -19,11 +19,17 @@
  #include "ffv.h"
  #include "timing.h"
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
  
  // return; 0 - normal
  //         1 - others
@@ -40,7 +41,7 @@ index 3495ec1..cf1c9cc 100644
    // FFV classのインスタンス
    FFV ffv;
  
-@@ -67,7 +72,12 @@ int main( int argc, char **argv )
+@@ -67,7 +73,12 @@ int main( int argc, char **argv )
    // タイムステップループ
  
    TIME_START(tm_MAIN);
@@ -53,7 +54,7 @@ index 3495ec1..cf1c9cc 100644
    TIME_STOP(tm_MAIN);
    
    switch (loop_ret) 
-@@ -97,5 +107,6 @@ int main( int argc, char **argv )
+@@ -97,5 +108,6 @@ int main( int argc, char **argv )
  
    if ( loop_ret != 1 ) return -1;
    
@@ -61,21 +62,24 @@ index 3495ec1..cf1c9cc 100644
    return 0;
  }
 diff --git a/src/make_setting.intel b/src/make_setting.intel
-index 5a63d26..13c2f17 100644
+index 5a63d26..39f3512 100644
 --- a/src/make_setting.intel
 +++ b/src/make_setting.intel
-@@ -3,9 +3,9 @@
+@@ -3,11 +3,11 @@
  #
  
  CXX         = mpicxx
 -CXXFLAGS    = -O3 -xHost -openmp -DMPICH_IGNORE_CXX_SEEK
-+CXXFLAGS    = -O3 -ipo -xHost -fopenmp -DMPICH_IGNORE_CXX_SEEK
++CXXFLAGS    = -O3 -ipo -xHost -fopenmp -DMPICH_IGNORE_CXX_SEEK -I${ADVISOR_2018_DIR}/include
  F90         = mpif90
 -F90FLAGS    = -O3 -xHost -openmp -fpp -D_STATIC -Warn unused
 +F90FLAGS    = -O3 -ipo -xHost -fopenmp -fpp -D_STATIC -Warn unused
  LDFLAGS     =
- LIBS        = -lifport -lifcore
+-LIBS        = -lifport -lifcore
++LIBS        = -lifport -lifcore -L${ADVISOR_2018_DIR}/lib64 -littnotify
  
+ ## timing
+ CXXFLAGS   += -DPROF_MAPROF
 -- 
 1.8.3.1
 

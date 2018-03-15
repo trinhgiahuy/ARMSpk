@@ -1,4 +1,4 @@
-From ea7a99144ebf4e1c770835ac7ac673aaac6852a0 Mon Sep 17 00:00:00 2001
+From e0539bd507b6bb3bc2c0a48bc4c35223ef288ab2 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:51:52 +0900
 Subject: [PATCH 1/1] CoMD: prepare precision experiment
@@ -6,9 +6,9 @@ Subject: [PATCH 1/1] CoMD: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore          |   4 ++
- src-openmp/CoMD.c   |  14 +++++++
+ src-openmp/CoMD.c   |  16 ++++++++
  src-openmp/Makefile | 108 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 126 insertions(+)
+ 3 files changed, 128 insertions(+)
  create mode 100644 src-openmp/Makefile
 
 diff --git a/.gitignore b/.gitignore
@@ -28,16 +28,18 @@ index 155f4dc..365100b 100644
 +CoMD_info.h
 +.depend
 diff --git a/src-openmp/CoMD.c b/src-openmp/CoMD.c
-index 12466c8..4ab5004 100644
+index 12466c8..89e17f7 100644
 --- a/src-openmp/CoMD.c
 +++ b/src-openmp/CoMD.c
-@@ -82,9 +82,14 @@ static void printThings(SimFlat* s, int iStep, double elapsedTime);
+@@ -82,9 +82,16 @@ static void printThings(SimFlat* s, int iStep, double elapsedTime);
  static void printSimulationDataYaml(FILE* file, SimFlat* s);
  static void sanityChecks(Command cmd, double cutoff, double latticeConst, char latticeType[8]);
  
 +#include <mpi.h>
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
  
  int main(int argc, char** argv)
  {
@@ -46,7 +48,7 @@ index 12466c8..4ab5004 100644
     // Prolog
     initParallel(&argc, &argv);
     profileStart(totalTimer);
-@@ -112,6 +117,9 @@ int main(int argc, char** argv)
+@@ -112,6 +119,9 @@ int main(int argc, char** argv)
     const int printRate = sim->printRate;
     int iStep = 0;
     profileStart(loopTimer);
@@ -56,7 +58,7 @@ index 12466c8..4ab5004 100644
     for (; iStep<nSteps;)
     {
        startTimer(commReduceTimer);
-@@ -126,10 +134,15 @@ int main(int argc, char** argv)
+@@ -126,10 +136,15 @@ int main(int argc, char** argv)
  
        iStep += printRate;
     }
@@ -72,7 +74,7 @@ index 12466c8..4ab5004 100644
     timestampBarrier("Ending simulation\n");
  
     // Epilog
-@@ -146,6 +159,7 @@ int main(int argc, char** argv)
+@@ -146,6 +161,7 @@ int main(int argc, char** argv)
     timestampBarrier("CoMD Ending\n");
     destroyParallel();
  
@@ -82,7 +84,7 @@ index 12466c8..4ab5004 100644
  
 diff --git a/src-openmp/Makefile b/src-openmp/Makefile
 new file mode 100644
-index 0000000..5882749
+index 0000000..255eb35
 --- /dev/null
 +++ b/src-openmp/Makefile
 @@ -0,0 +1,108 @@
@@ -104,10 +106,10 @@ index 0000000..5882749
 +### own.  If you need any -L or -l switches to get C standard libraries
 +### (such as -lm for the math library) put them in C_LIB.
 +CC = mpicc
-+CFLAGS = -std=c99 -fopenmp
++CFLAGS = -std=c99 -fopenmp -I${ADVISOR_2018_DIR}/include
 +OPTFLAGS = -g -O3 -ipo -xHost
 +INCLUDES = 
-+C_LIB = -lm
++C_LIB = -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify
 +
 +
 +### If you need to specify include paths, library paths, or link flags

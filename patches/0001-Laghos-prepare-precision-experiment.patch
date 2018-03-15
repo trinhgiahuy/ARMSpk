@@ -1,4 +1,4 @@
-From 25ddc143627bd68d58112917fdc625eb4b58e781 Mon Sep 17 00:00:00 2001
+From 0cf1eb5ca2f1089667ec84116c6585eae38fcdf6 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 03:24:55 +0900
 Subject: [PATCH 1/1] Laghos: prepare precision experiment
@@ -6,10 +6,10 @@ Subject: [PATCH 1/1] Laghos: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore        |  5 +++++
- laghos.cpp        |  9 +++++++++
- laghos_solver.cpp | 21 ++++++++++++++++++++-
- makefile          |  8 ++++----
- 4 files changed, 38 insertions(+), 5 deletions(-)
+ laghos.cpp        | 10 ++++++++++
+ laghos_solver.cpp | 22 +++++++++++++++++++++-
+ makefile          | 10 +++++-----
+ 4 files changed, 41 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -24,20 +24,21 @@ index 0000000..f848050
 +hypre-2.10.0b/
 +metis-4.0.3/
 diff --git a/laghos.cpp b/laghos.cpp
-index d808287..0de94c0 100644
+index d808287..446f580 100644
 --- a/laghos.cpp
 +++ b/laghos.cpp
-@@ -56,6 +56,9 @@
+@@ -56,6 +56,10 @@
  #include <iostream>
  #include <fstream>
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  using namespace std;
  using namespace mfem;
  using namespace mfem::hydrodynamics;
-@@ -67,6 +70,7 @@ void display_banner(ostream & os);
+@@ -67,6 +71,7 @@ void display_banner(ostream & os);
  
  int main(int argc, char *argv[])
  {
@@ -45,7 +46,7 @@ index d808287..0de94c0 100644
     // Initialize MPI.
     MPI_Session mpi(argc, argv);
     int myid = mpi.WorldRank();
-@@ -145,6 +149,7 @@ int main(int argc, char *argv[])
+@@ -145,6 +150,7 @@ int main(int argc, char *argv[])
     if (!args.Good())
     {
        if (mpi.Root()) { args.PrintUsage(cout); }
@@ -53,7 +54,7 @@ index d808287..0de94c0 100644
        return 1;
     }
     if (mpi.Root()) { args.PrintOptions(cout); }
-@@ -211,6 +216,7 @@ int main(int argc, char *argv[])
+@@ -211,6 +217,7 @@ int main(int argc, char *argv[])
           }
           delete mesh;
           MPI_Finalize();
@@ -61,7 +62,7 @@ index d808287..0de94c0 100644
           return 3;
     }
     int product = 1;
-@@ -237,6 +243,7 @@ int main(int argc, char *argv[])
+@@ -237,6 +244,7 @@ int main(int argc, char *argv[])
  #endif
        }
  #ifndef MFEM_USE_METIS
@@ -69,7 +70,7 @@ index d808287..0de94c0 100644
        return 1;
  #endif
        pmesh = new ParMesh(MPI_COMM_WORLD, *mesh);
-@@ -293,6 +300,7 @@ int main(int argc, char *argv[])
+@@ -293,6 +301,7 @@ int main(int argc, char *argv[])
           }
           delete pmesh;
           MPI_Finalize();
@@ -77,7 +78,7 @@ index d808287..0de94c0 100644
           return 3;
     }
  
-@@ -573,6 +581,7 @@ int main(int argc, char *argv[])
+@@ -573,6 +582,7 @@ int main(int argc, char *argv[])
     delete pmesh;
     delete material_pcf;
  
@@ -86,20 +87,21 @@ index d808287..0de94c0 100644
  }
  
 diff --git a/laghos_solver.cpp b/laghos_solver.cpp
-index 6a4c210..2849a1b 100644
+index 6a4c210..bed50d5 100644
 --- a/laghos_solver.cpp
 +++ b/laghos_solver.cpp
-@@ -16,6 +16,9 @@
+@@ -16,6 +16,10 @@
  
  #include "laghos_solver.hpp"
  
-+#define STARTSDE __SSC_MARK(0x111);
-+#define STOPSDE __SSC_MARK(0x222);
++#include <ittnotify.h>
++#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
 +
  #ifdef MFEM_USE_MPI
  
  using namespace std;
-@@ -227,7 +230,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -227,7 +231,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     {
        Force = 0.0;
        timer.sw_force.Start();
@@ -109,7 +111,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_force.Stop();
     }
  
-@@ -236,7 +241,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -236,7 +242,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     if (p_assembly)
     {
        timer.sw_force.Start();
@@ -119,7 +121,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_force.Stop();
        rhs.Neg();
  
-@@ -248,7 +255,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -248,7 +256,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
@@ -129,7 +131,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        VMassPA.RecoverFEMSolution(X, rhs, dv);
-@@ -257,7 +266,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -257,7 +267,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     else
     {
        timer.sw_force.Start();
@@ -139,7 +141,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_force.Stop();
        rhs.Neg();
  
-@@ -269,7 +280,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -269,7 +281,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
@@ -149,7 +151,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        Mv.RecoverFEMSolution(X, rhs, dv);
-@@ -290,7 +303,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -290,7 +304,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     if (p_assembly)
     {
        timer.sw_force.Start();
@@ -159,7 +161,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_force.Stop();
  
        if (e_source) { e_rhs += *e_source; }
-@@ -309,7 +324,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -309,7 +325,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     else
     {
        timer.sw_force.Start();
@@ -169,7 +171,7 @@ index 6a4c210..2849a1b 100644
        timer.sw_force.Stop();
        if (e_source) { e_rhs += *e_source; }
        for (int z = 0; z < nzones; z++)
-@@ -411,7 +428,7 @@ void LagrangianHydroOperator::PrintTimingData(bool IamRoot, int steps)
+@@ -411,7 +429,7 @@ void LagrangianHydroOperator::PrintTimingData(bool IamRoot, int steps)
        cout << "UpdateQuadData rate (megaquads x timesteps / second): "
             << 1e-6 * alldata[1] * integ_rule.GetNPoints() / rt_max[3] << endl;
        cout << endl;
@@ -178,7 +180,7 @@ index 6a4c210..2849a1b 100644
        cout << "Major kernels total rate (megadofs x time steps / second): "
             << 1e-6 * H1gsize * steps / rt_max[4] << endl;
     }
-@@ -426,6 +443,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
+@@ -426,6 +444,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
  {
     if (quad_data_is_current) { return; }
     timer.sw_qdata.Start();
@@ -186,7 +188,7 @@ index 6a4c210..2849a1b 100644
  
     const int nqp = integ_rule.GetNPoints();
  
-@@ -609,6 +627,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
+@@ -609,6 +628,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
     delete [] Jpr_b;
     quad_data_is_current = true;
  
@@ -195,7 +197,7 @@ index 6a4c210..2849a1b 100644
     timer.quad_tstep += nzones;
  }
 diff --git a/makefile b/makefile
-index 6595e96..93eda84 100644
+index 6595e96..35c3fd9 100644
 --- a/makefile
 +++ b/makefile
 @@ -51,7 +51,7 @@ PREFIX = ./bin
@@ -207,18 +209,20 @@ index 6595e96..93eda84 100644
  CONFIG_MK = $(MFEM_DIR)/config/config.mk
  TEST_MK = $(MFEM_DIR)/config/test.mk
  # Use the MFEM install directory
-@@ -74,7 +74,7 @@ endif
+@@ -74,16 +74,16 @@ endif
  
  CXX = $(MFEM_CXX)
  CPPFLAGS = $(MFEM_CPPFLAGS)
 -CXXFLAGS = $(MFEM_CXXFLAGS)
-+CXXFLAGS = $(MFEM_CXXFLAGS) -fopenmp
++CXXFLAGS = $(MFEM_CXXFLAGS) -fopenmp -I${ADVISOR_2018_DIR}/include
  
  # MFEM config does not define C compiler
  CC     = gcc
-@@ -83,7 +83,7 @@ CFLAGS = -O3
+ CFLAGS = -O3
+ 
  # Optional link flags
- LDFLAGS =
+-LDFLAGS =
++LDFLAGS = -L${ADVISOR_2018_DIR}/lib64 -littnotify
  
 -OPTIM_OPTS = -O3
 +OPTIM_OPTS = -O3 -ipo -xHost
