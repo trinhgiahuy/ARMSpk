@@ -80,7 +80,7 @@ for _, _, files in walk(sdeout_dir):
 					elif 'PS' in m.group(1):
 						num_ops_real += 2 * mult[m.group(2)] * int(m.group(3))
 					elif 'PD' in m.group(1):
-						num_ops_real += mult[m.group(2)] * int(m.group(3))
+						num_ops_dble += mult[m.group(2)] * int(m.group(3))
 	break
 
 total_rtime_re = compile('^Total running time:\s+([-+]?\d*\.\d+|\d+|-)')
