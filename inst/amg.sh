@@ -16,6 +16,10 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 	cd $ROOTDIR/$BM/
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	# avx512 on KNL/KNM causes errors in AMG exec
+	if [[ $HOSTNAME = *"lyon"* ]] || [[ $HOSTNAME = *"mill"* ]]; then
+		sed -i -e 's/xHost/xCORE-AVX2/g' ./Makefile.include
+	fi
 	make
 	cd $ROOTDIR
 fi
