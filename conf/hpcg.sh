@@ -31,7 +31,7 @@ elif [[ $HOSTNAME = *"lyon"* ]]; then
 elif [[ $HOSTNAME = *"mill"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""
-	export BESTCONF=""
+	export BESTCONF="64|1" # temporary for testing freq scaling
 else
 	echo "Unsupported host"
 	exit
