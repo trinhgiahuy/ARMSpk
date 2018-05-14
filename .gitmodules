@@ -67,3 +67,12 @@
 [submodule "HPCG"]
 	path = HPCG
 	url = https://github.com/hpcg-benchmark/hpcg.git
+[submodule "dep/msr-safe"]
+	path = dep/msr-safe
+	url = https://github.com/LLNL/msr-safe.git
+[submodule "dep/likwid"]
+	path = dep/likwid
+	url = https://github.com/RRZE-HPC/likwid.git
+[submodule "dep/intel-pcm"]
+	path = dep/intel-pcm
+	url = https://github.com/opcm/pcm.git
