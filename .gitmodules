@@ -76,3 +76,6 @@
 [submodule "dep/intel-pcm"]
 	path = dep/intel-pcm
 	url = https://github.com/opcm/pcm.git
+[submodule "BabelStream"]
+	path = BabelStream
+	url = https://github.com/UoB-HPC/BabelStream.git
