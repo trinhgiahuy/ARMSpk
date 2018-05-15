@@ -21,6 +21,8 @@ else
 	echo "Unsupported host"
 	exit
 fi
+export PATH=$ROOTDIR/dep/intel-pcm:$PATH
+PCM="pcm-memory.x 360000 -- "
 
 # ============================ AMG ============================================
 source conf/amg.sh
@@ -41,14 +43,20 @@ for BEST in $BESTCONF; do
 	Z=$(($MAXXYZ / $Z))
 	INPUT="`echo $INPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
-	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
-	for P in `seq 0 $((NumMPI - 1))`; do
-		echo "SDE output of MPI process $P" >> $LOG 2>&1
-		cat ./oSDE/${P}.txt >> $LOG 2>&1
-	done
-	echo "=== SDE summary ===" >> $LOG 2>&1
-	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed -e 's#profrun#bestrun#g'` >> $LOG 2>&1
-	rm -rf ./oSDE
+	if [ "x$RUNSDE" = "xyes" ]; then
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		for P in `seq 0 $((NumMPI - 1))`; do
+			echo "SDE output of MPI process $P" >> $LOG 2>&1
+			cat ./oSDE/${P}.txt >> $LOG 2>&1
+		done
+		echo "=== SDE summary ===" >> $LOG 2>&1
+		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed -e 's#profrun#bestrun#g'` >> $LOG 2>&1
+		rm -rf ./oSDE
+	fi
+	if [ "x$RUNPCM" = "xyes" ]; then
+		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
+		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
