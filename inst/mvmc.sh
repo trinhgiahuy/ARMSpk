@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64
+source `cat $ROOTDIR/conf/intel.cfg` intel64
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -12,8 +12,10 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="MVMC"
+VERSION="6c4ef79a95fee600e7b7148b69dfadede8220900"
 if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | awk '{print $1}'`" = "x0" ]; then
 	cd $ROOTDIR/$BM/
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src

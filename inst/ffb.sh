@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64
+source `cat $ROOTDIR/conf/intel.cfg` intel64
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -18,8 +18,10 @@ if [ ! -f $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz ]; then
 fi
 
 BM="FFB"
+VERSION="4e801e87d8747832357f9ad0ceaa8747194fc242"
 if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	cd $ROOTDIR/$BM/
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src

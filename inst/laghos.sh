@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64
+source `cat $ROOTDIR/conf/intel.cfg` intel64
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -12,8 +12,10 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="Laghos"
+VERSION="9a074521257434e0b9acff9e59ff10e3e881bc32"
 if [ ! -f $ROOTDIR/$BM/laghos ]; then
 	cd $ROOTDIR/$BM/
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f ./hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then

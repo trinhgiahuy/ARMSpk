@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64
+source `cat $ROOTDIR/conf/intel.cfg` intel64
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -12,8 +12,10 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
+VERSION="d0ef31454577740fbb87618cc35789b7ef838238"
 if [ ! -f $ROOTDIR/$BM/build.xeon/TestDfft ]; then
 	cd $ROOTDIR/$BM/
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/fftw-3.3.4/bin/fftw-wisdom ]; then

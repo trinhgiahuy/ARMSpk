@@ -11,23 +11,14 @@ export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
 
-BM="MiniTri"
-VERSION="9771c71f3d25023fc50bc6e84a905d6d50e81151"
-if [ ! -f $ROOTDIR/$BM/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
+BM="BabelStream"
+VERSION="d9b089a0f94e9423b0653ca7ca533bd04c8501cb"
+if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
-	cd $ROOTDIR/$BM/miniTri/linearAlgebra/MPI
-	make
-	cd $ROOTDIR/$BM/miniTri/linearAlgebra/openmp
-	make
-	# get an valid input
-	if [ ! -f $ROOTDIR/$BM/bcsstk30.mtx ]; then
-		cd $ROOTDIR/$BM/
-		wget ftp://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/bcsstruc5/bcsstk30.mtx.gz
-		gunzip bcsstk30.mtx.gz
-	fi
+	make -f OpenMP.make COMPILER=INTEL TARGET=CPU
 	cd $ROOTDIR
 fi
 
