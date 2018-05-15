@@ -1,4 +1,4 @@
-From 7675a60092b7ea29ca5642d22bfbc34e8ea20ce0 Mon Sep 17 00:00:00 2001
+From 6937827b004dd363a0158aa0ad96dd5e1bee0a61 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 14:24:22 +0900
 Subject: [PATCH 1/1] NGSAnalyzer: prepare precision experiment
@@ -11,9 +11,9 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  makefile.x86_64_intel            | 63 ++++++++++++++++++++++++++++++++++++++++
  samtools-0.1.8_kei/misc/Makefile |  6 ++--
  workflow/Makefile                |  4 +--
- workflow/workflow.c              | 41 +++++++++++++++++++++++++-
+ workflow/workflow.c              | 42 ++++++++++++++++++++++++++-
  workflow/workflow_01.sh          |  2 +-
- 8 files changed, 116 insertions(+), 10 deletions(-)
+ 8 files changed, 117 insertions(+), 10 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 makefile.x86_64_intel
 
@@ -158,34 +158,39 @@ index 8c294ea..4601d48 100644
  clean:
  	rm -f $(PROG) *.o *~
 diff --git a/workflow/workflow.c b/workflow/workflow.c
-index 37bcab4..7c57c84 100644
+index 37bcab4..ccae38e 100644
 --- a/workflow/workflow.c
 +++ b/workflow/workflow.c
-@@ -7,6 +7,10 @@
+@@ -7,6 +7,12 @@
  #include <sys/stat.h>
  #include <mpi.h>
  
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
  /* #define MEASURE_TIME */
  
  /* assume a shared directory */
-@@ -138,9 +142,11 @@ static void run_task(char *const *cmdline, const char *task_name, int rank)
+@@ -138,13 +144,14 @@ static void run_task(char *const *cmdline, const char *task_name, int rank)
  #endif
  }
  
 -
  int main(int argc, char **argv)
  {
-+double mkrts=0.0, mkrte=0.0; // my kernel run-time
-+STOPSDE;
-+
      int rank, nprocs;
      MPI_Init(&argc, &argv);
      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-@@ -175,7 +181,13 @@ int main(int argc, char **argv)
+     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
++double mkrts=0.0, mkrte=0.0; // my kernel run-time
++STOPSDE;
+ 
+     if (argc != 6) {
+ 	if (rank == 0) {
+@@ -175,7 +182,13 @@ int main(int argc, char **argv)
      cmd1[3] = bwa_db_file;
      cmd1[4] = contig_file;
      cmd1[5] = NULL;
@@ -199,7 +204,7 @@ index 37bcab4..7c57c84 100644
      free(cmd1[0]);
      free(cmd1);
  
-@@ -188,7 +200,13 @@ int main(int argc, char **argv)
+@@ -188,7 +201,13 @@ int main(int argc, char **argv)
      cmd2[2] = meddir;
      cmd2[3] = GLOBAL_MED_DIR;
      cmd2[4] = NULL;
@@ -213,7 +218,7 @@ index 37bcab4..7c57c84 100644
      free(cmd2[0]);
      free(cmd2[1]);
      free(cmd2);
-@@ -203,7 +221,13 @@ int main(int argc, char **argv)
+@@ -203,7 +222,13 @@ int main(int argc, char **argv)
      cmd3[3] = meddir;
      cmd3[4] = GLOBAL_MED_DIR;
      cmd3[5] = NULL;
@@ -227,7 +232,7 @@ index 37bcab4..7c57c84 100644
      free(cmd3[0]);
      free(cmd3[1]);
      free(cmd3[2]);
-@@ -216,7 +240,13 @@ int main(int argc, char **argv)
+@@ -216,7 +241,13 @@ int main(int argc, char **argv)
      cmd4[1] = meddir;
      cmd4[2] = ref_idx_file;
      cmd4[3] = NULL;
@@ -241,7 +246,7 @@ index 37bcab4..7c57c84 100644
      free(cmd4[0]);
      free(cmd4);
  
-@@ -228,7 +258,14 @@ int main(int argc, char **argv)
+@@ -228,7 +259,14 @@ int main(int argc, char **argv)
      cmd5[2] = outdir;
      cmd5[3] = ref_file;
      cmd5[4] = NULL;
@@ -256,7 +261,7 @@ index 37bcab4..7c57c84 100644
      free(cmd5[0]);
      free(cmd5);
  
-@@ -239,5 +276,7 @@ int main(int argc, char **argv)
+@@ -239,5 +277,7 @@ int main(int argc, char **argv)
  
      cleanup_directories(rank);
      MPI_Finalize();

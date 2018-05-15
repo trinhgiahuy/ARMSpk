@@ -1,4 +1,4 @@
-From e0539bd507b6bb3bc2c0a48bc4c35223ef288ab2 Mon Sep 17 00:00:00 2001
+From 9b642ee8845ba4c4d07047be0bbfe08ac27b69a8 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:51:52 +0900
 Subject: [PATCH 1/1] CoMD: prepare precision experiment
@@ -6,9 +6,9 @@ Subject: [PATCH 1/1] CoMD: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore          |   4 ++
- src-openmp/CoMD.c   |  16 ++++++++
+ src-openmp/CoMD.c   |  18 +++++++++
  src-openmp/Makefile | 108 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 128 insertions(+)
+ 3 files changed, 130 insertions(+)
  create mode 100644 src-openmp/Makefile
 
 diff --git a/.gitignore b/.gitignore
@@ -28,27 +28,31 @@ index 155f4dc..365100b 100644
 +CoMD_info.h
 +.depend
 diff --git a/src-openmp/CoMD.c b/src-openmp/CoMD.c
-index 12466c8..89e17f7 100644
+index 12466c8..820ad63 100644
 --- a/src-openmp/CoMD.c
 +++ b/src-openmp/CoMD.c
-@@ -82,9 +82,16 @@ static void printThings(SimFlat* s, int iStep, double elapsedTime);
+@@ -82,11 +82,20 @@ static void printThings(SimFlat* s, int iStep, double elapsedTime);
  static void printSimulationDataYaml(FILE* file, SimFlat* s);
  static void sanityChecks(Command cmd, double cutoff, double latticeConst, char latticeType[8]);
  
 +#include <mpi.h>
 +
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!printRank() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!printRank() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
  
  int main(int argc, char** argv)
  {
-+double mkrts, mkrte; // my kernel run-time
-+STOPSDE;
     // Prolog
     initParallel(&argc, &argv);
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
     profileStart(totalTimer);
-@@ -112,6 +119,9 @@ int main(int argc, char** argv)
+    initSubsystems();
+    timestampBarrier("Starting Initialization\n");
+@@ -112,6 +121,9 @@ int main(int argc, char** argv)
     const int printRate = sim->printRate;
     int iStep = 0;
     profileStart(loopTimer);
@@ -58,7 +62,7 @@ index 12466c8..89e17f7 100644
     for (; iStep<nSteps;)
     {
        startTimer(commReduceTimer);
-@@ -126,10 +136,15 @@ int main(int argc, char** argv)
+@@ -126,10 +138,15 @@ int main(int argc, char** argv)
  
        iStep += printRate;
     }
@@ -74,7 +78,7 @@ index 12466c8..89e17f7 100644
     timestampBarrier("Ending simulation\n");
  
     // Epilog
-@@ -146,6 +161,7 @@ int main(int argc, char** argv)
+@@ -146,6 +163,7 @@ int main(int argc, char** argv)
     timestampBarrier("CoMD Ending\n");
     destroyParallel();
  

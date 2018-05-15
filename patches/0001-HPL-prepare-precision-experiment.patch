@@ -1,6 +1,6 @@
 diff -Nur --no-dereference HPL.old/include/hpl_ptest.h HPL.new/include/hpl_ptest.h
 --- HPL.old/include/hpl_ptest.h	2016-02-24 10:10:50.000000000 +0900
-+++ HPL.new/include/hpl_ptest.h	2018-03-16 02:14:38.073906647 +0900
++++ HPL.new/include/hpl_ptest.h	2018-05-15 18:51:30.085850624 +0900
 @@ -142,7 +142,8 @@
     HPL_T_grid *,
     HPL_T_palg *,
@@ -13,7 +13,7 @@ diff -Nur --no-dereference HPL.old/include/hpl_ptest.h HPL.new/include/hpl_ptest
  #endif
 diff -Nur --no-dereference HPL.old/Make.Linux_Intel64 HPL.new/Make.Linux_Intel64
 --- HPL.old/Make.Linux_Intel64	1970-01-01 09:00:00.000000000 +0900
-+++ HPL.new/Make.Linux_Intel64	2018-03-16 02:15:52.756774950 +0900
++++ HPL.new/Make.Linux_Intel64	2018-05-15 18:51:30.093850718 +0900
 @@ -0,0 +1,193 @@
 +#  
 +#  -- High Performance Computing Linpack Benchmark (HPL)                
@@ -210,7 +210,7 @@ diff -Nur --no-dereference HPL.old/Make.Linux_Intel64 HPL.new/Make.Linux_Intel64
 +# ----------------------------------------------------------------------
 diff -Nur --no-dereference HPL.old/testing/ptest/HPL.dat HPL.new/testing/ptest/HPL.dat
 --- HPL.old/testing/ptest/HPL.dat	2004-12-01 06:55:36.000000000 +0900
-+++ HPL.new/testing/ptest/HPL.dat	2018-03-16 02:14:38.082906751 +0900
++++ HPL.new/testing/ptest/HPL.dat	2018-05-15 18:51:30.100850800 +0900
 @@ -1,31 +1,31 @@
  HPLinpack benchmark input file
  Innovative Computing Laboratory, University of Tennessee
@@ -265,28 +265,31 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL.dat HPL.new/testing/ptest/H
  8            memory alignment in double (> 0)
 diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pddriver.c HPL.new/testing/ptest/HPL_pddriver.c
 --- HPL.old/testing/ptest/HPL_pddriver.c	2016-02-24 10:10:50.000000000 +0900
-+++ HPL.new/testing/ptest/HPL_pddriver.c	2018-03-16 02:16:37.766298254 +0900
-@@ -49,6 +49,10 @@
++++ HPL.new/testing/ptest/HPL_pddriver.c	2018-05-15 18:57:37.977478649 +0900
+@@ -49,6 +49,12 @@
   */
  #include "hpl.h"
  
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
  #ifdef STDC_HEADERS
  int main
  (
-@@ -67,6 +71,8 @@
-    char                       * * ARGV;
+@@ -112,6 +118,9 @@
  #endif
- {
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &size );
 +double mkrts = 0.0, mkrte = 0.0; // my kernel run-time
 +STOPSDE;
- /* 
-  * Purpose
-  * =======
-@@ -220,7 +226,8 @@
++
+ /*
+  * Read and check validity of test parameters from input file
+  *
+@@ -220,7 +229,8 @@
                algo.fswap = fswap; algo.fsthr = tswap;
                algo.equil = equil; algo.align = align;
  
@@ -296,7 +299,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pddriver.c HPL.new/testing/
  
               }
              }
-@@ -233,6 +240,7 @@
+@@ -233,6 +243,7 @@
        (void) HPL_grid_exit( &grid );
  label_end_of_npqs: ;
     }
@@ -304,7 +307,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pddriver.c HPL.new/testing/
  /*
   * Print ending messages, close output file, exit.
   */
-@@ -284,6 +292,7 @@
+@@ -284,6 +295,7 @@
     vsip_finalize((void*)0);
  #endif
     MPI_Finalize();
@@ -314,19 +317,21 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pddriver.c HPL.new/testing/
     return( 0 );
 diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/ptest/HPL_pdtest.c
 --- HPL.old/testing/ptest/HPL_pdtest.c	2016-02-24 10:10:50.000000000 +0900
-+++ HPL.new/testing/ptest/HPL_pdtest.c	2018-03-16 02:17:16.729751266 +0900
-@@ -49,6 +49,10 @@
++++ HPL.new/testing/ptest/HPL_pdtest.c	2018-05-15 18:55:46.453848145 +0900
+@@ -49,6 +49,12 @@
   */
  #include "hpl.h"
  
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!myrow && !mycol && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myrow && !mycol && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
  #ifdef STDC_HEADERS
  void HPL_pdtest
  (
-@@ -56,7 +60,8 @@
+@@ -56,7 +62,8 @@
     HPL_T_grid *                     GRID,
     HPL_T_palg *                     ALGO,
     const int                        N,
@@ -336,7 +341,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/pt
  )
  #else
  void HPL_pdtest
-@@ -66,6 +71,7 @@
+@@ -66,6 +73,7 @@
     HPL_T_palg *                     ALGO;
     const int                        N;
     const int                        NB;
@@ -344,7 +349,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/pt
  #endif
  {
  /* 
-@@ -194,7 +200,9 @@
+@@ -194,7 +202,9 @@
     HPL_ptimer_boot(); (void) HPL_barrier( GRID->all_comm );
     time( &current_time_start );
     HPL_ptimer( 0 );
@@ -354,7 +359,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/pt
     HPL_ptimer( 0 );
     time( &current_time_end );
  #ifdef HPL_CALL_VSIPL
-@@ -247,6 +255,7 @@
+@@ -247,6 +257,7 @@
        else /* if( ALGO->btopo == HPL_BLONG_M ) */ ctop = '5';
  
        if( wtime[0] > HPL_rzero ) {
@@ -362,7 +367,7 @@ diff -Nur --no-dereference HPL.old/testing/ptest/HPL_pdtest.c HPL.new/testing/pt
           HPL_fprintf( TEST->outfp,
               "W%c%1d%c%c%1d%c%1d%12d %5d %5d %5d %18.2f     %18.3e\n",
               ( GRID->order == HPL_ROW_MAJOR ? 'R' : 'C' ),
-@@ -256,7 +265,7 @@
+@@ -256,7 +267,7 @@
               "HPL_pdgesv() start time %s\n", ctime( &current_time_start ) );
           HPL_fprintf( TEST->outfp,
               "HPL_pdgesv() end time   %s\n", ctime( &current_time_end ) );

@@ -1,4 +1,4 @@
-From 3643c269585598f1fd256e114a824fa97c786428 Mon Sep 17 00:00:00 2001
+From 7724e538a9cc998677761c9a883cf893f02fac7c Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:25:14 +0900
 Subject: [PATCH 1/1] NTChem: prepare precision experiment
@@ -11,8 +11,8 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  src/mp2/GNUmakefile                                |  2 +-
  src/mp2/mp2_main_mpiomp.f90                        | 25 ++++++++++++++++++++++
  src/util_lib/GNUmakefile                           |  5 +++++
- src/util_lib/ssc.c                                 | 12 +++++++++++
- 7 files changed, 55 insertions(+), 18 deletions(-)
+ src/util_lib/ssc.c                                 | 14 ++++++++++++
+ 7 files changed, 57 insertions(+), 18 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 src/util_lib/ssc.c
 
@@ -101,10 +101,10 @@ index 0e51c5e..d633806 100644
  mvbin :
  	$(MV) $(program) $(BIN)/.
 diff --git a/src/mp2/mp2_main_mpiomp.f90 b/src/mp2/mp2_main_mpiomp.f90
-index ea4f637..beacfed 100644
+index ea4f637..05f28ba 100644
 --- a/src/mp2/mp2_main_mpiomp.f90
 +++ b/src/mp2/mp2_main_mpiomp.f90
-@@ -6,11 +6,25 @@
+@@ -6,15 +6,29 @@
  !
  !     o Main MP2 routine
  !
@@ -126,16 +126,20 @@ index ea4f637..beacfed 100644
        REAL(8) :: TimeBgn, TimeEnd, WTimeBgn, WTimeEnd
 +      real(8) :: mkrts, mkrte
 +      integer(4) :: sscfake = 1
-+      sscfake = SSC_MARK_STOP(sscfake)
  !
  !     o Initialize MPI
+ !
+       CALL Util_InitMPI(.TRUE.)
++      sscfake = SSC_MARK_STOP(MyRank)
+ !
+ !     o Read MP2 input
  !
 @@ -67,6 +81,8 @@
        END IF
        WTimeBgn = MPI_WTIME()
        CALL CPU_TIME(TimeBgn)
 +      mkrts = MPI_WTIME()
-+      sscfake = SSC_MARK_START(sscfake)
++      sscfake = SSC_MARK_START(MyRank)
        IF (InCore) THEN
  !
  !        o In-Core RI-MP2 algorithm
@@ -143,7 +147,7 @@ index ea4f637..beacfed 100644
           CALL RIMP2_Driver_SemiDirect_MPIOMP
  !
        END IF
-+      sscfake = SSC_MARK_STOP(sscfake)
++      sscfake = SSC_MARK_STOP(MyRank)
 +      mkrte = MPI_WTIME()
 +      IF (MyRank == 0) THEN
 +         write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", mkrte - mkrts, " sec"
@@ -155,7 +159,7 @@ index ea4f637..beacfed 100644
  !     o Finalize MPI
  !
        CALL Util_FinMPI
-+      sscfake = SSC_MARK_START(sscfake)
++      sscfake = SSC_MARK_START(MyRank)
 +      IF (MyRank == 0) THEN
 +         write(*,*) sscfake
 +      END IF
@@ -183,21 +187,23 @@ index 95353ee..4b09434 100644
 +	$(CC) $(CFLAGS) -I${ADVISOR_2018_DIR}/include -c $<
 diff --git a/src/util_lib/ssc.c b/src/util_lib/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..270463c
 --- /dev/null
 +++ b/src/util_lib/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
-+int ssc_mark_start (int x) {
++int ssc_mark_start (int myid) {
 +	STARTSDE;
-+	return (x << 0x1);
++	return (myid << 0x1);
 +}
-+int ssc_mark_stop (int y) {
++int ssc_mark_stop (int myid) {
 +	STOPSDE;
-+	return (y >> 0x2);
++	return (myid >> 0x2);
 +}
 -- 
 1.8.3.1

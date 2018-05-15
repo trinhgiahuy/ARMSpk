@@ -1,4 +1,4 @@
-From b326fa4a171af18e00c71b0328af755a9a5f5073 Mon Sep 17 00:00:00 2001
+From 3471ce888ac719acd6a9a6ec0c1dff16b8789fa4 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 1 Mar 2018 10:49:33 +0900
 Subject: [PATCH 1/1] HPCG: prepare precision experiment
@@ -92,12 +92,12 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  src/finalize.cpp                |  20 ++
  src/hpcg.hpp                    |  38 ++-
  src/init.cpp                    |  91 ++++---
- src/main.cpp                    | 126 +++++++---
+ src/main.cpp                    | 128 +++++++---
  src/mpi_hpcg_api.hpp            | 136 +++++++++++
  src/mpi_wrappers.cpp            | 530 ++++++++++++++++++++++++++++++++++++++++
  src/mytimer.cpp                 |  21 ++
  src/mytimer.hpp                 |  20 ++
- 92 files changed, 4477 insertions(+), 1072 deletions(-)
+ 92 files changed, 4479 insertions(+), 1072 deletions(-)
  create mode 100644 setup/Make.IMPI_IOMP_AVX2
  create mode 100644 setup/Make.IMPI_IOMP_KNL
  delete mode 100644 src/.cproject
@@ -6422,7 +6422,7 @@ index 05958f8..8f47f84 100644
    return 0;
  }
 diff --git a/src/main.cpp b/src/main.cpp
-index 8ff7961..211ca7b 100644
+index 8ff7961..317681e 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -1,3 +1,24 @@
@@ -6450,7 +6450,7 @@ index 8ff7961..211ca7b 100644
  
  //@HEADER
  // ***************************************************
-@@ -61,6 +82,13 @@ using std::endl;
+@@ -61,6 +82,15 @@ using std::endl;
  #include "TestSymmetry.hpp"
  #include "TestNorms.hpp"
  
@@ -6458,22 +6458,31 @@ index 8ff7961..211ca7b 100644
 +#include <cfloat>
 +
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
  /*!
    Main driver program: Construct synthetic problem, run V&V tests, compute benchmark parameters, run benchmark, report results.
  
-@@ -71,7 +99,7 @@ using std::endl;
+@@ -71,7 +101,6 @@ using std::endl;
  
  */
  int main(int argc, char * argv[]) {
 -
-+STOPSDE;
  #ifndef HPCG_NO_MPI
    MPI_Init(&argc, &argv);
  #endif
-@@ -119,7 +147,7 @@ int main(int argc, char * argv[]) {
+@@ -85,6 +114,7 @@ int main(int argc, char * argv[]) {
+   bool quickPath = (params.runningTime==0);
+ 
+   int size = params.comm_size, rank = params.comm_rank; // Number of MPI processes, My process ID
++STOPSDE;
+ 
+ #ifdef HPCG_DETAILED_DEBUG
+   if (size < 100 && rank==0) HPCG_fout << "Process "<<rank<<" of "<<size<<" is alive with " << params.numThreads << " threads." <<endl;
+@@ -119,7 +149,7 @@ int main(int argc, char * argv[]) {
  
    // Construct the geometry and linear system
    Geometry * geom = new Geometry;
@@ -6482,7 +6491,7 @@ index 8ff7961..211ca7b 100644
  
    ierr = CheckAspectRatio(0.125, geom->npx, geom->npy, geom->npz, "process grid", rank==0);
    if (ierr)
-@@ -127,20 +155,20 @@ int main(int argc, char * argv[]) {
+@@ -127,20 +157,20 @@ int main(int argc, char * argv[]) {
  
    // Use this array for collecting timing information
    std::vector< double > times(10,0.0);
@@ -6507,7 +6516,7 @@ index 8ff7961..211ca7b 100644
    }
  
    setup_time = mytimer() - setup_time; // Capture total time of setup
-@@ -158,12 +186,19 @@ int main(int argc, char * argv[]) {
+@@ -158,12 +188,19 @@ int main(int argc, char * argv[]) {
       curxexact = 0;
    }
  
@@ -6529,7 +6538,7 @@ index 8ff7961..211ca7b 100644
    ////////////////////////////////////
    // Reference SpMV+MG Timing Phase //
    ////////////////////////////////////
-@@ -185,12 +220,16 @@ int main(int argc, char * argv[]) {
+@@ -185,12 +222,16 @@ int main(int argc, char * argv[]) {
    int numberOfCalls = 10;
    if (quickPath) numberOfCalls = 1; //QuickPath means we do on one call of each block of repetitive code
    double t_begin = mytimer();
@@ -6552,7 +6561,7 @@ index 8ff7961..211ca7b 100644
    times[8] = (mytimer() - t_begin)/((double) numberOfCalls);  // Total time divided by number of calls.
  #ifdef HPCG_DEBUG
    if (rank==0) HPCG_fout << "Total SpMV+MG timing phase execution time in main (sec) = " << mytimer() - t1 << endl;
-@@ -212,32 +251,49 @@ int main(int argc, char * argv[]) {
+@@ -212,32 +253,49 @@ int main(int argc, char * argv[]) {
    int refMaxIters = 50;
    numberOfCalls = 1; // Only need to run the residual reduction analysis once
  
@@ -6617,7 +6626,7 @@ index 8ff7961..211ca7b 100644
  
    //////////////////////////////
    // Validation Testing Phase //
-@@ -283,7 +339,9 @@ int main(int argc, char * argv[]) {
+@@ -283,7 +341,9 @@ int main(int argc, char * argv[]) {
      double last_cummulative_time = opt_times[0];
      ierr = CG( A, data, b, x, optMaxIters, refTolerance, niters, normr, normr0, &opt_times[0], true);
      if (ierr) ++err_count; // count the number of errors in CG
@@ -6628,7 +6637,7 @@ index 8ff7961..211ca7b 100644
  
      // pick the largest number of iterations to guarantee convergence
      if (niters > optNiters) optNiters = niters;
-@@ -298,7 +356,6 @@ int main(int argc, char * argv[]) {
+@@ -298,7 +358,6 @@ int main(int argc, char * argv[]) {
    MPI_Allreduce(&local_opt_worst_time, &opt_worst_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
  #endif
  
@@ -6636,7 +6645,7 @@ index 8ff7961..211ca7b 100644
    if (rank == 0 && err_count) HPCG_fout << err_count << " error(s) in call(s) to optimized CG." << endl;
    if (tolerance_failures) {
      global_failure = 1;
-@@ -331,13 +388,17 @@ int main(int argc, char * argv[]) {
+@@ -331,13 +390,17 @@ int main(int argc, char * argv[]) {
    testnorms_data.samples = numberOfCgSets;
    testnorms_data.values = new double[numberOfCgSets];
  
@@ -6654,7 +6663,7 @@ index 8ff7961..211ca7b 100644
  
    // Compute difference between known exact solution and computed solution
    // All processors are needed here.
-@@ -368,13 +429,12 @@ int main(int argc, char * argv[]) {
+@@ -368,13 +431,12 @@ int main(int argc, char * argv[]) {
    DeleteVector(b_computed);
    delete [] testnorms_data.values;
  

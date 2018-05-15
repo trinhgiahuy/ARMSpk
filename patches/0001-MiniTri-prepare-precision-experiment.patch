@@ -1,4 +1,4 @@
-From 059a9f9559c71fe2a40ed65f8ef7bf57b92f2b91 Mon Sep 17 00:00:00 2001
+From 76ff0103bc64f9d0edb2844ce7c004a908d285f7 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 14:00:47 +0900
 Subject: [PATCH 1/1] MiniTri: prepare precision experiment
@@ -7,10 +7,10 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore                              |  3 +++
  miniTri/linearAlgebra/MPI/Makefile      |  4 ++--
- miniTri/linearAlgebra/MPI/miniTri.cpp   | 13 +++++++++++++
+ miniTri/linearAlgebra/MPI/miniTri.cpp   | 14 ++++++++++++++
  miniTri/linearAlgebra/openmp/Makefile   |  6 +++---
- miniTri/linearAlgebra/openmp/miniTri.cc | 19 ++++++++++++++++++-
- 5 files changed, 39 insertions(+), 6 deletions(-)
+ miniTri/linearAlgebra/openmp/miniTri.cc | 21 ++++++++++++++++++++-
+ 5 files changed, 42 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -45,28 +45,32 @@ index 8eb0838..2da6c39 100644
  clean	:
  	rm -f *.o *~ libSPLA.a *.out miniTri.exe
 diff --git a/miniTri/linearAlgebra/MPI/miniTri.cpp b/miniTri/linearAlgebra/MPI/miniTri.cpp
-index ff8c6c8..aafa02f 100644
+index ff8c6c8..f7a9b25 100644
 --- a/miniTri/linearAlgebra/MPI/miniTri.cpp
 +++ b/miniTri/linearAlgebra/MPI/miniTri.cpp
-@@ -57,10 +57,17 @@
+@@ -57,6 +57,12 @@
  
  #include "Graph.hpp"
  
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
  //////////////////////////////////////////////////////////////////////////////
  //////////////////////////////////////////////////////////////////////////////
  int main(int argc, char *argv[])
- {
-+double mkrts, mkrte; // my kernel run-time
-+STOPSDE;
-+
-   MPI_Init(&argc,&argv);
+@@ -65,6 +71,8 @@ int main(int argc, char *argv[])
  
    int myrank;
-@@ -98,6 +105,8 @@ int main(int argc, char *argv[])
+   MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
++double mkrts, mkrte; // my kernel run-time
++STOPSDE;
+ 
+   if(argc!=2 && argc!=3)
+   {
+@@ -98,6 +106,8 @@ int main(int argc, char *argv[])
  
    Graph g(mat,isBinFile,MPI_COMM_WORLD);
  
@@ -75,7 +79,7 @@ index ff8c6c8..aafa02f 100644
    g.triangleEnumerate();
    if(myrank==0)
    {
-@@ -107,10 +116,14 @@ int main(int argc, char *argv[])
+@@ -107,10 +117,14 @@ int main(int argc, char *argv[])
  
    g.calculateTriangleDegrees();
    g.calculateKCounts();
@@ -115,16 +119,18 @@ index 6a0992a..f02c63f 100644
  clean	:
  	rm -f *.o *~ libSPLA.a *.out miniTri.exe
 diff --git a/miniTri/linearAlgebra/openmp/miniTri.cc b/miniTri/linearAlgebra/openmp/miniTri.cc
-index 40bb240..f9f96c1 100644
+index 40bb240..09c3c86 100644
 --- a/miniTri/linearAlgebra/openmp/miniTri.cc
 +++ b/miniTri/linearAlgebra/openmp/miniTri.cc
-@@ -60,11 +60,24 @@
+@@ -60,11 +60,26 @@
  
  #include "Graph.h"
  
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +double MPI_Wtime() {
 +	struct timeval t;
@@ -143,7 +149,7 @@ index 40bb240..f9f96c1 100644
    struct timeval t1, t2;
  
   
-@@ -105,10 +118,14 @@ int main(int argc, char *argv[])
+@@ -105,10 +120,14 @@ int main(int argc, char *argv[])
  
    Graph g(mat,isBinFile,blockSize);
  

@@ -1,4 +1,4 @@
-From 0669b2213ba1eb04d3a68335a39d994d516305f6 Mon Sep 17 00:00:00 2001
+From 613d573ff099fdb3eb62b794ee7ac89468b4a7da Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:34:00 +0900
 Subject: [PATCH 1/1] CANDLE: prepare precision experiment
@@ -8,26 +8,26 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  .gitignore                          |  4 ++++
  Pilot1/P1B1/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B1/p1b1_baseline_keras2.py | 26 +++++++++++++++++++++-----
- Pilot1/P1B1/ssc.c                   | 12 ++++++++++++
+ Pilot1/P1B1/ssc.c                   | 14 ++++++++++++++
  Pilot1/P1B2/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B2/p1b2_baseline_keras2.py | 18 ++++++++++++++++++
- Pilot1/P1B2/ssc.c                   | 12 ++++++++++++
+ Pilot1/P1B2/ssc.c                   | 14 ++++++++++++++
  Pilot1/P1B3/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B3/p1b3_baseline_keras2.py | 17 +++++++++++++++++
- Pilot1/P1B3/ssc.c                   | 12 ++++++++++++
+ Pilot1/P1B3/ssc.c                   | 14 ++++++++++++++
  Pilot2/P2B1/Makefile                | 20 ++++++++++++++++++++
  Pilot2/P2B1/p2b1_baseline_keras2.py | 22 +++++++++++++++++++---
- Pilot2/P2B1/ssc.c                   | 12 ++++++++++++
+ Pilot2/P2B1/ssc.c                   | 14 ++++++++++++++
  Pilot2/P2B2/Makefile                | 20 ++++++++++++++++++++
  Pilot2/P2B2/p2b2_baseline_keras2.py | 22 ++++++++++++++++++----
- Pilot2/P2B2/ssc.c                   | 12 ++++++++++++
+ Pilot2/P2B2/ssc.c                   | 14 ++++++++++++++
  Pilot3/P3B1/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B1/p3b1_baseline_keras2.py | 20 +++++++++++++++++++-
- Pilot3/P3B1/ssc.c                   | 12 ++++++++++++
+ Pilot3/P3B1/ssc.c                   | 14 ++++++++++++++
  Pilot3/P3B2/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B2/p3b2_baseline_keras2.py | 18 ++++++++++++++++++
- Pilot3/P3B2/ssc.c                   | 12 ++++++++++++
- 22 files changed, 358 insertions(+), 13 deletions(-)
+ Pilot3/P3B2/ssc.c                   | 14 ++++++++++++++
+ 22 files changed, 372 insertions(+), 13 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 Pilot1/P1B1/Makefile
  create mode 100644 Pilot1/P1B1/ssc.c
@@ -147,13 +147,15 @@ index 4f13f2f..90af8d5 100644
 +libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B1/ssc.c b/Pilot1/P1B1/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot1/P1B1/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -236,13 +238,15 @@ index 2c7a900..f717f24 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B2/ssc.c b/Pilot1/P1B2/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot1/P1B2/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -333,13 +337,15 @@ index 1d2b1b4..3da1e9b 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot1/P1B3/ssc.c b/Pilot1/P1B3/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot1/P1B3/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -427,13 +433,15 @@ index e2e43b9..09011dc 100644
 +	libssc.ssc_mark_start()
 diff --git a/Pilot2/P2B1/ssc.c b/Pilot2/P2B1/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot2/P2B1/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -521,13 +529,15 @@ index 7e8a043..0b53e6a 100644
 +	libssc.ssc_mark_start()
 diff --git a/Pilot2/P2B2/ssc.c b/Pilot2/P2B2/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot2/P2B2/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -626,13 +636,15 @@ index 1a56edf..632ccf7 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot3/P3B1/ssc.c b/Pilot3/P3B1/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot3/P3B1/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;
@@ -720,13 +732,15 @@ index 2fed890..e51d19a 100644
 +    libssc.ssc_mark_start()
 diff --git a/Pilot3/P3B2/ssc.c b/Pilot3/P3B2/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..6646a71
 --- /dev/null
 +++ b/Pilot3/P3B2/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
 +int ssc_mark_start (int x) {
 +	STARTSDE;

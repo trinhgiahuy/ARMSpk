@@ -1,4 +1,4 @@
-From 1b893a86810c6a9f8559ccb7c9df85f21dad2abf Mon Sep 17 00:00:00 2001
+From 8cea944b72dbdfeb71d049e405bcbfe0cdaaaadb Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:44:02 +0900
 Subject: [PATCH 1/1] QCD: prepare precision experiment
@@ -9,8 +9,8 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  src/Makefile                 |  4 ++--
  src/ccs_qcd_solver_bench.F90 | 29 +++++++++++++++++++++++++++++
  src/make.ifort.inc           |  7 ++++---
- src/ssc.c                    | 12 ++++++++++++
- 5 files changed, 48 insertions(+), 5 deletions(-)
+ src/ssc.c                    | 14 ++++++++++++++
+ 5 files changed, 50 insertions(+), 5 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/.gitignore b/.gitignore
@@ -43,7 +43,7 @@ index eed872c..0654bef 100644
  
  .PHONY: CONFIG_GEN
 diff --git a/src/ccs_qcd_solver_bench.F90 b/src/ccs_qcd_solver_bench.F90
-index 6786209..2595a94 100644
+index 6786209..501e98d 100644
 --- a/src/ccs_qcd_solver_bench.F90
 +++ b/src/ccs_qcd_solver_bench.F90
 @@ -14,7 +14,19 @@ program ccs_qcd_solver_bench
@@ -66,29 +66,30 @@ index 6786209..2595a94 100644
  !***********************************************************************
    complex(8) ::  ye_t(COL,SPIN,0:NTH,0:NZ1,0:NY1,0:NX1)
    complex(8) ::  yo_t(COL,SPIN,0:NTH,0:NZ1,0:NY1,0:NX1)
-@@ -46,6 +58,10 @@ program ccs_qcd_solver_bench
+@@ -46,7 +58,11 @@ program ccs_qcd_solver_bench
    integer, parameter :: SEC_BICGSTAB = 0
    integer, parameter :: SEC_CLOVER = 1
  
 +  real(8) :: mkrts, mkrte
 +  integer(4) :: sscfake = 1
-+  sscfake = SSC_MARK_STOP(sscfake)
 +
    call initset
++  sscfake = SSC_MARK_STOP(nodeid)
  
    mult_iter=0
+   bicg_total_etime=0.0d0
 @@ -143,8 +159,18 @@ program ccs_qcd_solver_bench
  !************************
    call xclock(etime0,8)
    call maprof_time_start(SEC_BICGSTAB)
 +
 +  mkrts = MPI_WTIME()
-+  sscfake = SSC_MARK_START(sscfake)
++  sscfake = SSC_MARK_START(nodeid)
 +
    call bicgstab_hmc(tol,iiter,flop,stops, ldops, etime2,  &
        &                    kappa,ye_t_,yde_t_,ue_t_,uo_t_,0,fclinve_t_,fclinvo_t_)
 +
-+  sscfake = SSC_MARK_STOP(sscfake)
++  sscfake = SSC_MARK_STOP(nodeid)
 +  mkrte = MPI_WTIME()
 +  if (nodeid==0) write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", &
 +      &   mkrte- mkrts, " sec"
@@ -100,7 +101,7 @@ index 6786209..2595a94 100644
    call comlib_finalize
  #endif
  
-+  sscfake = SSC_MARK_START(sscfake)
++  sscfake = SSC_MARK_START(nodeid)
 +  if (nodeid==0) write(*,*) sscfake
 +
    stop
@@ -126,21 +127,23 @@ index 5660987..5301ce9 100644
  
 diff --git a/src/ssc.c b/src/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..270463c
 --- /dev/null
 +++ b/src/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
-+int ssc_mark_start (int x) {
++int ssc_mark_start (int myid) {
 +	STARTSDE;
-+	return (x << 0x1);
++	return (myid << 0x1);
 +}
-+int ssc_mark_stop (int y) {
++int ssc_mark_stop (int myid) {
 +	STOPSDE;
-+	return (y >> 0x2);
++	return (myid >> 0x2);
 +}
 -- 
 1.8.3.1

@@ -1,4 +1,4 @@
-From cf92588102708b8052aae0203b42ef71056650b4 Mon Sep 17 00:00:00 2001
+From 07fd3ca620c5916e163b5bb53e5f2ba42e6570b5 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 16:03:54 +0900
 Subject: [PATCH 1/1] SWFFT: prepare precision experiment
@@ -8,9 +8,9 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  .gitignore         |  4 ++++
  GNUmakefile        | 14 +++++++-------
  GNUmakefile.openmp |  6 +++---
- TestFDfft.f90      | 22 +++++++++++++++++++++-
- ssc.c              | 12 ++++++++++++
- 5 files changed, 47 insertions(+), 11 deletions(-)
+ TestFDfft.f90      | 21 ++++++++++++++++++++-
+ ssc.c              | 14 ++++++++++++++
+ 5 files changed, 48 insertions(+), 11 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 ssc.c
 
@@ -93,10 +93,10 @@ index cbb94e5..ce9262a 100644
  # FFTW3
  DFFT_FFTW_HOME ?= $(shell dirname $(shell dirname $(shell which fftw-wisdom)))
 diff --git a/TestFDfft.f90 b/TestFDfft.f90
-index e589d90..70da2d5 100644
+index e589d90..462be14 100644
 --- a/TestFDfft.f90
 +++ b/TestFDfft.f90
-@@ -62,13 +62,27 @@ program main
+@@ -62,19 +62,32 @@ program main
  
    implicit none
  
@@ -120,18 +120,23 @@ index e589d90..70da2d5 100644
 -  real(8) :: t1, t2 
 +  real(8) :: t1, t2
 +  integer(4) :: sscfake = 1
-+
-+  sscfake = SSC_MARK_STOP(sscfake)
  
    !
    ! Initialize MPI communicators
-@@ -102,9 +116,13 @@ program main
+   !
+ 
+   call mpi_initialize
++  sscfake = SSC_MARK_STOP(rank)
+ 
+   !
+   ! Assign user arguments
+@@ -102,9 +115,13 @@ program main
    !
  
    t1 = MPI_Wtime()
-+  sscfake = SSC_MARK_START(sscfake)
++  sscfake = SSC_MARK_START(rank)
    call test
-+  sscfake = SSC_MARK_STOP(sscfake)
++  sscfake = SSC_MARK_STOP(rank)
    t2 = MPI_Wtime()
    if (rank == 0) write(*,*) " TEST TIME: ", t2-t1
 +  if (rank == 0) write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", &
@@ -139,32 +144,34 @@ index e589d90..70da2d5 100644
  
    !
    ! Finalize MPI communicators and exit 
-@@ -112,6 +130,8 @@ program main
+@@ -112,6 +129,8 @@ program main
  
    call MPI_Finalize(ierr)
  
-+  sscfake = SSC_MARK_START(sscfake)
++  sscfake = SSC_MARK_START(rank)
 +  if (rank == 0) write(*,*) sscfake
  contains
  
  !! -------------------------------------------------------------------------- !!
 diff --git a/ssc.c b/ssc.c
 new file mode 100644
-index 0000000..ad492cd
+index 0000000..270463c
 --- /dev/null
 +++ b/ssc.c
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,14 @@
 +#include <ittnotify.h>
-+#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
++#include <signal.h>
++#include <unistd.h>
++#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
-+int ssc_mark_start (int x) {
++int ssc_mark_start (int myid) {
 +	STARTSDE;
-+	return (x << 0x1);
++	return (myid << 0x1);
 +}
-+int ssc_mark_stop (int y) {
++int ssc_mark_stop (int myid) {
 +	STOPSDE;
-+	return (y >> 0x2);
++	return (myid >> 0x2);
 +}
 -- 
 1.8.3.1
