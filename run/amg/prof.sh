@@ -42,8 +42,8 @@ for BEST in $BESTCONF; do
 	Y=$(($MAXXYZ / $Y))
 	Z=$(($MAXXYZ / $Z))
 	INPUT="`echo $INPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 	if [ "x$RUNSDE" = "xyes" ]; then
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
 		for P in `seq 0 $((NumMPI - 1))`; do
 			echo "SDE output of MPI process $P" >> $LOG 2>&1
@@ -54,10 +54,12 @@ for BEST in $BESTCONF; do
 		rm -rf ./oSDE
 	fi
 	if [ "x$RUNPCM" = "xyes" ]; then
+		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
 		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
