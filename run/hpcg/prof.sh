@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/null 2>&1
+source `cat $ROOTDIR/conf/intel.cfg` intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
 if [[ $HOSTNAME = *"kiev"* ]]; then
@@ -25,6 +25,8 @@ else
         echo "Unsupported host"
         exit
 fi
+export PATH=$ROOTDIR/dep/intel-pcm:$PATH
+PCM="pcm-memory.x 360000 -- "
 
 # ============================ HPCG ===========================================
 source conf/hpcg.sh
@@ -47,23 +49,32 @@ for BEST in $BESTCONF; do
 	Y=$(($MAXXYZ / $Y))
 	Z=$(($MAXXYZ / $Z))
 	INPUT="`echo $DEFINPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
-        mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
-	cat hpcg_log_* >> $LOG 2>&1
-	cat n*.yaml >> $LOG 2>&1
-	rm -f hpcg_log_* n*.yaml
-        for P in `seq 0 $((NumMPI - 1))`; do
-                echo "SDE output of MPI process $P" >> $LOG 2>&1
-                cat ./oSDE/${P}.txt >> $LOG 2>&1
-        done
-        echo "=== SDE summary ===" >> $LOG 2>&1
-        $ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed -e 's#profrun#bestrun#g'` >> $LOG 2>&1
-        rm -rf ./oSDE
+	if [ "x$RUNSDE" = "xyes" ]; then
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		cat hpcg_log_* >> $LOG 2>&1
+		cat n*.yaml >> $LOG 2>&1
+		rm -f hpcg_log_* n*.yaml
+		for P in `seq 0 $((NumMPI - 1))`; do
+			echo "SDE output of MPI process $P" >> $LOG 2>&1
+			cat ./oSDE/${P}.txt >> $LOG 2>&1
+		done
+		echo "=== SDE summary ===" >> $LOG 2>&1
+		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed -e 's#profrun#bestrun#g'` >> $LOG 2>&1
+		rm -rf ./oSDE
+	fi
+	if [ "x$RUNPCM" = "xyes" ]; then
+		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
+		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTP.`hostname`
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1

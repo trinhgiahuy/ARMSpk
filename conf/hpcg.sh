@@ -6,8 +6,10 @@ export MAXXYZ=$((2*2*2*3*3*5))
 export INPUT="--nx=NX --ny=NY --nz=NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="5m"
-export RUNVTUNE="no"
+export MAXTIME="10m"
+export RUNSDE="no" #"yes"
+export RUNPCM="yes"
+export RUNVTUNE="no" #"yes"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

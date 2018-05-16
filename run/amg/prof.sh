@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
-source /opt/intel/parallel_studio_xe_2018.1.038/bin/psxevars.sh intel64 > /dev/null 2>&1
+source `cat $ROOTDIR/conf/intel.cfg` intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
@@ -64,6 +64,7 @@ for BEST in $BESTCONF; do
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTP.`hostname`
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
