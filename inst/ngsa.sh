@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	# bwa w/ intel breaks
 	make -f makefile.x86_64_intel
 	# we also need to get an input data set

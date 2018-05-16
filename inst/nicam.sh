@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
 	export NICAM_SYS=Linux64-intel-impi
 	make ENABLE_OPENMP=1

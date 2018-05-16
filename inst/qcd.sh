@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class1 ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
 	make MAKE_INC=make.ifort.inc CLASS=1 PX=1 PY=1 PZ=1
 	make MAKE_INC=make.ifort.inc CLASS=2 PX=1 PY=1 PZ=1

@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/build.xeon/TestDfft ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/fftw-3.3.4/bin/fftw-wisdom ]; then
 		wget http://fftw.org/fftw-3.3.4.tar.gz
 		tar xzf fftw-3.3.4.tar.gz

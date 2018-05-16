@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	make -f OpenMP.make COMPILER=INTEL TARGET=CPU
 	cd $ROOTDIR
 fi

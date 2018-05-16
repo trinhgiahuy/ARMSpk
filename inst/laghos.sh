@@ -17,7 +17,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
-	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f ./hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then
 		wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz
 		tar xzf hypre-2.10.0b.tar.gz
@@ -39,7 +39,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		cd $ROOTDIR/dep/mfem/
 		git checkout laghos-v1.0
 		git apply --check $ROOTDIR/patches/*1-mfem*.patch
-		if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-mfem*.patch; fi
+		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-mfem*.patch; fi
 		make parallel -j
 		cd $ROOTDIR/$BM/
 	fi
