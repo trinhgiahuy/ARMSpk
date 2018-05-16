@@ -29,7 +29,7 @@ index 3495ec1..e21714b 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!ffv.IsMaster() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!ffv.IsMaster() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
  

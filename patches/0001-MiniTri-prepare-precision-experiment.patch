@@ -54,7 +54,7 @@ index ff8c6c8..f7a9b25 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -128,7 +128,7 @@ index 40bb240..09c3c86 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +

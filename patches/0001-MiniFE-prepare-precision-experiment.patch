@@ -48,7 +48,7 @@ index 6c0f0f0..1cbf17b 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -93,7 +93,7 @@ index 16e27e1..a80e5be 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -151,7 +151,7 @@ index b24bdac..6eae828 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -196,7 +196,7 @@ index 290e661..13271dd 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -255,7 +255,7 @@ index b38887f..a1bfd5b 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -300,7 +300,7 @@ index 7983fc1..a1b4b5c 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +

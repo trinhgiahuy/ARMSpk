@@ -152,7 +152,7 @@ index 304da8b..d587751 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!rankx && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!rankx && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +

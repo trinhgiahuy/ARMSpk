@@ -92,7 +92,7 @@ diff -Nur --no-dereference MODYLAS.old/src/ssc.c MODYLAS.new/src/ssc.c
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +

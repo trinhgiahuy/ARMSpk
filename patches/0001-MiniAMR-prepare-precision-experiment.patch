@@ -48,7 +48,7 @@ index 95b15ed..bcbd550 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
@@ -89,7 +89,7 @@ index 034e300..6e9bd71 100644
  
 +#include <ittnotify.h>
 +#include <signal.h>
-+#include <unistd.h>
++#include <stdlib.h>
 +#define STARTSDE {if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
 +#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
 +
