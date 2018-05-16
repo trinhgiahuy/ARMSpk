@@ -14,6 +14,11 @@ alias ld=`which xild`
 echo -e '\nATTENTION!!! This script will ask for sudo/root access\nNote: MSR changes are not persistent.\n      Installing in NFS will not work when mounted with nosuid flag.\n\n(10s time to abort and manually install)\n'
 sleep 10
 
+echo -e '\nUpdating ldconfig'
+echo $LD_LIBRARY_PATH | sed -e 's/:/\n/g' > /dev/shm/precision.conf
+sudo mv /dev/shm/precision.conf /etc/ld.so.conf.d/
+sudo ldconfig
+
 echo -e '\nInstalling Likwid'
 BM="likwid"
 VERSION="4e1a04eed1371f82d04eb9c1d1d739706a633b4a"
@@ -54,7 +59,7 @@ if [ ! -f $ROOTDIR/dep/$BM/msr-safe.ko ] || [ ! -r /dev/cpu/0/msr ]; then
 	cd $ROOTDIR/dep/$BM/
 	git checkout -b precision ${VERSION}
 	make
-	WL=`printf 'wl_%.2x%x\n' $(lscpu | grep "CPU family:" | awk -F: '{print $3}') $(lscpu | grep "Model:" | awk -F: '{print $3}')`
+	WL="`printf 'wl_%.2x%x\n' $(lscpu | awk '/CPU family:/{print $3}') $(lscpu | awk '/Model:/{print $2}')`"
 	# use KNL whitelist for KNM nodes
 	if [ ! -e ./whitelists/wl_0685 ]; then cp ./whitelists/wl_0657 ./whitelists/wl_0685; fi
 	sudo insmod msr-safe.ko
