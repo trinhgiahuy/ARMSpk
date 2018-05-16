@@ -11,14 +11,14 @@ export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
 
-echo '\nATTENTION!!! This script will ask for sudo/root access\nNote: MSR changes are not persistent.\n      Installing in NFS will not work when mounted with nosuid flag.\n\n(10s time to abort and manually install)\n'
+echo -e '\nATTENTION!!! This script will ask for sudo/root access\nNote: MSR changes are not persistent.\n      Installing in NFS will not work when mounted with nosuid flag.\n\n(10s time to abort and manually install)\n'
 sleep 10
 
-echo '\nInstalling Likwid'
-BM="dep/likwid"
+echo -e '\nInstalling Likwid'
+BM="likwid"
 VERSION="4e1a04eed1371f82d04eb9c1d1d739706a633b4a"
-if [ ! -f $ROOTDIR/$BM/likwid-setFrequencies ]; then
-	cd $ROOTDIR/$BM/
+if [ ! -f $ROOTDIR/dep/$BM/likwid-setFrequencies ]; then
+	cd $ROOTDIR/dep/$BM/
 	git checkout -b precision ${VERSION}
 	sed -i -e 's/GCC#NO/ICC#NO/' -e 's/accessdaemon#NO/direct#NO/' ./config.mk
 	make
@@ -28,16 +28,16 @@ if [ ! -f $ROOTDIR/$BM/likwid-setFrequencies ]; then
 	# grub2-mkconfig -o /boot/grub2/grub.cfg
 	# grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
 	# reboot
-	if [ ! "x$?" = "x0" ]; then echo "Note: for likwid to work, please add 'intel_pstate=disable' to kernel parameter and reboot; Afterwards, run this script again"; fi
-	echo "Please execute:\n  export PATH=$ROOTDIR/$BM:\$PATH\n  export LD_LIBRARY_PATH=$ROOTDIR/$BM:\$LD_LIBRARY_PATH"
+	if [ ! "x$?" = "x0" ]; then echo -e 'Note: for likwid to work, please add 'intel_pstate=disable' to kernel parameter and reboot; Afterwards, run this script again'; fi
+	echo -e "Please execute:\n  export PATH=$ROOTDIR/dep/$BM:\$PATH\n  export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM:\$LD_LIBRARY_PATH"
 	cd $ROOTDIR
 fi
 
-echo '\nInstalling Intel PCM'
-BM="dep/intel-pcm"
+echo -e '\nInstalling Intel PCM'
+BM="intel-pcm"
 VERSION="33ba100b7694c5f3aecbb61dbc82507daa6c5b74"
-if [ ! -f $ROOTDIR/$BM/pcm-memory.x ]; then
-	cd $ROOTDIR/$BM/
+if [ ! -f $ROOTDIR/dep/$BM/pcm-memory.x ]; then
+	cd $ROOTDIR/dep/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am < $ROOTDIR/patches/*1-${BM}*.patch; fi
@@ -47,11 +47,11 @@ if [ ! -f $ROOTDIR/$BM/pcm-memory.x ]; then
 fi
 
 # enable support for MSR and MSR-safe counters from user space
-echo '\nInstalling MSR/MSR-Safe'
-BM="dep/msr-safe"
+echo -e '\nInstalling MSR/MSR-Safe'
+BM="msr-safe"
 VERSION="b5bdf8b200db5a0bfa7e9ba2aadb85159f72c697"
-if [ ! -f $ROOTDIR/$BM/msr-safe.ko ] || [ ! -r /dev/cpu/0/msr ]; then
-	cd $ROOTDIR/$BM/
+if [ ! -f $ROOTDIR/dep/$BM/msr-safe.ko ] || [ ! -r /dev/cpu/0/msr ]; then
+	cd $ROOTDIR/dep/$BM/
 	git checkout -b precision ${VERSION}
 	make
 	WL=`printf 'wl_%.2x%x\n' $(lscpu | grep "CPU family:" | awk -F: '{print $3}') $(lscpu | grep "Model:" | awk -F: '{print $3}')`
