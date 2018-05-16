@@ -7,7 +7,9 @@ export INPUT="PX PY PZ DCZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
-export RUNVTUNE="no"
+export RUNSDE="yes"
+export RUNPCM="yes"
+export RUNVTUNE="no" #"yes"
 
 if [[ $HOSTNAME = *"kiev"* ]]; then
 	# on "normal" Xeon

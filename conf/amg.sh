@@ -7,7 +7,7 @@ export INPUT="-problem 1 -P PX PY PZ -n NX NY NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
-export RUNSDE="no" #"yes"
+export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 

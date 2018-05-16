@@ -7,7 +7,7 @@ export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="10m"
-export RUNSDE="no" #"yes"
+export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 

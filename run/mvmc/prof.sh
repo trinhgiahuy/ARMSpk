@@ -21,6 +21,8 @@ else
 	echo "Unsupported host"
 	exit
 fi
+export PATH=$ROOTDIR/dep/intel-pcm:$PATH
+PCM="pcm-memory.x 360000 -- "
 
 # ============================ mVMC ===========================================
 source conf/mvmc.sh
@@ -35,29 +37,43 @@ for BEST in $BESTCONF; do
 	sed -i -e 's/^Lx = Ly = 12/Lx = Ly = 4 #12/' -e 's/^NTotalSample = 4096/NTotalSample = 512 #4096/' -e 's/^NOuterMPI = 64/NOuterMPI = 2 #64/' ./makeDef/makeDef_large.py
 	./makeDef/makeDef_large.py ${NumMPI}
 	cd ./job_mpi${NumMPI}
-	mkdir -p ./oSDE
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
-	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
-	cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
-	rm -f Lx*Ly*/zvo_*
-	for P in `seq 0 $((NumMPI - 1))`; do
-		echo "SDE output of MPI process $P" >> $LOG 2>&1
-		cat ./oSDE/${P}.txt >> $LOG 2>&1
-	done
-	echo "=== SDE summary ===" >> $LOG 2>&1
-	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
-	rm -rf ./oSDE
+	if [ "x$RUNSDE" = "xyes" ]; then
+		mkdir -p ./oSDE
+		echo "=== sde run ===" >> $LOG 2>&1
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
+		rm -f Lx*Ly*/zvo_*
+		for P in `seq 0 $((NumMPI - 1))`; do
+			echo "SDE output of MPI process $P" >> $LOG 2>&1
+			cat ./oSDE/${P}.txt >> $LOG 2>&1
+		done
+		echo "=== SDE summary ===" >> $LOG 2>&1
+		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
+		rm -rf ./oSDE
+	fi
+	if [ "x$RUNPCM" = "xyes" ]; then
+		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
+		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
+		rm -f Lx*Ly*/zvo_*
+	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
-		rm -rf ./oVTP.`hostname`
+		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
 		rm -f Lx*Ly*/zvo_*
+		rm -rf ./oVTP.`hostname`
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
-		rm -rf ./oVTM.`hostname`
+		cat Lx*Ly*/zvo_HitachiTimer.dat >> $LOG 2>&1
 		rm -f Lx*Ly*/zvo_*
+		rm -rf ./oVTM.`hostname`
 	fi
 	cd ../
 done

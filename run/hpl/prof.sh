@@ -31,13 +31,14 @@ mkdir -p `dirname $LOG`
 cd $APPDIR
 if [ ! -f ./HPL.dat.bak ]; then cp ./HPL.dat ./HPL.dat.bak; fi
 for BEST in $BESTCONF; do
-	mkdir -p ./oSDE
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	MPIP="`echo $BEST | cut -d '|' -f3`"
 	MPIQ="`echo $BEST | cut -d '|' -f4`"
 	sed -e "s/PNS/$HPLNS/" -e "s/PNB/$HPLNB/" -e "s/PPP/$MPIP/" -e "s/PPQ/$MPIQ/" ./HPL.dat.bak > ./HPL.dat
 	if [ "x$RUNSDE" = "xyes" ]; then
+		mkdir -p ./oSDE
+		echo "=== sde run ===" >> $LOG 2>&1
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
 		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
@@ -50,22 +51,24 @@ for BEST in $BESTCONF; do
 		rm -rf ./oSDE
 	fi
 	if [ "x$RUNPCM" = "xyes" ]; then
-		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
+		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
-		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
+		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
 		rm -rf ./oVTP.`hostname`
-		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
+		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
 		rm -rf ./oVTM.`hostname`
-		rm ./HPL.out
 	fi
 done
 cd $ROOTDIR

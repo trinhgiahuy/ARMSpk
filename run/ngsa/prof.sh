@@ -41,6 +41,8 @@ else
 	echo "Unsupported host"
 	exit
 fi
+export PATH=$ROOTDIR/dep/intel-pcm:$PATH
+PCM="pcm-memory.x 360000 -- "
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
@@ -48,38 +50,48 @@ LOG="$ROOTDIR/log/`hostname -s`/profrun/ngsa.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
-	mkdir -p ./oSDE
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 	# prep input (dep on numMPI; up to 12 supported)
 	PreprocessInput $NumMPI $INPUTDIR
-	mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
-	# clean up
-	rm -rf workflow_*
-	if [ -d $INPUTDIR/00-read-rank ]; then
-		rm -rf $INPUTDIR/00-read-rank
+	if [ "x$RUNSDE" = "xyes" ]; then
+		mkdir -p ./oSDE
+		echo "=== sde run ===" >> $LOG 2>&1
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		# clean up
+		rm -rf workflow_*
+		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+		for P in `seq 0 $((NumMPI - 1))`; do
+			echo "SDE output of MPI process $P" >> $LOG 2>&1
+			cat ./oSDE/${P}.txt >> $LOG 2>&1
+		done
+		echo "=== SDE dump all ===" >> $LOG 2>&1
+		for x in `ls ./oSDE/`; do
+			echo "dump of ./oSDE/$x" >> $LOG 2>&1
+			cat ./oSDE/$x >> $LOG 2>&1
+		done
+		echo "=== SDE summary ===" >> $LOG 2>&1
+		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
+		rm -rf ./oSDE
 	fi
-	for P in `seq 0 $((NumMPI - 1))`; do
-		echo "SDE output of MPI process $P" >> $LOG 2>&1
-		cat ./oSDE/${P}.txt >> $LOG 2>&1
-	done
-	echo "=== SDE dump all ===" >> $LOG 2>&1
-	for x in `ls ./oSDE/`; do
-		echo "dump of ./oSDE/$x" >> $LOG 2>&1
-		cat ./oSDE/$x >> $LOG 2>&1
-	done
-	echo "=== SDE summary ===" >> $LOG 2>&1
-	$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
-	rm -rf ./oSDE
+	if [ "x$RUNPCM" = "xyes" ]; then
+		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
+		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		rm -rf workflow_*
+		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTP.`hostname`
 		rm -rf workflow_*
 		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTM.`hostname`
