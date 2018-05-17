@@ -5,7 +5,7 @@ export INPUT="./tests/pointsource/pointsource.in"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
-export RUNSDE="yes"
+export RUNSDE="no"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 
@@ -24,7 +24,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 	export BESTCONF="24|2"
 elif [[ $HOSTNAME = *"lyon"* ]]; then
 	# on one of the Phi (knl)
-	export BINARY="./optimize_mp_mill/sw4lite"
+	export BINARY="./optimize_mp_lyon/sw4lite"
 	export TESTCONF="1|64 1|128 1|192 1|256
 			 4|16 4|32 4|48 4|64
 			 16|4 16|8 16|12 16|16
