@@ -25,7 +25,11 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestDfft ]; then
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
 		./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
-		make -j CFLAGS="-O3 -ipo -xHost -fp-model fast=2 -no-prec-div -qoverride-limits"
+		if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+			make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		else
+			make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
+		fi
 		make install
 		cd $ROOTDIR/$BM/
 	fi
