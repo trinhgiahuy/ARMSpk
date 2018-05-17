@@ -10,6 +10,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+alias mpic++=`which mpiicpc`
 
 BM="SW4lite"
 VERSION="85ba8163441a716ef6b83e42c702dee6a6a8f5be"
