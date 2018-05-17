@@ -20,7 +20,7 @@ if [ ! -f $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz ]; then
 fi
 
 BM="FFB"
-VERSION="f4c716e3349a4763cfa3253142d1e9923452b447"
+VERSION="e273244b65c7d340cc101ae596a55301359024dd"
 if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}

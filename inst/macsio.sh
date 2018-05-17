@@ -14,13 +14,16 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="MACSio"
-VERSION="e8bece99bfa5eab9355549bb587ee36aec9d6c67"
+VERSION1="e8bece99bfa5eab9355549bb587ee36aec9d6c67"
+VERSION2="30008dc17cd5f787dedd303c51367bb5a8885271"
 if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	git checkout -b precision ${VERSION1}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/dep/json-cwx/lib/libjson-cwx.a ]; then
+		cd $ROOTDIR/dep/json-cwx/
+		git checkout -b precision ${VERSION2}
 		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
 		./configure --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"

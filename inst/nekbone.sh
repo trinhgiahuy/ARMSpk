@@ -14,7 +14,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="Nekbone"
-VERSION="d13f1c37aaab62228f2b2fb7dde1804728378c6b"
+VERSION="d681db43f45f5437e5258b3663b5a92c078cfb57"
 if [ ! -f $ROOTDIR/$BM/test/nek_mgrid/nekbone ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}

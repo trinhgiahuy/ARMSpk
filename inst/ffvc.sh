@@ -14,7 +14,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="FFVC"
-VERSION="d1a83239bf7c61f3917517737a3a3b2dbacae69f"
+VERSION="890a3f9bb3a5cf358504063a1751383b7d46f86d"
 if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}

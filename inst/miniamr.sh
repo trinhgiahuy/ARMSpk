@@ -14,7 +14,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="MiniAMR"
-VERSION="28866a718d0e793cfa1d1817f2d35cbdbe55db52"
+VERSION="62f60f2a70407c40dc3a2ed2dd3d69191e4f38dd"
 if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}

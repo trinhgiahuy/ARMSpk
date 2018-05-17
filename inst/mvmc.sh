@@ -14,7 +14,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="MVMC"
-VERSION="6c4ef79a95fee600e7b7148b69dfadede8220900"
+VERSION="7c58766b180ccb1035e4c220208b64ace3c49cf2"
 if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | awk '{print $1}'`" = "x0" ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}

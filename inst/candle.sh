@@ -14,7 +14,7 @@ alias ar=`which xiar`
 alias ld=`which xild`
 
 BM="CANDLE"
-VERSION="1dbcbd6c89d8655bcb5f721d1082c8d1d2ad3c3a"
+VERSION="ea14ed86d3e612f56383c56a6cff6f77210f7412"
 if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
