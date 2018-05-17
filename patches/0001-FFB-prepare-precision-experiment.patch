@@ -1,4 +1,4 @@
-From f5c11e405afeb1238e72afbd2b020f99a225622a Mon Sep 17 00:00:00 2001
+From 33203d095808e761b8c406bae3acd20a956b474c Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 02:38:26 +0900
 Subject: [PATCH 1/1] FFB: prepare precision experiment
@@ -8,10 +8,10 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  .gitignore            |  2 ++
  src/Makefile          |  2 +-
  src/ffb_mini_main.F90 | 33 ++++++++++++++++++++++++++++++++-
- src/les3x.F           | 40 +++++++++++++++++++++++++++++++++++++---
+ src/les3x.F           | 44 ++++++++++++++++++++++++++++++++++++++++----
  src/make_setting      |  5 +++--
  src/ssc.c             | 24 ++++++++++++++++++++++++
- 6 files changed, 99 insertions(+), 7 deletions(-)
+ 6 files changed, 102 insertions(+), 8 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/.gitignore b/.gitignore
@@ -41,7 +41,7 @@ index 0f46f89..a5166c1 100644
  ifeq (, $(findstring -DNO_METIS, $(FFLAGS)))
  OBJS += metis_wrapper.o
 diff --git a/src/ffb_mini_main.F90 b/src/ffb_mini_main.F90
-index 060f4d4..a4376af 100644
+index 060f4d4..2680550 100644
 --- a/src/ffb_mini_main.F90
 +++ b/src/ffb_mini_main.F90
 @@ -1,7 +1,28 @@
@@ -82,8 +82,8 @@ index 060f4d4..a4376af 100644
    call MPI_Init(ierr)
    call MPI_Comm_rank(MPI_COMM_WORLD, myrank, ierr)
    call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierr)
-+  if (myrank .eq. 0) sscfake = SSC_MARK_STOP(myrank)
-+  if (myrank .ne. 0) sscfake = SSC_MARK_STOP2(myrank)
++  if (myrank .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++  if (myrank .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
  
    narg = command_argument_count()
    if (narg < 4) call print_usage_and_exit
@@ -94,8 +94,8 @@ index 060f4d4..a4376af 100644
 -  call LES3X(file_parm)
 +  call LES3X(file_parm, myrank)
 +
-+  if (myrank .eq. 0) sscfake = SSC_MARK_START(myrank)
-+  if (myrank .ne. 0) sscfake = SSC_MARK_START2(myrank)
++  if (myrank .eq. 0) sscfake = SSC_MARK_START(sscfake)
++  if (myrank .ne. 0) sscfake = SSC_MARK_START2(sscfake)
 +  if (myrank == 0) then
 +      write(*,*) sscfake
 +  end if
@@ -103,7 +103,7 @@ index 060f4d4..a4376af 100644
  contains
  
 diff --git a/src/les3x.F b/src/les3x.F
-index bf9d6fa..8da3b68 100644
+index bf9d6fa..2faab07 100644
 --- a/src/les3x.F
 +++ b/src/les3x.F
 @@ -15,10 +15,33 @@ C THERMO-FLUID ANALYSIS SOLVERS FOR LARGE-SCALE-ASSEMBLY               C
@@ -138,7 +138,7 @@ index bf9d6fa..8da3b68 100644
 +C
 +      include 'mpif.h'
 +      real(8) :: mkrts, mkrte
-+      integer(4) :: sscfake = 1
++      integer :: sscfake = 1
 +      INTEGER*4 myrank
        CHARACTER*(*) FILEIN
  C
@@ -148,8 +148,8 @@ index bf9d6fa..8da3b68 100644
        WRITE(IUT6,*) ' ** NOW ENTERING TIME MARCH LOOP **'
        TIME_START(TM_MAIN_LOOP)
 +      mkrts = MPI_WTIME()
-+      if (myrank .eq. 0) sscfake = SSC_MARK_START(myrank)
-+      if (myrank .ne. 0) sscfake = SSC_MARK_START2(myrank)
++      if (myrank .eq. 0) sscfake = SSC_MARK_START(sscfake)
++      if (myrank .ne. 0) sscfake = SSC_MARK_START2(sscfake)
        DO 5000
  C     
            CALL DDSYNC
@@ -157,8 +157,8 @@ index bf9d6fa..8da3b68 100644
  C
   5000 CONTINUE
   5100 CONTINUE
-+      if (myrank .eq. 0) sscfake = SSC_MARK_STOP(myrank)
-+      if (myrank .ne. 0) sscfake = SSC_MARK_STOP2(myrank)
++      if (myrank .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++      if (myrank .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
 +      mkrte = MPI_WTIME()
 +      IF(myrank.EQ.0) THEN
 +              write(*,"(A,F10.6,A)") "Walltime of the main kernel: ",
@@ -168,6 +168,17 @@ index bf9d6fa..8da3b68 100644
        TIME_STOP(TM_MAIN_LOOP)
  C
        WRITE(IUT6,*) BLANK
+@@ -2137,7 +2171,9 @@ C
+ C
+       IF(IPART.GE.2) CLOSE(IUT6)
+       CALL DDEXIT
+-C
++      if (myrank .eq. 0) sscfake = SSC_MARK_START(sscfake)
++      if (myrank .ne. 0) sscfake = SSC_MARK_START2(sscfake)
++C 
+ C
+       STOP
+ C
 diff --git a/src/make_setting b/src/make_setting
 index d329411..08f5fc2 100644
 --- a/src/make_setting

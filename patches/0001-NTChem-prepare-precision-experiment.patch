@@ -1,18 +1,18 @@
-From 7724e538a9cc998677761c9a883cf893f02fac7c Mon Sep 17 00:00:00 2001
+From ff678aca5ce12f5a7bc42b3ffc38ff2309cb9abf Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:25:14 +0900
 Subject: [PATCH 1/1] NTChem: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- .gitignore                                         |  3 +++
- .../linux64_mpif90_omp_intel_proto.makeconfig.in   | 12 +++++------
- config_mine                                        | 14 +++---------
+ .gitignore                                         |  3 ++
+ .../linux64_mpif90_omp_intel_proto.makeconfig.in   | 12 +++----
+ config_mine                                        | 14 ++------
  src/mp2/GNUmakefile                                |  2 +-
- src/mp2/mp2_main_mpiomp.f90                        | 25 ++++++++++++++++++++++
- src/util_lib/GNUmakefile                           |  5 +++++
- src/util_lib/ssc.c                                 | 14 ++++++++++++
- 7 files changed, 57 insertions(+), 18 deletions(-)
+ src/mp2/mp2_main_mpiomp.f90                        | 37 ++++++++++++++++++++++
+ src/util_lib/GNUmakefile                           |  5 +++
+ src/util_lib/ssc.c                                 | 24 ++++++++++++++
+ 7 files changed, 79 insertions(+), 18 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 src/util_lib/ssc.c
 
@@ -101,23 +101,31 @@ index 0e51c5e..d633806 100644
  mvbin :
  	$(MV) $(program) $(BIN)/.
 diff --git a/src/mp2/mp2_main_mpiomp.f90 b/src/mp2/mp2_main_mpiomp.f90
-index ea4f637..05f28ba 100644
+index ea4f637..b12195b 100644
 --- a/src/mp2/mp2_main_mpiomp.f90
 +++ b/src/mp2/mp2_main_mpiomp.f90
-@@ -6,15 +6,29 @@
+@@ -6,15 +6,38 @@
  !
  !     o Main MP2 routine
  !
 +      use, intrinsic :: iso_c_binding
        IMPLICIT NONE
 +      interface
-+      integer(4) function SSC_MARK_START ( i ) bind ( c )
-+      integer(4) :: i
++      integer function SSC_MARK_START ( i ) bind ( c )
++      integer :: i
 +      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
 +      end function
-+      integer(4) function SSC_MARK_STOP ( j ) bind ( c )
-+      integer(4) :: j
++      integer function SSC_MARK_START2 ( i ) bind ( c )
++      integer :: i
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START2
++      end function
++      integer function SSC_MARK_STOP ( j ) bind ( c )
++      integer :: j
 +      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++      end function
++      integer function SSC_MARK_STOP2 ( j ) bind ( c )
++      integer :: j
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP2
 +      end function
 +      end interface
  !
@@ -125,29 +133,32 @@ index ea4f637..05f28ba 100644
  !
        REAL(8) :: TimeBgn, TimeEnd, WTimeBgn, WTimeEnd
 +      real(8) :: mkrts, mkrte
-+      integer(4) :: sscfake = 1
++      integer :: sscfake = 1
  !
  !     o Initialize MPI
  !
        CALL Util_InitMPI(.TRUE.)
-+      sscfake = SSC_MARK_STOP(MyRank)
++      if (MyRank .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++      if (MyRank .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
  !
  !     o Read MP2 input
  !
-@@ -67,6 +81,8 @@
+@@ -67,6 +90,9 @@
        END IF
        WTimeBgn = MPI_WTIME()
        CALL CPU_TIME(TimeBgn)
 +      mkrts = MPI_WTIME()
-+      sscfake = SSC_MARK_START(MyRank)
++      if (MyRank .eq. 0) sscfake = SSC_MARK_START(sscfake)
++      if (MyRank .ne. 0) sscfake = SSC_MARK_START2(sscfake)
        IF (InCore) THEN
  !
  !        o In-Core RI-MP2 algorithm
-@@ -80,6 +96,11 @@
+@@ -80,6 +106,12 @@
           CALL RIMP2_Driver_SemiDirect_MPIOMP
  !
        END IF
-+      sscfake = SSC_MARK_STOP(MyRank)
++      if (MyRank .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++      if (MyRank .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
 +      mkrte = MPI_WTIME()
 +      IF (MyRank == 0) THEN
 +         write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", mkrte - mkrts, " sec"
@@ -155,11 +166,12 @@ index ea4f637..05f28ba 100644
        CALL CPU_TIME(TimeEnd)
        WTimeEnd = MPI_WTIME()
        IF (MyRank == 0) THEN
-@@ -96,5 +117,9 @@
+@@ -96,5 +128,10 @@
  !     o Finalize MPI
  !
        CALL Util_FinMPI
-+      sscfake = SSC_MARK_START(MyRank)
++      if (MyRank .eq. 0) sscfake = SSC_MARK_START(sscfake)
++      if (MyRank .ne. 0) sscfake = SSC_MARK_START2(sscfake)
 +      IF (MyRank == 0) THEN
 +         write(*,*) sscfake
 +      END IF
@@ -187,23 +199,33 @@ index 95353ee..4b09434 100644
 +	$(CC) $(CFLAGS) -I${ADVISOR_2018_DIR}/include -c $<
 diff --git a/src/util_lib/ssc.c b/src/util_lib/ssc.c
 new file mode 100644
-index 0000000..270463c
+index 0000000..f6e43bb
 --- /dev/null
 +++ b/src/util_lib/ssc.c
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,24 @@
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define START2SDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STOP2SDE {__SSC_MARK(0x222); __itt_pause();}
 +
-+int ssc_mark_start (int myid) {
++int ssc_mark_start (int x) {
 +	STARTSDE;
-+	return (myid << 0x1);
++	return (x << 0x1);
 +}
-+int ssc_mark_stop (int myid) {
++int ssc_mark_start2 (int x) {
++	START2SDE;
++	return (x << 0x1);
++}
++int ssc_mark_stop (int x) {
 +	STOPSDE;
-+	return (myid >> 0x2);
++	return (x >> 0x2);
++}
++int ssc_mark_stop2 (int x) {
++	STOP2SDE;
++	return (x >> 0x2);
 +}
 -- 
 1.8.3.1

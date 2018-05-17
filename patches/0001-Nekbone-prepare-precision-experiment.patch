@@ -1,66 +1,77 @@
-From 6eebe9d21f62f9ca90064819891a11d2e1063d4c Mon Sep 17 00:00:00 2001
+From 1df7e9e9e3fee4ed62598675be16176e8fe4a9a9 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:35:10 +0900
 Subject: [PATCH 1/1] Nekbone: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- src/driver.f           | 24 ++++++++++++++++++++++++
+ src/driver.f           | 36 ++++++++++++++++++++++++++++++++++++
  src/makefile.template  | 17 +++++++++--------
  src/makenek.inc        |  2 +-
- src/ssc.c              | 14 ++++++++++++++
+ src/ssc.c              | 24 ++++++++++++++++++++++++
  test/nek_mgrid/makenek |  2 +-
- 5 files changed, 49 insertions(+), 10 deletions(-)
+ 5 files changed, 71 insertions(+), 10 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/src/driver.f b/src/driver.f
-index 75c2dca..764e5f3 100755
+index 75c2dca..054aa54 100755
 --- a/src/driver.f
 +++ b/src/driver.f
-@@ -1,6 +1,18 @@
+@@ -1,6 +1,26 @@
  c-----------------------------------------------------------------------
        program nekbone
        
 +      use, intrinsic :: iso_c_binding
 +      interface
-+      integer(4) function SSC_MARK_START ( i ) bind ( c )
-+      integer(4) :: i
++      integer function SSC_MARK_START ( i ) bind ( c )
++      integer :: i
 +      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
 +      end function
-+      integer(4) function SSC_MARK_STOP ( j ) bind ( c )
-+      integer(4) :: j
++      integer function SSC_MARK_START2 ( i ) bind ( c )
++      integer :: i
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_START2
++      end function
++      integer function SSC_MARK_STOP ( j ) bind ( c )
++      integer :: j
 +      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++      end function
++      integer function SSC_MARK_STOP2 ( j ) bind ( c )
++      integer :: j
++      !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP2
 +      end function
 +      end interface
 +
        include 'SIZE'
        include 'TOTAL'
        include 'SEMHAT'
-@@ -21,8 +33,11 @@ c-----------------------------------------------------------------------
+@@ -21,8 +41,12 @@ c-----------------------------------------------------------------------
        integer npx,npy,npz      ! processor decomp
        integer mx ,my ,mz       ! element decomp
  
 +      real(8) :: mkrts = 0.0, mkrte = 0.0
-+      integer(4) :: sscfake = 1
++      integer :: sscfake = 1
  
        call iniproc(mpi_comm_world)    ! has nekmpi common block
-+      sscfake = SSC_MARK_STOP(nid)
++      if (nid .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++      if (nid .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
        call init_delay
  
        call read_param(ifbrick,iel0,ielN,ielD,nx0,nxN,nxD,
-@@ -56,7 +71,11 @@ c     SET UP and RUN NEKBONE
+@@ -56,7 +80,13 @@ c     SET UP and RUN NEKBONE
             call nekgsync()
  
             call set_timer_flop_cnt(0)
 +           mkrts = MPI_WTIME()
-+           sscfake = SSC_MARK_START(nid)
++           if (nid .eq. 0) sscfake = SSC_MARK_START(sscfake)
++           if (nid .ne. 0) sscfake = SSC_MARK_START2(sscfake)
             call cg(x,f,g,c,r,w,p,z,n,niter,flop_cg)
-+           sscfake = SSC_MARK_STOP(nid)
++           if (nid .eq. 0) sscfake = SSC_MARK_STOP(sscfake)
++           if (nid .ne. 0) sscfake = SSC_MARK_STOP2(sscfake)
 +           mkrte = mkrte + (MPI_WTIME() - mkrts)
             call set_timer_flop_cnt(1)
  
             call gs_free(gsh)
-@@ -65,6 +84,8 @@ c     SET UP and RUN NEKBONE
+@@ -65,6 +95,8 @@ c     SET UP and RUN NEKBONE
             mfloplist(icount) = mflops*np
           enddo
        enddo
@@ -69,12 +80,13 @@ index 75c2dca..764e5f3 100755
  
        avmflop = 0.0
        do i = 1,icount
-@@ -81,6 +102,9 @@ c     SET UP and RUN NEKBONE
+@@ -81,6 +113,10 @@ c     SET UP and RUN NEKBONE
  c     TEST BANDWIDTH BISECTION CAPACITY
  c     call xfer(np,cr_h)
  
-+      sscfake = SSC_MARK_START(nid)
-+      if(nid.eq.0) write(*,*) sscfake
++      if (nid .eq. 0) sscfake = SSC_MARK_START(sscfake)
++      if (nid .ne. 0) sscfake = SSC_MARK_START2(sscfake)
++      if (nid .eq. 0) write(*,*) sscfake
 +
        call exitt0
  
@@ -158,23 +170,33 @@ index 659bffd..5340491 100755
     MXM_USER="mxm_std.o bg_aligned3.o bg_mxm44.o bg_mxm44_uneven.o bg_mxm3.o blas.o" 
 diff --git a/src/ssc.c b/src/ssc.c
 new file mode 100644
-index 0000000..270463c
+index 0000000..f6e43bb
 --- /dev/null
 +++ b/src/ssc.c
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,24 @@
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define START2SDE {__itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STOP2SDE {__SSC_MARK(0x222); __itt_pause();}
 +
-+int ssc_mark_start (int myid) {
++int ssc_mark_start (int x) {
 +	STARTSDE;
-+	return (myid << 0x1);
++	return (x << 0x1);
 +}
-+int ssc_mark_stop (int myid) {
++int ssc_mark_start2 (int x) {
++	START2SDE;
++	return (x << 0x1);
++}
++int ssc_mark_stop (int x) {
 +	STOPSDE;
-+	return (myid >> 0x2);
++	return (x >> 0x2);
++}
++int ssc_mark_stop2 (int x) {
++	STOP2SDE;
++	return (x >> 0x2);
 +}
 diff --git a/test/nek_mgrid/makenek b/test/nek_mgrid/makenek
 index 00118aa..3d84375 100755
