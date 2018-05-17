@@ -13,7 +13,7 @@ export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 
-if [[ $HOSTNAME = *"kiev"* ]]; then
+if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
 			 2|6 2|12 2|24
@@ -25,7 +25,7 @@ if [[ $HOSTNAME = *"kiev"* ]]; then
 			 48|1 48|2
 			 96|1"
 	export BESTCONF="24|1"
-elif [[ $HOSTNAME = *"lyon"* ]]; then
+elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256
 			 4|16 4|32 4|48 4|64
@@ -37,7 +37,7 @@ elif [[ $HOSTNAME = *"lyon"* ]]; then
 			 192|1
 			 256|1"
 	export BESTCONF="16|8"
-elif [[ $HOSTNAME = *"mill"* ]]; then
+elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""
 	export BESTCONF=""

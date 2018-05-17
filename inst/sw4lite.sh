@@ -3,7 +3,9 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source `cat $ROOTDIR/conf/intel.cfg` intel64
+source $ROOTDIR/conf/host.cfg
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -19,13 +21,13 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_kiev/sw4lite ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	sed -i -e "s/CXX = mpic++/CXX = mpiicpc/g" Makefile
-	if [[ $HOSTNAME = *"kiev"* ]]; then
-		HHOST="kiev"
+	if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+		HHOST="${XEONHOST}"
 		sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" Makefile
-	elif [[ $HOSTNAME = *"lyon"* ]]; then
-		HHOST="lyon"
-	elif [[ $HOSTNAME = *"mill"* ]]; then
-		HHOST="mill"
+	elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
+		HHOST="${IKNLHOST}"
+	elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+		HHOST="${IKNMHOST}"
 	else
 		echo "Unsupported host"
 		exit

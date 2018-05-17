@@ -22,7 +22,9 @@ function PreprocessInput {
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
-source `cat $ROOTDIR/conf/intel.cfg` intel64 > /dev/null 2>&1
+source $ROOTDIR/conf/host.cfg
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
@@ -31,11 +33,11 @@ export PATH=$ROOTDIR/dep/sde-external-8.16.0-2018-01-30-lin:$PATH
 if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please intel-sde-external-8.16.0-2018-01-30-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 #SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
 SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
-if [[ $HOSTNAME = *"kiev"* ]]; then
+if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	SDE="$SDE -bdw -- "
-elif [[ $HOSTNAME = *"lyon"* ]]; then
+elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	SDE="$SDE -knl -- "
-elif [[ $HOSTNAME = *"mill"* ]]; then
+elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	SDE="$SDE -knm -- "
 else
 	echo "Unsupported host"

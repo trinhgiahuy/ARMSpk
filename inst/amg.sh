@@ -3,7 +3,9 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source `cat $ROOTDIR/conf/intel.cfg` intel64
+source $ROOTDIR/conf/host.cfg
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
@@ -19,7 +21,7 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	# avx512 on KNL/KNM causes errors in AMG exec
-	if [[ $HOSTNAME = *"lyon"* ]] || [[ $HOSTNAME = *"mill"* ]]; then
+	if [[ $HOSTNAME = *"${IKNLHOST}"* ]] || [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 		sed -i -e 's/xHost/xCORE-AVX2/g' ./Makefile.include
 	fi
 	make

@@ -22,7 +22,9 @@ function PreprocessInput {
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
-source `cat $ROOTDIR/conf/intel.cfg` intel64 > /dev/null 2>&1
+source $ROOTDIR/conf/host.cfg
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
 MPIEXECOPT="-host `hostname`"
