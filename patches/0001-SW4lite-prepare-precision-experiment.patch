@@ -1,38 +1,21 @@
-From 659700904116b7143ba2c2bb19686d2829416125 Mon Sep 17 00:00:00 2001
+From a7d0d75d72d56ce3fd8513736546397f45c5b6f6 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:54:32 +0900
 Subject: [PATCH 1/1] SW4lite: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- Makefile    | 22 +++++++++++-----------
+ Makefile    | 14 +++++++-------
  src/EW-dg.C | 12 ++++++++++++
  src/EW.C    |  9 +++++++++
  src/main.C  |  8 ++++++++
- 4 files changed, 40 insertions(+), 11 deletions(-)
+ 4 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 506c443..2a62508 100644
+index 506c443..811f00b 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -16,7 +16,7 @@ ifneq ($(single),yes)
-    single := "no"
- endif
- 
--HOSTNAME := $(shell hostname)
-+HOSTNAME := mill #$(shell hostname)
- 
- # default optimization level (may be modified below)
- OPT = -O3
-@@ -64,24 +64,24 @@ else ifeq ($(findstring carl,$(HOSTNAME)),carl)
-   openmp = yes
-   computername := carl
- #
--# LBL quadknl is Hans' single node Intel KNL machine
-+# LBL mill is Hans' single node Intel KNL machine
- #
--else ifeq ($(findstring quadknl,$(HOSTNAME)),quadknl)
-+else ifeq ($(findstring mill,$(HOSTNAME)),mill)
+@@ -70,14 +70,14 @@ else ifeq ($(findstring quadknl,$(HOSTNAME)),quadknl)
    FC = mpiifort
    CXX = mpiicpc
    CC = icc
@@ -54,13 +37,8 @@ index 506c443..2a62508 100644
  # for building testil
  #  EXTRA_LINK_FLAGS = -Wl,-rpath=${OTHER_PATH} -L${OTHER_PATH} -lifcore -L${BASIC_PATH} -limf -lsvml -lintlc -lm -ldl 
    openmp = yes
--  computername := quadknl
-+  computername := mill
- #
- # Cori
- else ifeq ($(findstring cori,$(HOSTNAME)),cori)
 diff --git a/src/EW-dg.C b/src/EW-dg.C
-index 643933c..256942b 100644
+index 643933c..85530ae 100644
 --- a/src/EW-dg.C
 +++ b/src/EW-dg.C
 @@ -56,6 +56,12 @@
@@ -97,7 +75,7 @@ index 643933c..256942b 100644
          float_sw4 time_end_solve = MPI_Wtime();
          cout << endl << "***** Solver execution time: " << time_end_solve - time_begin_solve <<
 diff --git a/src/EW.C b/src/EW.C
-index b66c849..c88a38d 100644
+index b66c849..553a1fe 100644
 --- a/src/EW.C
 +++ b/src/EW.C
 @@ -61,6 +61,12 @@
@@ -132,7 +110,7 @@ index b66c849..c88a38d 100644
     if( m_output_detailed_timing )
        print_execution_times( time_sum );
 diff --git a/src/main.C b/src/main.C
-index 9df8036..650649f 100644
+index 9df8036..0f1f0a0 100644
 --- a/src/main.C
 +++ b/src/main.C
 @@ -35,6 +35,12 @@

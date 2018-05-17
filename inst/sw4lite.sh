@@ -20,7 +20,6 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_kiev/sw4lite ]; then
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
-	sed -i -e "s/CXX = mpic++/CXX = mpiicpc/g" Makefile
 	if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 		HHOST="${XEONHOST}"
 		sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" Makefile
