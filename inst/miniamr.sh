@@ -3,7 +3,9 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
-source `cat $ROOTDIR/conf/intel.cfg` intel64
+source $ROOTDIR/conf/host.cfg
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 export I_MPI_CC=icc
 export I_MPI_CXX=icpc
 export I_MPI_F77=ifort
