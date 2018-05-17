@@ -16,6 +16,13 @@ alias ld=`which xild`
 echo -e '\nATTENTION!!! This script will ask for sudo/root access\nNote: MSR changes are not persistent.\n      Installing in NFS will not work when mounted with nosuid flag.\n\n(10s time to abort and manually install)\n'
 sleep 10
 
+echo -e '\nInstalling known dependencies'
+if [[ -f /etc/redhat-release ]];then
+	sudo yum install cmake autoconf automake libtool
+else
+	echo -e '\nNote: untested linux distro; please install cmake autoconf automake libtool yourself;\n      everything hereafter may break, no guarantees ;-)'
+fi
+
 echo -e '\nUpdating ldconfig'
 echo $LD_LIBRARY_PATH | sed -e 's/:/\n/g' > /dev/shm/precision.conf
 sudo mv /dev/shm/precision.conf /etc/ld.so.conf.d/
