@@ -55,6 +55,10 @@ if [ ! -f $ROOTDIR/dep/$BM/pcm-memory.x ]; then
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	# no KNM suport yet, so "fake" it and hope for the best
+	if [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+		sed -i -e 's/KNL = 87/KNL = 133/' ./cpucounters.h
+	fi
 	make CXX=icpc
 	for x in `ls *.x`; do if [ -x $x ]; then sudo setcap cap_sys_admin,cap_sys_rawio+ep $x; fi; done
 	cd $ROOTDIR
