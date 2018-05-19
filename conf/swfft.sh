@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export APPDIR="./SWFFT"
+export BINARY="./build.openmp/TestFDfft"
 export INPUT="32 128"
 export NumRunsTEST=3
 export NumRunsBEST=10
@@ -11,7 +12,6 @@ export RUNVTUNE="no" #"yes"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
-	export BINARY="./build.xeon/TestFDfft"
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
 			 2|6 2|12 2|24
 			 4|1 4|2 4|4 4|6 4|12
@@ -24,7 +24,6 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	export BESTCONF="32|1"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
-	export BINARY="./build.xmic/TestFDfft"
 	export TESTCONF="1|64 1|128 1|192 1|256
 			 4|16 4|32 4|48 4|64
 			 16|4 16|8 16|12 16|16
@@ -37,7 +36,6 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	export BESTCONF="64|1"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export BINARY="./build.xmic/TestFDfft"
 	export TESTCONF=""
 	export BESTCONF=""
 else
