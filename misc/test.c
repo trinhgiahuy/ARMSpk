@@ -3,31 +3,35 @@
 #include <mpi.h>
 
 #include <ittnotify.h>
-#define STARTSDE {__itt_resume(); __SSC_MARK(0x111);}
-#define STOPSDE {__itt_pause(); __SSC_MARK(0x222);}
+#include <signal.h>
+#include <stdlib.h>
+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
+
+#define RUM 10000000
 
 int main() {
 double mkrts, mkrte; // my kernel run-time
-STOPSDE;
+STOPSDE(0,0);
 
 	float *a, *b;
 	int i;
 	MPI_Init(NULL, NULL);
 
-	a=malloc(10240 * sizeof(*a));
-	b=malloc(10240 * sizeof(*b));
-	for (i=0; i<10240; a[i]=2, b[i]=3, i++);
+	a=malloc(RUM * sizeof(*a));
+	b=malloc(RUM  * sizeof(*b));
+	for (i=0; i<RUM; a[i]=2, b[i]=3, i++);
 	#pragma omp parallel for
-	for (i=0; i<10240; i++) a[i] *= b[i];
-	for (i=0; i<10240; b[i]=4, i++);
+	for (i=0; i<RUM; i++) a[i] *= b[i];
+	for (i=0; i<RUM; b[i]=4, i++);
 
 mkrts = MPI_Wtime();
-STARTSDE;
+STARTSDE(1,0);
 
 	#pragma omp parallel for
-	for (i=0; i<10240; i++) a[i] *= b[i];
+	for (i=0; i<RUM; i++) a[i] *= b[i];
 
-STOPSDE;
+STOPSDE(1,0);
 mkrte = MPI_Wtime();
 printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
 
@@ -37,6 +41,6 @@ printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
 
 	MPI_Finalize();
 
-STARTSDE;
+STARTSDE(0,0);
 	return 0;
 }

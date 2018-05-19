@@ -1,4 +1,4 @@
-From ff77db9db5bc096cdb4a8f4ab0cb6f2da56f47ea Mon Sep 17 00:00:00 2001
+From 9e967e3fdbdcfc7df63ca8ad60ac44ad8d0d5da5 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 03:24:55 +0900
 Subject: [PATCH 1/1] Laghos: prepare precision experiment
@@ -6,11 +6,11 @@ Subject: [PATCH 1/1] Laghos: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore        |  5 +++++
- laghos.cpp        | 14 +++++++++++++-
- laghos_solver.cpp | 24 +++++++++++++++++++++++-
- laghos_solver.hpp |  2 ++
+ laghos.cpp        | 10 +++++++++-
+ laghos_solver.cpp | 18 +++++++++++++++++-
+ laghos_solver.hpp |  6 ++++++
  makefile          | 10 +++++-----
- 5 files changed, 48 insertions(+), 7 deletions(-)
+ 5 files changed, 42 insertions(+), 7 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -25,160 +25,150 @@ index 0000000..f848050
 +hypre-2.10.0b/
 +metis-4.0.3/
 diff --git a/laghos.cpp b/laghos.cpp
-index d808287..838ff8e 100644
+index d808287..e9f38eb 100644
 --- a/laghos.cpp
 +++ b/laghos.cpp
-@@ -56,6 +56,12 @@
- #include <iostream>
- #include <fstream>
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE {if(!gmyid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!gmyid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
-+
- using namespace std;
- using namespace mfem;
- using namespace mfem::hydrodynamics;
-@@ -69,7 +75,8 @@ int main(int argc, char *argv[])
+@@ -69,7 +69,8 @@ int main(int argc, char *argv[])
  {
     // Initialize MPI.
     MPI_Session mpi(argc, argv);
 -   int myid = mpi.WorldRank();
 +   int myid = gmyid = mpi.WorldRank();
-+STOPSDE;
++STOPSDE(0,!mpi.Root());
  
     // Print the banner.
     if (mpi.Root()) { display_banner(cout); }
-@@ -145,6 +152,7 @@ int main(int argc, char *argv[])
+@@ -145,6 +146,7 @@ int main(int argc, char *argv[])
     if (!args.Good())
     {
        if (mpi.Root()) { args.PrintUsage(cout); }
-+STARTSDE;
++STARTSDE(0,!mpi.Root());
        return 1;
     }
     if (mpi.Root()) { args.PrintOptions(cout); }
-@@ -211,6 +219,7 @@ int main(int argc, char *argv[])
+@@ -211,6 +213,7 @@ int main(int argc, char *argv[])
           }
           delete mesh;
           MPI_Finalize();
-+STARTSDE;
++STARTSDE(0,!mpi.Root());
           return 3;
     }
     int product = 1;
-@@ -237,6 +246,7 @@ int main(int argc, char *argv[])
+@@ -237,6 +240,7 @@ int main(int argc, char *argv[])
  #endif
        }
  #ifndef MFEM_USE_METIS
-+STARTSDE;
++STARTSDE(0,!mpi.Root());
        return 1;
  #endif
        pmesh = new ParMesh(MPI_COMM_WORLD, *mesh);
-@@ -293,6 +303,7 @@ int main(int argc, char *argv[])
+@@ -293,6 +297,7 @@ int main(int argc, char *argv[])
           }
           delete pmesh;
           MPI_Finalize();
-+STARTSDE;
++STARTSDE(0,!mpi.Root());
           return 3;
     }
  
-@@ -573,6 +584,7 @@ int main(int argc, char *argv[])
+@@ -436,6 +441,7 @@ int main(int argc, char *argv[])
+    bool last_step = false;
+    int steps = 0;
+    BlockVector S_old(S);
++STARTSDE(1,!mpi.Root());
+    for (int ti = 1; !last_step; ti++)
+    {
+       if (t + dt >= t_final)
+@@ -552,6 +558,7 @@ int main(int argc, char *argv[])
+          }
+       }
+    }
++STOPSDE(1,!mpi.Root());
+ 
+    switch (ode_solver_type)
+    {
+@@ -573,6 +580,7 @@ int main(int argc, char *argv[])
     delete pmesh;
     delete material_pcf;
  
-+STARTSDE;
++STARTSDE(0,!mpi.Root());
     return 0;
  }
  
 diff --git a/laghos_solver.cpp b/laghos_solver.cpp
-index 6a4c210..619b98b 100644
+index 6a4c210..e3997bd 100644
 --- a/laghos_solver.cpp
 +++ b/laghos_solver.cpp
-@@ -16,6 +16,12 @@
- 
- #include "laghos_solver.hpp"
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE {if(!gmyid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!gmyid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
-+
- #ifdef MFEM_USE_MPI
- 
- using namespace std;
-@@ -227,7 +233,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -227,7 +227,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     {
        Force = 0.0;
        timer.sw_force.Start();
-+STARTSDE;
++STARTSDE(0,0);
        Force.Assemble();
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_force.Stop();
     }
  
-@@ -236,7 +244,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -236,7 +238,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     if (p_assembly)
     {
        timer.sw_force.Start();
-+STARTSDE;
++STARTSDE(0,0);
        ForcePA.Mult(one, rhs);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_force.Stop();
        rhs.Neg();
  
-@@ -248,7 +258,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -248,7 +252,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
-+STARTSDE;
++STARTSDE(0,0);
        cg.Mult(B, X);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        VMassPA.RecoverFEMSolution(X, rhs, dv);
-@@ -257,7 +269,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -257,7 +263,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     else
     {
        timer.sw_force.Start();
-+STARTSDE;
++STARTSDE(0,0);
        Force.Mult(one, rhs);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_force.Stop();
        rhs.Neg();
  
-@@ -269,7 +283,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -269,7 +277,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
-+STARTSDE;
++STARTSDE(0,0);
        cg.Mult(B, X);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        Mv.RecoverFEMSolution(X, rhs, dv);
-@@ -290,7 +306,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -290,7 +300,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     if (p_assembly)
     {
        timer.sw_force.Start();
-+STARTSDE;
++STARTSDE(0,0);
        ForcePA.MultTranspose(v, e_rhs);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_force.Stop();
  
        if (e_source) { e_rhs += *e_source; }
-@@ -309,7 +327,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
+@@ -309,7 +321,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     else
     {
        timer.sw_force.Start();
-+STARTSDE;
++STARTSDE(0,0);
        Force.MultTranspose(v, e_rhs);
-+STOPSDE;
++STOPSDE(0,0);
        timer.sw_force.Stop();
        if (e_source) { e_rhs += *e_source; }
        for (int z = 0; z < nzones; z++)
-@@ -411,7 +431,7 @@ void LagrangianHydroOperator::PrintTimingData(bool IamRoot, int steps)
+@@ -411,7 +425,7 @@ void LagrangianHydroOperator::PrintTimingData(bool IamRoot, int steps)
        cout << "UpdateQuadData rate (megaquads x timesteps / second): "
             << 1e-6 * alldata[1] * integ_rule.GetNPoints() / rt_max[3] << endl;
        cout << endl;
@@ -187,35 +177,39 @@ index 6a4c210..619b98b 100644
        cout << "Major kernels total rate (megadofs x time steps / second): "
             << 1e-6 * H1gsize * steps / rt_max[4] << endl;
     }
-@@ -426,6 +446,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
+@@ -426,6 +440,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
  {
     if (quad_data_is_current) { return; }
     timer.sw_qdata.Start();
-+STARTSDE;
++STARTSDE(0,0);
  
     const int nqp = integ_rule.GetNPoints();
  
-@@ -609,6 +630,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
+@@ -609,6 +624,7 @@ void LagrangianHydroOperator::UpdateQuadratureData(const Vector &S) const
     delete [] Jpr_b;
     quad_data_is_current = true;
  
-+STOPSDE;
++STOPSDE(0,0);
     timer.sw_qdata.Stop();
     timer.quad_tstep += nzones;
  }
 diff --git a/laghos_solver.hpp b/laghos_solver.hpp
-index 2c78a41..dbb327e 100644
+index 2c78a41..dc9cf57 100644
 --- a/laghos_solver.hpp
 +++ b/laghos_solver.hpp
-@@ -22,6 +22,8 @@
+@@ -20,6 +20,12 @@
+ #include "mfem.hpp"
+ #include "laghos_assembly.hpp"
  
++#include <ittnotify.h>
++#include <signal.h>
++#include <stdlib.h>
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
++
  #ifdef MFEM_USE_MPI
  
-+static int gmyid = -1;
-+
  #include <memory>
- #include <iostream>
- #include <fstream>
 diff --git a/makefile b/makefile
 index 6595e96..35c3fd9 100644
 --- a/makefile

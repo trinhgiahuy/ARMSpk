@@ -1,4 +1,4 @@
-From 324d3b1df56b3ff9aadbce7dd844d62b1af4ddc4 Mon Sep 17 00:00:00 2001
+From 44e8e846886f98539ab58feeee00e37db9bd0763 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Tue, 15 May 2018 10:07:01 +0900
 Subject: [PATCH 1/1] BabelStream: prepare precision experiment
@@ -32,7 +32,7 @@ index 18a71bf..6275f5d 100644
  OMP_CLANG_CPU = -fopenmp=libomp
  OMP_XL_CPU = -qsmp=omp -qthreaded
 diff --git a/main.cpp b/main.cpp
-index 4fd5125..c3e4c6a 100644
+index 4fd5125..8d17dd5 100644
 --- a/main.cpp
 +++ b/main.cpp
 @@ -39,6 +39,12 @@
@@ -42,8 +42,8 @@ index 4fd5125..c3e4c6a 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  // Default size of 2^25
  unsigned int ARRAY_SIZE = 33554432;
@@ -52,7 +52,7 @@ index 4fd5125..c3e4c6a 100644
  
  int main(int argc, char *argv[])
  {
-+STOPSDE;
++STOPSDE(0,0);
  
    parseArguments(argc, argv);
  
@@ -60,7 +60,7 @@ index 4fd5125..c3e4c6a 100644
        run<double>();
    }
  
-+STARTSDE;
++STARTSDE(0,0);
  }
  
  template <typename T>
@@ -72,7 +72,7 @@ index 4fd5125..c3e4c6a 100644
 +  std::chrono::high_resolution_clock::time_point t1, t2, t3, t4;
  
 +t3 = std::chrono::high_resolution_clock::now();
-+STARTSDE;
++STARTSDE(1,0);
    // Main loop
    for (unsigned int k = 0; k < num_times; k++)
    {
@@ -80,7 +80,7 @@ index 4fd5125..c3e4c6a 100644
      timings[4].push_back(std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count());
  
    }
-+STOPSDE;
++STOPSDE(1,0);
 +t4 = std::chrono::high_resolution_clock::now();
 +printf("Walltime of the main kernel: %.6lf sec\n", std::chrono::duration_cast<std::chrono::duration<double> >(t4-t3).count());
  

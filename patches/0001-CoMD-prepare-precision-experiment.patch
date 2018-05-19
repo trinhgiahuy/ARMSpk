@@ -1,4 +1,4 @@
-From d7d247f3bb0b06734095c7603a0f18ca91978331 Mon Sep 17 00:00:00 2001
+From ddd56ffa8f59a354ec099214dae0978f484feb68 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:51:52 +0900
 Subject: [PATCH 1/1] CoMD: prepare precision experiment
@@ -28,7 +28,7 @@ index 155f4dc..365100b 100644
 +CoMD_info.h
 +.depend
 diff --git a/src-openmp/CoMD.c b/src-openmp/CoMD.c
-index 12466c8..fb12607 100644
+index 12466c8..bd10c72 100644
 --- a/src-openmp/CoMD.c
 +++ b/src-openmp/CoMD.c
 @@ -82,11 +82,20 @@ static void printThings(SimFlat* s, int iStep, double elapsedTime);
@@ -40,15 +40,15 @@ index 12466c8..fb12607 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(printRank() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(printRank() && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
  
  int main(int argc, char** argv)
  {
     // Prolog
     initParallel(&argc, &argv);
 +double mkrts, mkrte; // my kernel run-time
-+STOPSDE;
++STOPSDE(0, !printRank());
     profileStart(totalTimer);
     initSubsystems();
     timestampBarrier("Starting Initialization\n");
@@ -58,7 +58,7 @@ index 12466c8..fb12607 100644
     profileStart(loopTimer);
 +
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1, !printRank());
     for (; iStep<nSteps;)
     {
        startTimer(commReduceTimer);
@@ -66,7 +66,7 @@ index 12466c8..fb12607 100644
  
        iStep += printRate;
     }
-+STOPSDE;
++STOPSDE(1, !printRank());
 +mkrte = MPI_Wtime();
 +if (printRank()) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
 +
@@ -82,7 +82,7 @@ index 12466c8..fb12607 100644
     timestampBarrier("CoMD Ending\n");
     destroyParallel();
  
-+STARTSDE;
++STARTSDE(0, !printRank());
     return 0;
  }
  

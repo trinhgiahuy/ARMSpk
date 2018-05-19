@@ -1,4 +1,4 @@
-From 8c6db29b7697a7259d548c5818e8fc2ee565225e Mon Sep 17 00:00:00 2001
+From 7f30aa2cb5f0a7b69aa6d5f8e05382466c7362a5 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 13:38:02 +0900
 Subject: [PATCH 1/1] MiniAMR: prepare precision experiment
@@ -39,7 +39,7 @@ index 457fa58..fbd1090 100644
  EXEC = ma.x
  
 diff --git a/ref/driver.c b/ref/driver.c
-index 95b15ed..bcbd550 100644
+index 95b15ed..e030b7b 100644
 --- a/ref/driver.c
 +++ b/ref/driver.c
 @@ -33,9 +33,17 @@
@@ -49,8 +49,8 @@ index 95b15ed..bcbd550 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  // Main driver for program.
  void driver(void)
@@ -65,7 +65,7 @@ index 95b15ed..bcbd550 100644
  
     if (use_time) delta = calc_time_step();
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,my_pe);
     for (sim_time = 0.0, done = comm_stage =calc_stage=0, ts = 1; !done; ts++) {
        for (stage=0; stage < stages_per_ts; stage++,comm_stage++,calc_stage++) {
           total_blocks += global_active;
@@ -73,14 +73,14 @@ index 95b15ed..bcbd550 100644
           if (ts >= num_tsteps)
              done = 1;
     }
-+STOPSDE;
++STOPSDE(1,my_pe);
 +mkrte = MPI_Wtime();
 +if (!my_pe) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
  
     end_time = sim_time;
     num_tsteps = ts - 1;
 diff --git a/ref/main.c b/ref/main.c
-index 034e300..6e9bd71 100644
+index 034e300..9f55148 100644
 --- a/ref/main.c
 +++ b/ref/main.c
 @@ -34,6 +34,12 @@
@@ -90,8 +90,8 @@ index 034e300..6e9bd71 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!my_pe && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  int main(int argc, char** argv)
  {
@@ -100,7 +100,7 @@ index 034e300..6e9bd71 100644
     ierr = MPI_Errhandler_set(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
     ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
     ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
-+STOPSDE;
++STOPSDE(0,my_pe);
  
     counter_malloc = 0;
     size_malloc = 0.0;
@@ -108,7 +108,7 @@ index 034e300..6e9bd71 100644
  
     MPI_Finalize();
  
-+STARTSDE;
++STARTSDE(0,my_pe);
     exit(0);
  }
  

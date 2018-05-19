@@ -1,4 +1,4 @@
-From ac2878f552843f3d367d73a508cca4e18b54d4b0 Mon Sep 17 00:00:00 2001
+From 5841244c3cd05aa9e6a649862ee779329ee7221b Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 04:17:42 +0900
 Subject: [PATCH 1/1] MVMC: prepare precision experiment
@@ -143,7 +143,7 @@ index 5b78e62..2a57661 100644
  
  $(OBJ): SFMT.c
 diff --git a/src/vmcmain.c b/src/vmcmain.c
-index 304da8b..d587751 100644
+index 304da8b..63da287 100644
 --- a/src/vmcmain.c
 +++ b/src/vmcmain.c
 @@ -7,6 +7,12 @@
@@ -153,8 +153,8 @@ index 304da8b..d587751 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!rankx && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!rankx && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  int VMCParaOpt(MPI_Comm comm_parent, MPI_Comm comm_child1, MPI_Comm comm_child2);
  int VMCPhysCal(MPI_Comm comm_parent, MPI_Comm comm_child1, MPI_Comm comm_child2);
@@ -174,7 +174,7 @@ index 304da8b..d587751 100644
    MPI_Init(&argc, &argv);
 +  MPI_Comm_rank(MPI_COMM_WORLD, &rankx);
 +double mkrts, mkrte; // my kernel run-time
-+STOPSDE;
++STOPSDE(0,rankx);
 +
    NThread = omp_get_max_threads();
  
@@ -192,7 +192,7 @@ index 304da8b..d587751 100644
    StopTimer(1);
  
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,rankx);
    if(NVMCCalMode==0) {
      StartTimer(2);
      /*-- VMC Parameter Optimization --*/
@@ -200,9 +200,9 @@ index 304da8b..d587751 100644
      info=1;
      if(rank0==0) fprintf(stderr,"error: NVMCCalMode must be 0 or 1.\n");
    }
-+STOPSDE;
++STOPSDE(1,rankx);
 +mkrte = MPI_Wtime();
-+if(rank0==0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
++if(rankx==0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
  
    StopTimer(0);
    if(rank0==0) {
@@ -210,7 +210,7 @@ index 304da8b..d587751 100644
    FreeMemoryDef();
    MPI_Finalize();
  
-+STARTSDE;
++STARTSDE(0,rankx);
    return info;
  }
  

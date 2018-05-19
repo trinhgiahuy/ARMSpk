@@ -1,4 +1,4 @@
-From a7d0d75d72d56ce3fd8513736546397f45c5b6f6 Mon Sep 17 00:00:00 2001
+From 619063a4ee9a08b55b0f815058de71af788a67fd Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:54:32 +0900
 Subject: [PATCH 1/1] SW4lite: prepare precision experiment
@@ -38,7 +38,7 @@ index 506c443..811f00b 100644
  #  EXTRA_LINK_FLAGS = -Wl,-rpath=${OTHER_PATH} -L${OTHER_PATH} -lifcore -L${BASIC_PATH} -limf -lsvml -lintlc -lm -ldl 
    openmp = yes
 diff --git a/src/EW-dg.C b/src/EW-dg.C
-index 643933c..85530ae 100644
+index 643933c..1e78805 100644
 --- a/src/EW-dg.C
 +++ b/src/EW-dg.C
 @@ -56,6 +56,12 @@
@@ -48,8 +48,8 @@ index 643933c..85530ae 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!m_myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!m_myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  void EW::set_dg_orders( int qu, int qv)
  {
@@ -60,7 +60,7 @@ index 643933c..85530ae 100644
     float_sw4 time_begin_solve = MPI_Wtime();
 +double mkrts, mkrte; // my kernel run-time
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,m_myrank);
  #ifdef SW4_CROUTINES
     std::cout << "ERROR, DG requires compilation with fortran" << endl;
     exit(2);
@@ -68,14 +68,14 @@ index 643933c..85530ae 100644
  
      if(m_myrank == 0){cout << "checking errors at final time: " << mTmax <<  endl;}
      computeError(udg,vdg,t);
-+STOPSDE;
++STOPSDE(1,m_myrank);
 +mkrte = MPI_Wtime();
 +if( m_myrank == 0 ) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
      if( m_myrank == 0 ){
          float_sw4 time_end_solve = MPI_Wtime();
          cout << endl << "***** Solver execution time: " << time_end_solve - time_begin_solve <<
 diff --git a/src/EW.C b/src/EW.C
-index b66c849..553a1fe 100644
+index b66c849..3ef1fe1 100644
 --- a/src/EW.C
 +++ b/src/EW.C
 @@ -61,6 +61,12 @@
@@ -85,8 +85,8 @@ index b66c849..553a1fe 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!m_myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!m_myrank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  #ifndef SW4_CROUTINES
  extern "C" {
@@ -95,7 +95,7 @@ index b66c849..553a1fe 100644
  
     // Do all timing in double, time differences have to much cancellation for float.
     double time_start_solve = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,m_myrank);
     bool saveerror = false;
  
     // Define local arrays
@@ -103,14 +103,14 @@ index b66c849..553a1fe 100644
  	    trdata[s+12*(currentTimeStep-beginCycle)]= time_measure[s];
  
     } // end time stepping loop
-+STOPSDE;
++STOPSDE(1,m_myrank);
     double time_end_solve = MPI_Wtime();
 +if (m_myrank == 0) printf("Walltime of the main kernel: %.6lf sec\n", time_end_solve - time_start_solve);
     print_execution_time( time_start_solve, time_end_solve, "solver phase" );
     if( m_output_detailed_timing )
        print_execution_times( time_sum );
 diff --git a/src/main.C b/src/main.C
-index 9df8036..0f1f0a0 100644
+index 9df8036..5364ea9 100644
 --- a/src/main.C
 +++ b/src/main.C
 @@ -35,6 +35,12 @@
@@ -120,8 +120,8 @@ index 9df8036..0f1f0a0 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myRank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myRank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  int main( int argc, char** argv )
  {
@@ -130,7 +130,7 @@ index 9df8036..0f1f0a0 100644
     double  time_start, time_end;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-+STOPSDE;
++STOPSDE(0,myRank);
  
     MPI_Barrier(MPI_COMM_WORLD);
     time_start = MPI_Wtime();
@@ -138,7 +138,7 @@ index 9df8036..0f1f0a0 100644
  
     MPI_Finalize();
  
-+STARTSDE;
++STARTSDE(0,myRank);
     return 0;
  }
 -- 

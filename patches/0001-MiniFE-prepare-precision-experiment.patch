@@ -1,4 +1,4 @@
-From 22c0259ffc04d1fd2aeacaed68b57cbc660ade01 Mon Sep 17 00:00:00 2001
+From 5315b6472d43f79215cb4b6734228c6cf97ba724 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 13:57:15 +0900
 Subject: [PATCH 1/1] MiniFE: prepare precision experiment
@@ -39,7 +39,7 @@ index d81bbcf..20a79fd 100644
  # The MPICH_IGNORE_CXX_SEEK macro is required for some mpich versions,
  # such as the one on my cygwin machine.
 diff --git a/mkl/src/driver.hpp b/mkl/src/driver.hpp
-index 6c0f0f0..1cbf17b 100644
+index 6c0f0f0..6e80f34 100644
 --- a/mkl/src/driver.hpp
 +++ b/mkl/src/driver.hpp
 @@ -88,6 +88,12 @@
@@ -49,8 +49,8 @@ index 6c0f0f0..1cbf17b 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  //This program assembles finite-element matrices into a global matrix and
  //vector, then solves the linear-system using Conjugate Gradients.
@@ -69,7 +69,7 @@ index 6c0f0f0..1cbf17b 100644
      std::cout << "Starting CG solver ... " << std::endl;
    }
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,myproc);
  
    if (matvec_with_comm_overlap) {
  #ifdef MINIFE_CSR_MATRIX
@@ -77,14 +77,14 @@ index 6c0f0f0..1cbf17b 100644
        verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
      }
    }
-+STOPSDE;
++STOPSDE(1,myproc);
 +mkrte = MPI_Wtime();
 +if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
 diff --git a/mkl/src/main.cpp b/mkl/src/main.cpp
-index 16e27e1..a80e5be 100644
+index 16e27e1..fb45f47 100644
 --- a/mkl/src/main.cpp
 +++ b/mkl/src/main.cpp
 @@ -65,6 +65,12 @@
@@ -94,8 +94,8 @@ index 16e27e1..a80e5be 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  // ************************************************************************
  
@@ -104,7 +104,7 @@ index 16e27e1..a80e5be 100644
  
    int numprocs = 1, myproc = 0;
    miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE;
++STOPSDE(0,myproc);
  
    miniFE::timer_type start_time = miniFE::mytimer();
  
@@ -112,7 +112,7 @@ index 16e27e1..a80e5be 100644
  
    miniFE::finalize_mpi();
  
-+STARTSDE;
++STARTSDE(0,myproc);
    return return_code;
  }
  
@@ -142,7 +142,7 @@ index 629af96..a406c58 100644
  # The MPICH_IGNORE_CXX_SEEK macro is required for some mpich versions,
  # such as the one on my cygwin machine.
 diff --git a/openmp-opt-knl/src/driver.hpp b/openmp-opt-knl/src/driver.hpp
-index b24bdac..6eae828 100644
+index b24bdac..e6a7c2a 100644
 --- a/openmp-opt-knl/src/driver.hpp
 +++ b/openmp-opt-knl/src/driver.hpp
 @@ -87,6 +87,12 @@
@@ -152,8 +152,8 @@ index b24bdac..6eae828 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  //This program assembles finite-element matrices into a global matrix and
  //vector, then solves the linear-system using Conjugate Gradients.
@@ -172,7 +172,7 @@ index b24bdac..6eae828 100644
    }
  
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,myproc);
    if (matvec_with_comm_overlap) {
  #ifdef MINIFE_CSR_MATRIX
      rearrange_matrix_local_external(A);
@@ -180,14 +180,14 @@ index b24bdac..6eae828 100644
        verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
      }
    }
-+STOPSDE;
++STOPSDE(1,myproc);
 +mkrte = MPI_Wtime();
 +if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
 diff --git a/openmp-opt-knl/src/main.cpp b/openmp-opt-knl/src/main.cpp
-index 290e661..13271dd 100644
+index 290e661..81a5d12 100644
 --- a/openmp-opt-knl/src/main.cpp
 +++ b/openmp-opt-knl/src/main.cpp
 @@ -69,6 +69,12 @@
@@ -197,8 +197,8 @@ index 290e661..13271dd 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  // ************************************************************************
  
@@ -207,7 +207,7 @@ index 290e661..13271dd 100644
  
    int numprocs = 1, myproc = 0;
    miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE;
++STOPSDE(0,myproc);
  
    miniFE::timer_type start_time = miniFE::mytimer();
  
@@ -215,7 +215,7 @@ index 290e661..13271dd 100644
  
    miniFE::finalize_mpi();
  
-+STARTSDE;
++STARTSDE(0,myproc);
    return return_code;
  }
  
@@ -246,7 +246,7 @@ index bd271ec..c118822 100644
  # The MPICH_IGNORE_CXX_SEEK macro is required for some mpich versions,
  # such as the one on my cygwin machine.
 diff --git a/openmp-opt/src/driver.hpp b/openmp-opt/src/driver.hpp
-index b38887f..a1bfd5b 100644
+index b38887f..8282522 100644
 --- a/openmp-opt/src/driver.hpp
 +++ b/openmp-opt/src/driver.hpp
 @@ -87,6 +87,12 @@
@@ -256,8 +256,8 @@ index b38887f..a1bfd5b 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  //This program assembles finite-element matrices into a global matrix and
  //vector, then solves the linear-system using Conjugate Gradients.
@@ -276,7 +276,7 @@ index b38887f..a1bfd5b 100644
    }
  
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,myproc);
    if (matvec_with_comm_overlap) {
  #ifdef MINIFE_CSR_MATRIX
      rearrange_matrix_local_external(A);
@@ -284,14 +284,14 @@ index b38887f..a1bfd5b 100644
        verify_result = verify_solution(mesh, x, tolerance, verify_whole_domain);
      }
    }
-+STOPSDE;
++STOPSDE(1,myproc);
 +mkrte = MPI_Wtime();
 +if (myproc == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
 diff --git a/openmp-opt/src/main.cpp b/openmp-opt/src/main.cpp
-index 7983fc1..a1b4b5c 100644
+index 7983fc1..35bdd76 100644
 --- a/openmp-opt/src/main.cpp
 +++ b/openmp-opt/src/main.cpp
 @@ -69,6 +69,12 @@
@@ -301,8 +301,8 @@ index 7983fc1..a1b4b5c 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myproc && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  // ************************************************************************
  
@@ -311,7 +311,7 @@ index 7983fc1..a1b4b5c 100644
  
    int numprocs = 1, myproc = 0;
    miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE;
++STOPSDE(0,myproc);
  
    miniFE::timer_type start_time = miniFE::mytimer();
  
@@ -319,7 +319,7 @@ index 7983fc1..a1b4b5c 100644
  
    miniFE::finalize_mpi();
  
-+STARTSDE;
++STARTSDE(0,myproc);
    return return_code;
  }
  

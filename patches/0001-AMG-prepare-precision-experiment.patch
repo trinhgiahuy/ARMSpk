@@ -1,4 +1,4 @@
-From dbf2c87f5dac02b4ef88fa659bfeabc9072bc53a Mon Sep 17 00:00:00 2001
+From d8afc01db966ad105f67ec389c9ce47ee4390560 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 21:41:17 +0900
 Subject: [PATCH 1/1] AMG: prepare precision experiment
@@ -39,7 +39,7 @@ index b73ccce..15d0545 100644
  #INCLUDE_LFLAGS = -lm 
  
 diff --git a/test/amg.c b/test/amg.c
-index 68b67c5..7f96202 100644
+index 68b67c5..922a343 100644
 --- a/test/amg.c
 +++ b/test/amg.c
 @@ -37,6 +37,12 @@
@@ -49,8 +49,8 @@ index 68b67c5..7f96202 100644
 +#include <ittnotify.h>
 +#include <signal.h>
 +#include <stdlib.h>
-+#define STARTSDE {if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE {__SSC_MARK(0x222); __itt_pause(); if(!myid && getenv("PCMPID")) kill(atoi(getenv("PCMPID")), SIGUSR1);}
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  #ifdef __cplusplus
  extern "C" {
@@ -68,7 +68,7 @@ index 68b67c5..7f96202 100644
     hypre_MPI_Init(&argc, &argv);
  
     hypre_MPI_Comm_rank(hypre_MPI_COMM_WORLD, &myid );
-+STOPSDE;
++STOPSDE(0,myid);
  
     /*-----------------------------------------------------------
      * Set defaults
@@ -79,11 +79,11 @@ index 68b67c5..7f96202 100644
 - 
 +
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,myid);
        HYPRE_PCGSolve(pcg_solver, (HYPRE_Matrix)parcsr_A, 
                       (HYPRE_Vector)b, (HYPRE_Vector)x);
 - 
-+STOPSDE;
++STOPSDE(1,myid);
 +mkrte = MPI_Wtime();
 +if (myid == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
 +
@@ -103,7 +103,7 @@ index 68b67c5..7f96202 100644
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_BeginTiming(time_index);
 +mkrts = MPI_Wtime();
-+STARTSDE;
++STARTSDE(1,myid);
 +
        for (j=0; j < time_steps; j++)
        {
@@ -112,7 +112,7 @@ index 68b67c5..7f96202 100644
           }
        }
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
-+STOPSDE;
++STOPSDE(1,myid);
 +mkrte = MPI_Wtime();
 +if (myid == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
 +
@@ -131,7 +131,7 @@ index 68b67c5..7f96202 100644
  */
     hypre_MPI_Finalize();
  
-+STARTSDE;
++STARTSDE(0,myid);
     return (0);
  }
  
