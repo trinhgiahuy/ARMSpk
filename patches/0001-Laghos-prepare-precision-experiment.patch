@@ -1,4 +1,4 @@
-From 9e967e3fdbdcfc7df63ca8ad60ac44ad8d0d5da5 Mon Sep 17 00:00:00 2001
+From f642dae707e974a43f0166dd5fe3795fb1e1c268 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 03:24:55 +0900
 Subject: [PATCH 1/1] Laghos: prepare precision experiment
@@ -6,11 +6,11 @@ Subject: [PATCH 1/1] Laghos: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore        |  5 +++++
- laghos.cpp        | 10 +++++++++-
+ laghos.cpp        |  8 ++++++++
  laghos_solver.cpp | 18 +++++++++++++++++-
  laghos_solver.hpp |  6 ++++++
  makefile          | 10 +++++-----
- 5 files changed, 42 insertions(+), 7 deletions(-)
+ 5 files changed, 41 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -25,15 +25,13 @@ index 0000000..f848050
 +hypre-2.10.0b/
 +metis-4.0.3/
 diff --git a/laghos.cpp b/laghos.cpp
-index d808287..e9f38eb 100644
+index d808287..19dea2f 100644
 --- a/laghos.cpp
 +++ b/laghos.cpp
-@@ -69,7 +69,8 @@ int main(int argc, char *argv[])
- {
+@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     // Initialize MPI.
     MPI_Session mpi(argc, argv);
--   int myid = mpi.WorldRank();
-+   int myid = gmyid = mpi.WorldRank();
+    int myid = mpi.WorldRank();
 +STOPSDE(0,!mpi.Root());
  
     // Print the banner.

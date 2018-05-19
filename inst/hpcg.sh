@@ -15,7 +15,7 @@ alias ld=`which xild`
 
 BM="HPCG"
 VERSION="5422fecd0a009a8731d0bd96b957d443297a53bc"
-if [ ! -f $ROOTDIR/$BM/bin/build/xhpcg ]; then
+if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
