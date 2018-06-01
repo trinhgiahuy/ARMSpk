@@ -396,17 +396,123 @@
 % creates the second title. It will be ignored for other modes.
 \IEEEpeerreviewmaketitle
 
+% list of venues:
+%  - ** IPDPS (~sep)
+%  - * PPoPP (~aug)
+%  - TACO (journal)
+%  - TPDS (journal)
+%  - JPDC (journal)
+%  - CCgrid (~nov)
+%  - (SC Asia)
+%  - (HPC Asia)
+
+% need: 1 full script setting up all -> for reproduce
+%
+% ignore post-K for now
+%
+% overall story:
+%   - analyze apps-per-system overview (to guide purchase process, RFPs) + some hpc systems are 1-app only
+%   - option a: rigor performance model; run on many (2-3) systems to see what happens if the next-gen comes (so, based on current info in apps, how are they expected to run on post-k or coral 1)
+%   - option b: design a better flow/approach how to choose/design the next system
+%   - option c: how to actually determine if app is compute or memory bound; we tried multiple ways, vtune, pcm, freq scaling
+%   - option d: do we really need that much fp64? -> next study?
+%   - ** option e: check which of our apps use high percentage of systems (>80%) and then give guide how to balance compute/network/memory for this use-case
+%   - option f: compare time to solution for xeon/knl/knm and see the trend, not that much fp64 needed since knl with half fp64 performs roughly equivalent to knm
+%   - ** option g: focus on time-to-solution (e.g. normalize run time / time-to-solution by memory bandwidth) and (maybe power -> not important for big players unless constrained building/power plant next door; they have gov/scientists to pay the bill)
+%   - option h: code is fp64 -> we need fp64-heavy systems -> perf goes up is a WRONG graph: break at code -> architecture design
+%   - option i: knm now real advantage over knm for our use case, so safe power and money to get near similar time-to-solution
+%   - option j: We have empiric evidence that zealously allocating silicon to DP is unwise and it might be high time to revice how silicon is distributed.
+
 \input{introduction}
+% 1 page
+
+% - analyze if either of the BM suits has been used in other studies (not as individual apps but as the entire ECP/portK set
+% - analyze the usage of what type of apps/sciences is run on HPC systems -> give weights on the apps and requirements
+
+\input{Systems-and-applications}
+% follow bio papers: materials
+% 1.5 page
+
+% table with comparison/differences
+% incl non performance relevant info: name, type/domain, programming lang, etc., input type (dummy genome vs human genome, 3d sphere vs 2d stuff, etc); bytes-per-flop if in ref.?
 
 \input{methodology}
+% 1.5 page
 
-\input{evaluation}
+% no changes to any code (unless fixing bug)
+% 2 similar architecture, executed lots of bench for flops/memory/power
+% normalize results on #cores (avoid bad numa settings); change freq to 1.3Ghz; etc -> to reduce obvious differences betw KNL/KNM
+% xhost, intel, same compile
+% run parameter sweep
+%    #runs per app -> min/max/avg???
+% strong scaling vs weak scaling
+% tools/profileer/etc used ("exclusive" to intel SW stack + open-source)
+% subsection on oddities of our config:
+%    compiler/OS/kernel (w/ meltdown patch)
+%    stupid mcdram behavior -> warm up ...
+%    intel_pstate=disable for freq
+%    fixed uncore freq.
+
+\input{evaluation-incl-result-"summary"}
+% 2.5 -- 3 pages
+
+% runtime overall
+% time in solver
+% percentage instructions
+% performance in (sp/dp) gflop/s
+% total #flops
+% memory usage
+% resource stall counter
+% LLC hit/miss rate
+% fp64/fp32/int/(branch?)/(unconditional memory ops; -> LOAD/STORE) instructions
+% power usage
+% memory-boundness, multitude of tests based on:
+%  - educated guess
+%  - roofline
+%  - stalled instructions
+%  - frequ. scaling
+%  - mcdram? vs ddr?
+%  - traffic betw. LLC and RAM
+%  (-- how much does each of these contribute to the ground-truth???)
+% normalized based on number of core or absolute numbers, dep. on context/what to show
+% ** create all graphs and check for the **anomalies**
+%
+% => all 3 systems (find kiev w/ right pcm results)
+
+% put uninteresting stuff into TechReport
+
+\input{discussion-on-implications-and-outlooks}
+% 1 page
+
+% - themes: time-to-solution is most important metric
+% - instructions doesn't matter too much because most are memory-bound
+% - apps have different requirements
+% - people need to dive deeper into their workloads
+% - suggestion: decouple notion of hpc apps need high FP64 and which architecture to choose => see if NASA has papers on their design choices?!
+
+
+% - option: suggest to ditch fp32 and emulate fp32 ops in fp64 units
+% - mixed precision can't work (requ. hand tuning in each app) -> not practical
+% - compute bound codes -> what if no FP64 anymore in new chips -> what will they do?
+% - memory bound: doesn't matter if fp64 is gone
+% lay out options for comp.-bound guys:
+% a) library
+% b) mixed precision
+% c) emulated by 2 fp32
+% d) hope for cpu support for faster emulation
+% e) accept the perf hit :-(
 
 \input{related-work}
+% 1/2 page
 
 \input{conclusion}
+% 1/2 page
 
 \input{acknowledgment}
+% 1/2 page
+
+% references:
+% 3/4 page
 
 %\section{Introduction}
 %% no \IEEEPARstart
