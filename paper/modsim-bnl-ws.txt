@@ -1,0 +1,60 @@
+#
+#    Abstract title (1 page at most)
+#    Primary research area:
+#        ModSim of Subsystems
+#        ModSim of Resilience
+#        Methodology for Modeling, Simulation, and Emulation of Performance, Power, and Reliability
+#        ModSim of Open-Hardware
+#    What is being modeled? (e.g., performance, reliability, power, other)
+#    What is the target application?
+#    What modeling techniques are being used?
+#    What is novel about the approach versus current state of the art?
+#    Are preliminary results available?
+#
+
+Title: To float or not to float... How much FP64 performance do we really need?
+
+Abstract:
+Common wisdom in supercomputing is that double precision floating point
+calculations is what matters, with respect to both application requirements and
+performance. Accordingly, chip manufacturers for HPC compute nodes have
+traditionally allocated a significant portion of chip area to double precision
+FPUs. Double precision FPUs, however, occupy larger chip area, i.e., the chip
+provides less compute per silicon, and also reduces the bandwidth utilization,
+i.e., less compute and less bandwidth.
+
+We conduct an exhaustive FPU-requirement and performance study using 22 HPC
+(proxy/mini) applications from various scientific domains, which comprise the
+majority of CPU cycles in HPC, and which all have been used in the USA and Japan
+to procure the current generation of supercomputers, such as Summit and Post-K.
+The analyzed metrics for theses applications does not only include floating
+point operations, but ranges from memory usage, bandwidth utilization, integer
+instructions, cache behavior, power consumption, to runtime variability, and
+more. The two primary target platforms of this initial study are the Intel
+Xeon Phi Knights Landing and Knights Mill standalone many-core processors, as
+well as an older Intel Xeon server processor (used as reference architecture).
+Both Xeon Phi processors share the same architecture and memory hierarchy, and
+are nearly identical apart from the amount and ratio of FP units. Hence, this
+comparison will give us and the rest of the community a good chance to investigate
+the precision or unit requirements, and identify performance bottlenecks in
+HPC codes, to guide the procurement towards more/less FP64, FP32, ..., or
+faster/bigger memory and caches, or more cores instead. Furthermore, during
+the talk we will go into detail about the many approaches we tried to analyze
+the memory-boundedness of applications and outline their quirks and our
+lessons-learned in this area.
+
+Last but not least, this talk will include an outlook into our future simulation
+efforts using the CPU/node-simulator for the Post-K system. Presumably, our
+analysis and subsequent simulations of these 22 applications will give guidance
+to the application developers at RIKEN for their performance portability efforts
+towards the new architecture when moving from K to Post-K.
+
+
+Primary research area: ModSim of Subsystems
+What is being modeled?: performance + power
+What is the target application?: ECP proxyapps and Post-K miniapps
+What is novel about the approach versus current state of the art?:
+  multi-spectrum FP unit requirement analysis for state-of-the-art HPC applications
+Are preliminary results available?:
+  yes: performance measurements on 3 real systems (Xeon, KNL, and KNM)
+  no:  simulation of these applications on post-K compute nodes for comparison
