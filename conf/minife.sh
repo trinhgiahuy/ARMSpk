@@ -3,7 +3,7 @@
 export APPDIR="./MiniFE"
 export BINARYS="./mkl/src/miniFE.x ./openmp-opt-knl/src/miniFE.x ./openmp-opt/src/miniFE.x"
 export BBINARY="./mkl/src/miniFE.x"
-export INPUT="-nx 128 -ny 128"
+export INPUT="-nx 128 -ny 128 -nz 128"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
