@@ -1,4 +1,4 @@
-From ee4ae0fd1ef621fb48c5491526bb7b15f225a233 Mon Sep 17 00:00:00 2001
+From aa91036e3de41f5e69908d461d416fe99369a77c Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Tue, 15 May 2018 10:06:16 +0900
 Subject: [PATCH 1/1] intel-pcm: prepare precision experiment
@@ -6,7 +6,8 @@ Subject: [PATCH 1/1] intel-pcm: prepare precision experiment
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  pcm-memory.cpp | 4 ++++
- 1 file changed, 4 insertions(+)
+ pcm-power.cpp  | 4 ++++
+ 2 files changed, 8 insertions(+)
 
 diff --git a/pcm-memory.cpp b/pcm-memory.cpp
 index 988007d..ffb7e3f 100644
@@ -23,6 +24,21 @@ index 988007d..ffb7e3f 100644
      if ( (sysCmd != NULL) && (delay<=0.0) ) {
          // in case external command is provided in command line, and
          // delay either not provided (-1) or is zero
+diff --git a/pcm-power.cpp b/pcm-power.cpp
+index c75ef68..2e0ebf6 100644
+--- a/pcm-power.cpp
++++ b/pcm-power.cpp
+@@ -286,6 +286,10 @@ int main(int argc, char * argv[])
+     ServerUncorePowerState * AfterState = new ServerUncorePowerState[m->getNumSockets()];
+     uint64 BeforeTime = 0, AfterTime = 0;
+ 
++    char pid[16];
++    snprintf(pid, 16, "%d",(int)getpid());
++    if (delay >= 0) setenv("PCMPID", pid, 1);
++
+     std::cerr << std::dec << std::endl;
+     std::cerr.precision(2);
+     std::cerr << std::fixed;
 -- 
 1.8.3.1
 

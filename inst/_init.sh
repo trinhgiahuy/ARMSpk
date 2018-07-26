@@ -34,7 +34,8 @@ VERSION="4e1a04eed1371f82d04eb9c1d1d739706a633b4a"
 if [ ! -f $ROOTDIR/dep/$BM/likwid-setFrequencies ]; then
 	cd $ROOTDIR/dep/$BM/
 	git checkout -b precision ${VERSION}
-	sed -i -e 's/GCC#NO/ICC#NO/' -e 's/accessdaemon#NO/direct#NO/' ./config.mk
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	make
 	for x in `ls likwid-*`; do if [ -x $x ]; then sudo setcap cap_sys_admin,cap_sys_rawio+ep $x; fi; done
 	cat /proc/cmdline | grep 'intel_pstate=disable'  > /dev/null

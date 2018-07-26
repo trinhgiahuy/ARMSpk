@@ -1,0 +1,44 @@
+From 672872add0c32c7098e5c1a387a9edf725ceb6f2 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Thu, 26 Jul 2018 16:34:19 +0900
+Subject: [PATCH 1/1] likwid: prepare precision experiment
+
+Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
+---
+ config.mk | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/config.mk b/config.mk
+index d9e4943..d771e6c 100644
+--- a/config.mk
++++ b/config.mk
+@@ -7,7 +7,7 @@
+ # Please have a look in INSTALL and the WIKI for details on
+ # configuration options setup steps.
+ # supported: GCC, CLANG, ICC, MIC (ICC), GCCX86 (for 32bit systems)
+-COMPILER = GCC#NO SPACE
++COMPILER = ICC#NO SPACE
+ 
+ # Path were to install likwid
+ PREFIX = /usr/local#NO SPACE
+@@ -15,7 +15,7 @@ PREFIX = /usr/local#NO SPACE
+ # Set the default mode for MSR access.
+ # This can usually be overriden on the commandline.
+ # Valid values are: direct, accessdaemon and perf_event
+-ACCESSMODE = accessdaemon#NO SPACE
++ACCESSMODE = direct#NO SPACE
+ 
+ # Build Fortran90 module interface for Marker API. Adopt Fortran compiler
+ # in ./make/include_<COMPILER>.mk if necessary. Default: ifort (even for
+@@ -86,7 +86,7 @@ DEBUG = false#NO SPACE
+ 
+ # Basic configuration for some internal arrays.
+ # Maximal number of hardware threads
+-MAX_NUM_THREADS = 263
++MAX_NUM_THREADS = 288
+ # Maximal number of sockets
+ MAX_NUM_NODES = 64
+ 
+-- 
+1.8.3.1
+
