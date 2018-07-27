@@ -23,7 +23,8 @@ else
 	exit
 fi
 export PATH=$ROOTDIR/dep/intel-pcm:$PATH
-PCM="pcm-memory.x 360000 -- "
+PCMM="pcm-memory.x 360000 -- "
+PCMP="pcm-power.x 360000 -- "
 
 # ============================ CANDLE =========================================
 source conf/candle.sh
@@ -51,8 +52,11 @@ for BEST in $BESTCONF; do
 		fi
 		if [ "x$RUNPCM" = "xyes" ]; then
 			echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
-			echo "$PCM mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
-			$PCM mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT
+			echo "$PCMM mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
+			$PCMM mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT
+			echo "=== intel pcm-power.x run ===" >> $LOG 2>&1
+			echo "$PCMP mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
+			$PCMP mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT
 		fi
 		if [ "x$RUNVTUNE" = "xyes" ]; then
 			echo "=== vtune hpc-performance ===" >> $LOG 2>&1

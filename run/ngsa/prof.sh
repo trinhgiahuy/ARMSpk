@@ -44,7 +44,8 @@ else
 	exit
 fi
 export PATH=$ROOTDIR/dep/intel-pcm:$PATH
-PCM="pcm-memory.x 360000 -- "
+PCMM="pcm-memory.x 360000 -- "
+PCMP="pcm-power.x 360000 -- "
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
@@ -79,8 +80,13 @@ for BEST in $BESTCONF; do
 	fi
 	if [ "x$RUNPCM" = "xyes" ]; then
 		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
-		echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		echo "$PCMM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		$PCMM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		rm -rf workflow_*
+		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+		echo "=== intel pcm-power.x run ===" >> $LOG 2>&1
+		echo "$PCMP mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		$PCMP mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 		rm -rf workflow_*
 		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
 	fi
