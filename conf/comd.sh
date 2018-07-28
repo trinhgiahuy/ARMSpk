@@ -2,7 +2,7 @@
 
 export APPDIR="./CoMD"
 export BINARY="./bin/CoMD-openmp-mpi"
-export INPUT="-iPX -jPY -kPZ"
+export INPUT="-iPX -jPY -kPZ -x 40 -y 40 -z 40"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
