@@ -62,7 +62,7 @@ if [ ! -f $ROOTDIR/dep/$BM/pcm-memory.x ]; then
 	if [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 		sed -i -e 's/KNL = 87/KNL = 133/' ./cpucounters.h
 	fi
-	make CXX=icpc
+	make -j CXX=icpc
 	for x in `ls *.x`; do if [ -x $x ]; then sudo setcap cap_sys_admin,cap_sys_rawio+ep $x; fi; done
 	cd $ROOTDIR
 fi
