@@ -24,8 +24,7 @@ else
 	exit
 fi
 export PATH=$ROOTDIR/dep/intel-pcm:$PATH
-PCMM="pcm-memory.x 360000 -- "
-PCMP="pcm-power.x 360000 -- "
+PCMB="pcm.x pcm-memory.x pcm-power.x"
 
 # ============================ HPL ============================================
 source conf/hpl.sh
@@ -54,14 +53,15 @@ for BEST in $BESTCONF; do
 		rm -rf ./oSDE
 	fi
 	if [ "x$RUNPCM" = "xyes" ]; then
-		echo "=== intel pcm-memory.x run ===" >> $LOG 2>&1
-		echo "$PCMM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		$PCMM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
-		echo "=== intel pcm-power.x run ===" >> $LOG 2>&1
-		echo "$PCMP mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		$PCMP mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
+		# reset PMU counters
+		pcm.x -r -- mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=1 `lscpu | grep '^CPU(s):' | awk '{print $2}'` sleep 0.1 >> /dev/null 2>&1
+		for PCM in $PCMB; do
+			echo "=== intel $PCM run ===" >> $LOG 2>&1
+			PCM+=" 360000 -- "
+			echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+			$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+			cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
+		done
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
