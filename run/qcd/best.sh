@@ -16,17 +16,19 @@ LOG="$ROOTDIR/log/`hostname -s`/bestrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
-	for BINARY in $BBINARY; do
-		NumMPI="`echo $BEST | cut -d '|' -f1`"
-		NumOMP="`echo $BEST | cut -d '|' -f2`"
-		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		for i in `seq 1 $NumRunsBEST`; do
-			START="`date +%s.%N`"
-			timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
-			ENDED="`date +%s.%N`"
-			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-		done
+	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumOMP="`echo $BEST | cut -d '|' -f2`"
+	PX="`echo $BEST | cut -d '|' -f3`"
+	PY="`echo $BEST | cut -d '|' -f4`"
+	PZ="`echo $BEST | cut -d '|' -f5`"
+	BINARYYY="${BINARY}_${PX}${PY}${PZ}"
+	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT" >> $LOG 2>&1
+	for i in `seq 1 $NumRunsBEST`; do
+		START="`date +%s.%N`"
+		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT >> $LOG 2>&1
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
+		ENDED="`date +%s.%N`"
+		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 done
 echo "Best QCD run:"

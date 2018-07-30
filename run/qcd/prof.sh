@@ -32,14 +32,17 @@ LOG="$ROOTDIR/log/`hostname -s`/profrun/qcd.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
-	BINARY=$BBINARY
+	PX="`echo $BEST | cut -d '|' -f3`"
+	PY="`echo $BEST | cut -d '|' -f4`"
+	PZ="`echo $BEST | cut -d '|' -f5`"
+	BINARYYY="${BINARY}_${PX}${PY}${PZ}"
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	if [ "x$RUNSDE" = "xyes" ]; then
 		mkdir -p ./oSDE
 		echo "=== sde run ===" >> $LOG 2>&1
-		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
-		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARYYY $INPUT\"" >> $LOG 2>&1
+		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARYYY $INPUT" >> $LOG 2>&1
 		for P in `seq 0 $((NumMPI - 1))`; do
 			echo "SDE output of MPI process $P" >> $LOG 2>&1
 			cat ./oSDE/${P}.txt >> $LOG 2>&1
@@ -54,19 +57,19 @@ for BEST in $BESTCONF; do
 		for PCM in $PCMB; do
 			echo "=== intel $PCM run ===" >> $LOG 2>&1
 			PCM+=" 360000 -- "
-			echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-			$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+			echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT" >> $LOG 2>&1
+			$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT >> $LOG 2>&1
 		done
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
-		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
+		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT" >> $LOG 2>&1
+		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTP.`hostname`
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
-		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT
+		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT" >> $LOG 2>&1
+		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -no-auto-finalize -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARYYY $INPUT
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTM.`hostname`
 	fi
