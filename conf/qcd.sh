@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export APPDIR="./QCD/src"
-export BINARY="./ccs_qcd_solver_bench_class"
+export BINARY="./ccs_qcd_solver_bench_class2"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
