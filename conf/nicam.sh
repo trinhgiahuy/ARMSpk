@@ -21,7 +21,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	export BESTCONF="10|10"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export TESTCONF=""
+	export TESTCONF="10|5 10|6 10|7 10|10 10|14 10|16 10|20 10|28 10|30"
 	export BESTCONF=""
 else
 	echo "Unsupported host"

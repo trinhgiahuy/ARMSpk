@@ -36,7 +36,19 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	export BESTCONF="64|6"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export TESTCONF=""
+	export TESTCONF="1|64 1|72 1|128 1|144 1|192 1|256 1|288
+			 4|18 4|36 4|54 4|72
+			 16|4 16|8 16|12 16|16
+			 18|4 18|8 18|12 18|16
+			 32|2 32|4 32|6 32|8
+			 64|1 64|2 64|4 64|6
+			 72|1 72|2 72|4
+			 96|1 96|2 96|3
+			 128|1 128|2
+			 144|1 144|2
+			 192|1
+			 256|1
+			 288|1"
 	export BESTCONF=""
 else
 	echo "Unsupported host"
