@@ -18,10 +18,10 @@ sleep 10
 
 echo -e '\nInstalling known dependencies'
 if [[ -f /etc/redhat-release ]];then
-	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel
+	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel
 	# vim screen gtk2 gtk3 pango xorg-x11-server-Xorg
 else
-	echo -e '\nNote: untested linux distro; please install -- cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel -- yourself;\n      everything hereafter may break, no guarantees ;-)'
+	echo -e '\nNote: untested linux distro; please install -- cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel -- yourself;\n      everything hereafter may break, no guarantees ;-)'
 	sleep 10
 fi
 
