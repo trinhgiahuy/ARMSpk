@@ -22,7 +22,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|48|1|1 1|64|1|1 1|96|1|1 1|128|1|1 1|256|1|1
-	                 2|32|2|1 2|64|2|1 2|96|2|1 2|128|2|1
+			 2|32|2|1 2|64|2|1 2|96|2|1 2|128|2|1
 			 4|8|2|2 4|16|2|2 4|32|2|2 4|64|2|2
 			 8|4|4|2 8|8|4|2 8|16|4|2
 			 16|4|4|4 16|6|4|4 16|8|4|4
@@ -35,7 +35,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF=""
-	export BESTCONF="64|1|8|8" # temporary for testing freq scaling
+	export BESTCONF=""
 	export HPLNB="336"
 else
 	echo "Unsupported host"

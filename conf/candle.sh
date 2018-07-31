@@ -18,11 +18,11 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	export BESTCONF="24"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
-	export TESTCONF="32 64 128 192 256"
+	export TESTCONF="1 32 64 128 192 256"
 	export BESTCONF="32"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export TESTCONF=""
+	export TESTCONF="1 36 72 144 216 288"
 	export BESTCONF=""
 else
 	echo "Unsupported host"
