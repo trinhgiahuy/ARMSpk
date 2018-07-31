@@ -15,7 +15,7 @@ alias ld=`which xild`
 
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
 VERSION="d0ef31454577740fbb87618cc35789b7ef838238"
-if [ ! -f $ROOTDIR/$BM/build.openmp/TestDfft ]; then
+if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
