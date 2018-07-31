@@ -18,10 +18,10 @@ sleep 10
 
 echo -e '\nInstalling known dependencies'
 if [[ -f /etc/redhat-release ]];then
-	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel
+	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep
 	# vim screen gtk2 gtk3 pango xorg-x11-server-Xorg
 else
-	echo -e '\nNote: untested linux distro; please install -- cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel -- yourself;\n      everything hereafter may break, no guarantees ;-)'
+	echo -e '\nNote: untested linux distro; please install -- cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep -- yourself;\n      everything hereafter may break, no guarantees ;-)'
 	sleep 10
 fi
 
@@ -29,6 +29,14 @@ echo -e '\nUpdating ldconfig'
 echo $LD_LIBRARY_PATH | sed -e 's/:/\n/g' > /dev/shm/precision.conf
 sudo mv /dev/shm/precision.conf /etc/ld.so.conf.d/
 sudo ldconfig
+
+echo -e '\nDisabling NMI watchdog'
+sudo sh -c "echo 0 > /proc/sys/kernel/nmi_watchdog"
+sudo sh -c "echo 'kernel.nmi_watchdog=0' >> /etc/sysctl.conf"
+
+#echo -e '\nAdding Intel VTune Sampling Drivers'
+#cd $VTUNE_AMPLIFIER_2018_DIR/sepdk/src
+#sudo ./insmod-sep -r -g `whoami`
 
 echo -e '\nInstalling Likwid'
 BM="likwid"
