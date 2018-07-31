@@ -34,9 +34,10 @@ echo -e '\nDisabling NMI watchdog'
 sudo sh -c "echo 0 > /proc/sys/kernel/nmi_watchdog"
 sudo sh -c "echo 'kernel.nmi_watchdog=0' >> /etc/sysctl.conf"
 
-#echo -e '\nAdding Intel VTune Sampling Drivers'
-#cd $VTUNE_AMPLIFIER_2018_DIR/sepdk/src
-#sudo ./insmod-sep -r -g `whoami`
+echo -e '\nCorrectly adding Intel VTune Sampling Drivers'
+cd ${VTUNE_AMPLIFIER_2018_DIR}/sepdk/src
+sudo ./insmod-sep -r -g `whoami` -pu
+sudo ./boot-script --install -g `whoami` -pu
 
 echo -e '\nInstalling Likwid'
 BM="likwid"
