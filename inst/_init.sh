@@ -126,6 +126,8 @@ sudo tuned-adm profile latency-performance
 tuned-adm verify
 export PATH=$ROOTDIR/dep/likwid/bin:\$PATH
 export LD_LIBRARY_PATH=$ROOTDIR/dep/likwid/lib:\$LD_LIBRARY_PATH
-likwid-setFrequencies -g performance --freq 2.2 --turbo 1 --umin 2.7 --umax 2.7
+#Xeon: likwid-setFrequencies -g performance --freq 2.2 --turbo 1 --umin 2.7 --umax 2.7
+#KNL:  likwid-setFrequencies -g performance --freq 1.301 --turbo 1
+#KNM:  likwid-setFrequencies -g performance --freq 1.501 --turbo 1
 likwid-setFrequencies -p"
 
