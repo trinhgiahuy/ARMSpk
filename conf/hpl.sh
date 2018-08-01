@@ -6,7 +6,7 @@ export HPLNS=$((336*192))
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="5m"
 export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="yes"
@@ -30,7 +30,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 			 64|1|8|8 64|2|8|8
 			 128|1|16|8
 			 256|1|16|16"
-	export BESTCONF=""
+	export BESTCONF="64|1|8|8"
 	export HPLNB="336"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)

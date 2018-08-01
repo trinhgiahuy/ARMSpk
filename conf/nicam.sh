@@ -18,7 +18,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="10|5 10|6 10|7 10|10 10|15 10|20 10|25"
-	export BESTCONF=""
+	export BESTCONF="10|15"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF="10|5 10|6 10|7 10|10 10|14 10|16 10|20 10|28 10|30"

@@ -30,7 +30,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 			 64|1|4|4|4 64|2|4|4|4 64|4|6|4|4 64|6|6|4|4
 			 128|1|8|4|4 128|2|8|4|4 128|3|8|4|4
 			 256|1|8|8|4 256|2|8|8|4"
-	export BESTCONF=""
+	export BESTCONF="1|128|1|1|1"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF="1|64|1|1|1 1|72|1|1|1 1|128|1|1|1 1|144|1|1|1 1|192|1|1|1 1|256|1|1|1 1|288|1|1|1
