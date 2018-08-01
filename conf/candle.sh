@@ -15,11 +15,11 @@ export RUNVTUNE="yes"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="1 2 6 12 24 48"
-	export BESTCONF="24"
+	export BESTCONF=""
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1 32 64 128 192 256"
-	export BESTCONF="32"
+	export BESTCONF=""
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF="1 36 72 144 216 288"

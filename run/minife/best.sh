@@ -25,6 +25,8 @@ for BEST in $BESTCONF; do
 			timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 			ENDED="`date +%s.%N`"
+			cat ./miniFE.*.yaml >> $LOG 2>&1
+			rm -f ./miniFE.*.yaml
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		done
 	done

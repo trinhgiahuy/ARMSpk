@@ -40,6 +40,8 @@ for BEST in $BESTCONF; do
 		echo "=== sde run ===" >> $LOG 2>&1
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $BINARY $INPUT" >> $LOG 2>&1
+		cat ./miniFE.*.yaml >> $LOG 2>&1
+		rm -f ./miniFE.*.yaml
 		for P in `seq 0 $((NumMPI - 1))`; do
 			echo "SDE output of MPI process $P" >> $LOG 2>&1
 			cat ./oSDE/${P}.txt >> $LOG 2>&1
@@ -56,17 +58,23 @@ for BEST in $BESTCONF; do
 			PCM+=" 360000 -- "
 			echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 			$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+			cat ./miniFE.*.yaml >> $LOG 2>&1
+			rm -f ./miniFE.*.yaml
 		done
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
 		echo "mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		cat ./miniFE.*.yaml >> $LOG 2>&1
+		rm -f ./miniFE.*.yaml
 		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTP.`hostname`
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
 		echo "mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		cat ./miniFE.*.yaml >> $LOG 2>&1
+		rm -f ./miniFE.*.yaml
 		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
 		rm -rf ./oVTM.`hostname`
 	fi

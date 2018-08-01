@@ -2,7 +2,6 @@
 
 export APPDIR="./MiniFE"
 export BINARYS="./mkl/src/miniFE.x ./openmp-opt-knl/src/miniFE.x ./openmp-opt/src/miniFE.x"
-export BBINARY="./mkl/src/miniFE.x"
 export INPUT="-nx 128 -ny 128 -nz 128"
 export NumRunsTEST=3
 export NumRunsBEST=10
@@ -22,6 +21,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 32|1 32|2
 			 48|1
 			 96|1"
+	export BBINARY="./mkl/src/miniFE.x"
 	export BESTCONF="24|1"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
@@ -34,7 +34,8 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 			 128|1 128|2
 			 192|1
 			 256|1"
-	export BESTCONF="1|64"
+	export BBINARY=""
+	export BESTCONF=""
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF="1|64 1|72 1|128 1|144 1|192 1|256 1|288
@@ -50,6 +51,7 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 192|1
 			 256|1
 			 288|1"
+	export BBINARY=""
 	export BESTCONF=""
 else
 	echo "Unsupported host"

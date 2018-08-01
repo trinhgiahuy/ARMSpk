@@ -51,15 +51,17 @@ if [ ! -f $ROOTDIR/dep/$BM/likwid-setFrequencies ]; then
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	sed -i -e "s# /usr/local\#NO# $ROOTDIR/dep/$BM\#/usr/local\#NO#" ./config.mk
 	make
-	for x in `ls likwid-*`; do if [ -x $x ]; then sudo setcap cap_sys_admin,cap_sys_rawio+ep $x; fi; done
+	sudo make install
+	for x in `ls bin/likwid-*`; do if [ -x $x ]; then sudo setcap cap_sys_admin,cap_sys_rawio+ep $x; fi; done
 	cat /proc/cmdline | grep 'intel_pstate=disable'  > /dev/null
 	# vim /etc/default/grub
 	# grub2-mkconfig -o /boot/grub2/grub.cfg
 	# grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
 	# reboot
 	if [ ! "x$?" = "x0" ]; then echo -e 'Note: for likwid to work, please add 'intel_pstate=disable' to kernel parameter and reboot; Afterwards, run this script again'; fi
-	echo -e "Please execute:\n  export PATH=$ROOTDIR/dep/$BM:\$PATH\n  export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM:\$LD_LIBRARY_PATH"
+	echo -e "Please execute:\n  export PATH=$ROOTDIR/dep/$BM/bin:\$PATH\n  export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM/lib:\$LD_LIBRARY_PATH"
 	cd $ROOTDIR
 fi
 
@@ -117,5 +119,13 @@ sudo chmod go+rw /sys/firmware/acpi/tables/MCFG
 sudo chmod go+rw /dev/cpu/*/msr
 sudo chmod go+rw /dev/cpu/*/msr_safe
 sudo chmod go+rw /proc/bus/pci/*/*.*
-sudo chmod go+rw /dev/mem"
+sudo chmod go+rw /dev/mem
+sudo tuned-adm off
+sleep 5
+sudo tuned-adm profile latency-performance
+tuned-adm verify
+export PATH=$ROOTDIR/dep/likwid/bin:\$PATH
+export LD_LIBRARY_PATH=$ROOTDIR/dep/likwid/lib:\$LD_LIBRARY_PATH
+likwid-setFrequencies -g performance --freq 2.2 --turbo 1 --umin 2.7 --umax 2.7
+likwid-setFrequencies -p"
 
