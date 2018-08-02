@@ -21,12 +21,14 @@ for TEST in $TESTCONF; do
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
 		make libssc.so
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
+		NROUND=1
 		for i in `seq 1 $NumRunsTEST`; do
 			START="`date +%s.%N`"
 			timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT >> $LOG 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; NROUND=0; fi
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+			if [ "x${NROUND}" = "x0" ]; then break; fi
 		done
 		popd
 	done

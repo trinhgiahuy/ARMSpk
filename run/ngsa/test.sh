@@ -38,12 +38,13 @@ for TEST in $TESTCONF; do
 	NumMPI="`echo $TEST | cut -d '|' -f1`"
 	NumOMP="`echo $TEST | cut -d '|' -f2`"
 	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	NROUND=1
 	for i in `seq 1 $NumRunsTEST`; do
 		# prep input (dep on numMPI; up to 12 supported)
 		PreprocessInput $NumMPI $INPUTDIR
 		START="`date +%s.%N`"
 		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; NROUND=0; fi
 		ENDED="`date +%s.%N`"
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		# clean up
@@ -51,6 +52,7 @@ for TEST in $TESTCONF; do
 		if [ -d $INPUTDIR/00-read-rank ]; then
 			rm -rf $INPUTDIR/00-read-rank
 		fi
+		if [ "x${NROUND}" = "x0" ]; then break; fi
 	done
 done
 echo "Best NGS Analyzer run:"
