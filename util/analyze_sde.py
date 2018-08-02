@@ -25,6 +25,7 @@ fxfr_re = compile('^\*dataxfer_fp_(\w+)_(\d+)\s+(\d+)')
 real_re = compile('^\*elements_fp_single_(\d+)\s+(\d+)')
 dble_re = compile('^\*elements_fp_double_(\d+)\s+(\d+)')
 inte_re = compile('^\*elements_i(\d+)_(\d+)\s+(\d+)')
+bran_re = compile('^\*cond-branch-\w+\s+(\d+)')
 vfms_re = compile('^VFM.*(SS|SD|PS).*(XMM|YMM|ZMM).*\s+(\d+)')
 mult = {'XMM': 2, 'YMM': 4, 'ZMM':8}
 
@@ -35,6 +36,7 @@ num_dataxfer_flo = 0
 num_ops_real = 0
 num_ops_dble = 0
 num_ops_inte = 0
+num_branches = 0
 
 # ignore subfolders
 for _, _, files in walk(sdeout_dir):
@@ -70,6 +72,10 @@ for _, _, files in walk(sdeout_dir):
 				if inte_re.match(line):
 					m = inte_re.match(line)
 					num_ops_inte += int(m.group(2)) * int(m.group(3))
+					continue
+				if bran_re.match(line):
+					m = bran_re.match(line)
+					num_branches += int(m.group(1))
 					continue
 				if vfms_re.match(line):
 					m = vfms_re.match(line)
@@ -115,6 +121,7 @@ print("Number FLOAT data transfers:", num_dataxfer_flo)
 print("Total #(DP)GFLOP:", num_ops_dble/(1000.0*1000*1000))
 print("Total #(SP)GFLOP:", num_ops_real/(1000.0*1000*1000))
 print("Total #GINTOP:", num_ops_inte/(1000.0*1000*1000))
+print("Total #Gbranches:", num_branches/(1000.0*1000*1000))
 
 print("GFLOP/s (SP):", num_ops_real/(1000.0*1000*1000*kernel_rtime))
 print("GFLOP/s (DP):", num_ops_dble/(1000.0*1000*1000*kernel_rtime))
