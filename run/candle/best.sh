@@ -20,6 +20,8 @@ for BEST in $BESTCONF; do
 		NumOMP=$BEST
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
 		make libssc.so
+		# check if data is hot or must be preloaded
+		python ./p1b1.py
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsBEST`; do
 			START="`date +%s.%N`"
