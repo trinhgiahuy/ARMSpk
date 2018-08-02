@@ -9,7 +9,7 @@ export NumRunsBEST=10
 export MAXTIME="1m"
 export RUNSDE="yes"
 export RUNPCM="yes"
-export RUNVTUNE="no" #"yes"
+export RUNVTUNE="yes"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon

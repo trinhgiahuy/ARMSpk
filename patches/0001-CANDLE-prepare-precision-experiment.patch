@@ -1,4 +1,4 @@
-From dff1cef46ed9fcc206beeeaa2ace91572974f068 Mon Sep 17 00:00:00 2001
+From 313747e5700f284debab78cc7e8f5a37f41c82ea Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:34:00 +0900
 Subject: [PATCH 1/1] CANDLE: prepare precision experiment
@@ -7,6 +7,7 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore                          |  4 ++++
  Pilot1/P1B1/Makefile                | 20 ++++++++++++++++++++
+ Pilot1/P1B1/p1b1.py                 | 26 ++++++++++++++++++++++++--
  Pilot1/P1B1/p1b1_baseline_keras2.py | 27 ++++++++++++++++++++++-----
  Pilot1/P1B1/ssc.c                   | 14 ++++++++++++++
  Pilot1/P1B2/Makefile                | 20 ++++++++++++++++++++
@@ -27,7 +28,7 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  Pilot3/P3B2/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B2/p3b2_baseline_keras2.py | 19 +++++++++++++++++++
  Pilot3/P3B2/ssc.c                   | 14 ++++++++++++++
- 22 files changed, 380 insertions(+), 13 deletions(-)
+ 23 files changed, 404 insertions(+), 15 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 Pilot1/P1B1/Makefile
  create mode 100644 Pilot1/P1B1/ssc.c
@@ -80,6 +81,64 @@ index 0000000..cda4825
 +	mpirun -n 2 ./testC.exe
 +	mpirun -n 2 ./testF.exe
 +	python ./test.py
+diff --git a/Pilot1/P1B1/p1b1.py b/Pilot1/P1B1/p1b1.py
+index 83d0fd2..6ff3a8d 100644
+--- a/Pilot1/P1B1/p1b1.py
++++ b/Pilot1/P1B1/p1b1.py
+@@ -15,7 +15,8 @@ lib_path = os.path.abspath(os.path.join(file_path, '..', '..', 'common'))
+ sys.path.append(lib_path)
+ 
+ from data_utils import get_file
+-
++from cPickle import load, dump
++from shutil import rmtree
+ 
+ seed = 2016
+ 
+@@ -25,10 +26,20 @@ def get_p1_file(link):
+     return get_file(fname, origin=link, cache_subdir='Pilot1')
+ 
+ 
+-def load_data(shuffle=True, n_cols=None):
++def load_data(shuffle=True, n_cols=None, check_dump_only=False):
+     train_path = get_p1_file('http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B1/P1B1.train.csv')
+     test_path = get_p1_file('http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B1/P1B1.test.csv')
+ 
++    try:
++        X_train_path = get_file(fname='X_train.b', origin='', cache_subdir='Pilot1')
++        X_test_path = get_file(fname='X_test.b', origin='', cache_subdir='Pilot1')
++        if check_dump_only: return (True, True)
++        X_train = load(open(X_train_path, 'rb'))
++        X_test  = load(open(X_test_path, 'rb'))
++        return X_train, X_test
++    except:
++        pass
++
+     usecols = list(range(n_cols)) if n_cols else None
+ 
+     df_train = pd.read_csv(train_path, engine='c', usecols=usecols)
+@@ -51,6 +62,13 @@ def load_data(shuffle=True, n_cols=None):
+     X_train = mat[:X_train.shape[0], :]
+     X_test = mat[X_train.shape[0]:, :]
+ 
++    try:
++        dump(X_train, open(os.path.join(os.path.dirname(train_path), 'X_train.b'), 'wb'))
++        dump(X_test, open(os.path.join(os.path.dirname(test_path), 'X_test.b'), 'wb'))
++    except:
++        rmtree(os.path.join(os.path.dirname(train_path), 'X_train.b'), True)
++        rmtree(os.path.join(os.path.dirname(test_path), 'X_test.b'), True)
++
+     return X_train, X_test
+ 
+ 
+@@ -63,3 +81,7 @@ def evaluate(y_pred, y_test):
+     accuracy = accuracy_score(ya, ypa)
+     # print('Final accuracy of best model: {}%'.format(100 * accuracy))
+     return {'accuracy': accuracy}
++
++
++if __name__ == '__main__':
++    _, _ = load_data(check_dump_only=True)
 diff --git a/Pilot1/P1B1/p1b1_baseline_keras2.py b/Pilot1/P1B1/p1b1_baseline_keras2.py
 index 4f13f2f..ee773e8 100644
 --- a/Pilot1/P1B1/p1b1_baseline_keras2.py

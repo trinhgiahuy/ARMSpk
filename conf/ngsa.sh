@@ -9,7 +9,7 @@ export NumRunsBEST=10
 export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="yes"
-export RUNVTUNE="no" #"yes"
+export RUNVTUNE="yes"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
@@ -31,7 +31,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 			 16|4 16|8 16|12 16|16
 			 32|2 32|4 32|6 32|8
 			 64|1 64|2 64|4 64|6"
-	export BESTCONF=""
+	export BESTCONF="4|32"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
 	export TESTCONF="1|64 1|72 1|128 1|144 1|192 1|256 1|288

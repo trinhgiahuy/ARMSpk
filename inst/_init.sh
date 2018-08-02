@@ -31,6 +31,9 @@ echo $LD_LIBRARY_PATH | sed -e 's/:/\n/g' > /dev/shm/precision.conf
 sudo mv /dev/shm/precision.conf /etc/ld.so.conf.d/
 sudo ldconfig
 
+echo -e '\nFix problem with Vtune getting stuck it seems'
+ssh -o StrictHostKeyChecking=no `hostname` echo ''
+
 echo -e '\nDisabling NMI watchdog'
 sudo sh -c "echo 0 > /proc/sys/kernel/nmi_watchdog"
 sudo sh -c "echo 'kernel.nmi_watchdog=0' >> /etc/sysctl.conf"
