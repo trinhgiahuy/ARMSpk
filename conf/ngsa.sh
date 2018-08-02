@@ -6,7 +6,7 @@ export INPUTDIR="./ngsa_mini_input"
 export INPUT="$INPUTDIR/bwa_db/reference.fa $INPUTDIR/seq_contig.md $INPUTDIR/reference.fa $INPUTDIR/reference.fa.fai $INPUTDIR/00-read-rank"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="40m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
@@ -22,7 +22,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 32|1 32|2
 			 48|1 48|2
 			 96|1"
-	export BESTCONF=""
+	export BESTCONF="12|4"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256

@@ -47,7 +47,7 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 192|1|16|12
 			 256|1|16|16
 			 288|1|18|16"
-	export BESTCONF=""
+	export BESTCONF="72|1|9|8"
 	export HPLNB="336"
 else
 	echo "Unsupported host"

@@ -51,8 +51,8 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 192|1
 			 256|1
 			 288|1"
-	export BBINARY=""
-	export BESTCONF=""
+	export BBINARY="./mkl/src/miniFE.x"
+	export BESTCONF="72|1"
 else
 	echo "Unsupported host"
 	exit
