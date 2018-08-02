@@ -6,13 +6,14 @@ export INPUTDIR="./ngsa_mini_input"
 export INPUT="$INPUTDIR/bwa_db/reference.fa $INPUTDIR/seq_contig.md $INPUTDIR/reference.fa $INPUTDIR/reference.fa.fai $INPUTDIR/00-read-rank"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="40m"
 export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
+	export MAXTIME="10m"
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
 			 2|6 2|12 2|24
 			 4|1 4|2 4|4 4|6 4|12

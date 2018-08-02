@@ -7,13 +7,14 @@ export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 export MKL_THREADING_LAYER=GNU
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="40m"
 export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="no" #"yes"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
+	export MAXTIME="10m"
 	export TESTCONF="1 2 6 12 24 48"
 	export BESTCONF="12"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
