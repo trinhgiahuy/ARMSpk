@@ -15,15 +15,15 @@ export RUNVTUNE="no" #"yes"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export MAXTIME="10m"
-	export TESTCONF="1 2 6 12 24 48"
+	export TESTCONF="2 6 12 24 48"
 	export BESTCONF="12"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
-	export TESTCONF="1 32 64 128 192 256"
+	export TESTCONF="32 64 128 192 256"
 	export BESTCONF=""
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export TESTCONF="1 36 72 144 216 288"
+	export TESTCONF="36 72 144 216 288"
 	export BESTCONF=""
 else
 	echo "Unsupported host"
