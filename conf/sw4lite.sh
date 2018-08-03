@@ -5,7 +5,7 @@ export INPUT="./tests/pointsource/pointsource.in"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
-export RUNSDE="no"
+export RUNSDE="yes"
 export RUNPCM="yes"
 export RUNVTUNE="yes"
 
