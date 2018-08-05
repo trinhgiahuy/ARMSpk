@@ -14,7 +14,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export MAXTIME="10m"
 	export TESTCONF="2 6 12 18 24"
-	export BESTCONF=""
+	export BESTCONF="12"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="8 16 32 64 96 128"

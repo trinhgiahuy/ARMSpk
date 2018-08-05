@@ -54,9 +54,9 @@ cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	# prep input (dep on numMPI; up to 12 supported)
-	PreprocessInput $NumMPI $INPUTDIR
 	if [ "x$RUNSDE" = "xyes" ]; then
+		# prep input (dep on numMPI; up to 12 supported)
+		PreprocessInput $NumMPI $INPUTDIR
 		mkdir -p ./oSDE
 		echo "=== sde run ===" >> $LOG 2>&1
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
@@ -81,6 +81,8 @@ for BEST in $BESTCONF; do
 		# reset PMU counters
 		pcm.x -r -- mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=1 `lscpu | grep '^CPU(s):' | awk '{print $2}'` sleep 0.1 >> /dev/null 2>&1
 		for PCM in $PCMB; do
+			# prep input (dep on numMPI; up to 12 supported)
+			PreprocessInput $NumMPI $INPUTDIR
 			echo "=== intel $PCM run ===" >> $LOG 2>&1
 			PCM+=" 360000 -- "
 			echo "$PCM mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
@@ -90,6 +92,8 @@ for BEST in $BESTCONF; do
 		done
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
+		# prep input (dep on numMPI; up to 12 supported)
+		PreprocessInput $NumMPI $INPUTDIR
 		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
 		echo "mpiexec -gtool \"amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all\" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
@@ -97,6 +101,8 @@ for BEST in $BESTCONF; do
 		rm -rf ./oVTP.`hostname`
 		rm -rf workflow_*
 		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+		# prep input (dep on numMPI; up to 12 supported)
+		PreprocessInput $NumMPI $INPUTDIR
 		echo "=== vtune memory-access ===" >> $LOG 2>&1
 		echo "mpiexec -gtool \"amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all\" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
