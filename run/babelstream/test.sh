@@ -11,7 +11,7 @@ ulimit -n 4096
 
 # ============================ BabelStream ====================================
 source conf/babelstream.sh
-LOG="$ROOTDIR/log/`hostname -s`/testrun/babelstream.log"
+DEFLOG="$ROOTDIR/log/`hostname -s`/testrun/babelstream"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT
@@ -21,6 +21,7 @@ for TEST in $TESTCONF; do
 		NumOMP=$TEST
 		S="`echo $BINARY | cut -d '_' -f2`"
 		BINARY="`echo $BINARY | cut -d '_' -f1`"
+		LOG="${DEFLOG}${S}gb.log"
 		S=$((S*1024*1024*1024/8))
 		INPUT="`echo $DEFINPUT | sed -e \"s/SIZE/$S/\"`"
 		echo "mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1

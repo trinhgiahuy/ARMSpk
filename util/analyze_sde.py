@@ -26,8 +26,9 @@ real_re = compile('^\*elements_fp_single_(\d+)\s+(\d+)')
 dble_re = compile('^\*elements_fp_double_(\d+)\s+(\d+)')
 inte_re = compile('^\*elements_i(\d+)_(\d+)\s+(\d+)')
 bran_re = compile('^\*cond-branch-\w+\s+(\d+)')
-vfms_re = compile('^VFM.*(SS|SD|PS).*(XMM|YMM|ZMM).*\s+(\d+)')
-mult = {'XMM': 2, 'YMM': 4, 'ZMM':8}
+vfms_re = compile('^VFM.*(SS|SD|PS|PD).*(XMM|YMM|ZMM).*\s+(\d+)')
+multSP = {'XMM': 4, 'YMM': 8, 'ZMM': 16}
+multDP = {'XMM': 2, 'YMM': 4, 'ZMM': 8}
 
 mread_in_byte = 0
 mwrite_in_byte = 0
@@ -78,15 +79,20 @@ for _, _, files in walk(sdeout_dir):
 					num_branches += int(m.group(1))
 					continue
 				if vfms_re.match(line):
+					# Intel: The above (elements_*) by itself
+					# is not sufficient since the Fused Multiply
+					# and Add instruction (FMA) is counted
+					# as 1 FLOP by the above counters.
+					# -> don't multiply by 2x since half is already counted
 					m = vfms_re.match(line)
 					if 'SS' in m.group(1):
 						num_ops_real += int(m.group(3))
 					elif 'SD' in m.group(1):
 						num_ops_dble += int(m.group(3))
 					elif 'PS' in m.group(1):
-						num_ops_real += 2 * mult[m.group(2)] * int(m.group(3))
+						num_ops_real += multSP[m.group(2)] * int(m.group(3))
 					elif 'PD' in m.group(1):
-						num_ops_dble += mult[m.group(2)] * int(m.group(3))
+						num_ops_dble += multDP[m.group(2)] * int(m.group(3))
 	break
 
 total_rtime_re = compile('^Total running time:\s+([-+]?\d*\.\d+|\d+|-)')

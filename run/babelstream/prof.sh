@@ -29,7 +29,7 @@ VTRO="-data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir .
 
 # ============================ BabelStream ====================================
 source conf/babelstream.sh
-LOG="$ROOTDIR/log/`hostname -s`/profrun/babelstream.log"
+DEFLOG="$ROOTDIR/log/`hostname -s`/profrun/babelstream"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT
@@ -39,6 +39,7 @@ for BEST in $BESTCONF; do
 		NumOMP=$BEST
 		S="`echo $BINARY | cut -d '_' -f2`"
 		BINARY="`echo $BINARY | cut -d '_' -f1`"
+		LOG="${DEFLOG}${S}gb.log"
 		S=$((S*1024*1024*1024/8))
 		INPUT="`echo $DEFINPUT | sed -e \"s/SIZE/$S/\"`"
 		if [ "x$RUNSDE" = "xyes" ]; then
