@@ -66,7 +66,7 @@ for BEST in $BESTCONF; do
 		if [ "x$RUNVTUNE" = "xyes" ]; then
 			for VTO in $VTAO; do
 				echo "=== vtune $VTO ===" >> $LOG 2>&1
-				echo "mpiexec -gtool \"amplxe-cl -collect $VTO $VTRO\" $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1 
+				echo "mpiexec -gtool \"amplxe-cl -collect $VTO $VTRO\" $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT" >> $LOG 2>&1
 				mpiexec -gtool "amplxe-cl -collect $VTO $VTRO" $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI python $BINARY $INPUT >> $LOG 2>&1
 				amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
 				rm -rf ./oVTP.`hostname`
