@@ -45,6 +45,8 @@ else
 fi
 export PATH=$ROOTDIR/dep/intel-pcm:$PATH
 PCMB="pcm.x pcm-memory.x pcm-power.x"
+VTAO="hpc-performance memory-access"
+VTRO="-data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all"
 
 # ============================ NGSA ===========================================
 source conf/ngsa.sh $ROOTDIR
@@ -92,24 +94,17 @@ for BEST in $BESTCONF; do
 		done
 	fi
 	if [ "x$RUNVTUNE" = "xyes" ]; then
-		# prep input (dep on numMPI; up to 12 supported)
-		PreprocessInput $NumMPI $INPUTDIR
-		echo "=== vtune hpc-performance ===" >> $LOG 2>&1
-		echo "mpiexec -gtool \"amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all\" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		mpiexec -gtool "amplxe-cl -collect hpc-performance -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTP:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
-		rm -rf ./oVTP.`hostname`
-		rm -rf workflow_*
-		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
-		# prep input (dep on numMPI; up to 12 supported)
-		PreprocessInput $NumMPI $INPUTDIR
-		echo "=== vtune memory-access ===" >> $LOG 2>&1
-		echo "mpiexec -gtool \"amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all\" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
-		mpiexec -gtool "amplxe-cl -collect memory-access -data-limit=0 -finalization-mode=none -no-summary -trace-mpi -result-dir ./oVTM:all" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
-		amplxe-cl -report summary -q -result-dir ./oVTM.`hostname` >> $LOG 2>&1
-		rm -rf ./oVTM.`hostname`
-		rm -rf workflow_*
-		if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+		for VTO in $VTAO; do
+			# prep input (dep on numMPI; up to 12 supported)
+			PreprocessInput $NumMPI $INPUTDIR
+			echo "=== vtune $VTO ===" >> $LOG 2>&1
+			echo "mpiexec -gtool \"amplxe-cl -collect $VTO $VTRO\" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+			mpiexec -gtool "amplxe-cl -collect $VTO $VTRO" $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+			amplxe-cl -report summary -q -result-dir ./oVTP.`hostname` >> $LOG 2>&1
+			rm -rf ./oVTP.`hostname`
+			rm -rf workflow_*
+			if [ -d $INPUTDIR/00-read-rank ]; then rm -rf $INPUTDIR/00-read-rank; fi
+		done
 	fi
 done
 cd $ROOTDIR
