@@ -308,10 +308,7 @@
 % to submit to, of course. )
 
 
-\usepackage{etoolbox}
-\newtoggle{doubleblind}
-%\toggletrue{doubleblind}
-\togglefalse{doubleblind}
+\input{extra-packages}
 
 
 % correct bad hyphenation here
@@ -326,12 +323,12 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{Less FP64 Units for Everyone: Investigating the Impact of Having Less Double Precision FPUs on Processors for HPC Applications}
-
+%\title{Less FP64 Units for Everyone: Investigating the Impact of Having Less Double Precision FPUs on Processors for HPC Applications}
+\title{Bottlenecks in Modern Systems: Studying the Impact of FP64 Units on HPC Workloads}
 
 % author names and affiliations
 % use a multiple column layout for up to three different
-% affiliations
+% affiliation
 \iftoggle{doubleblind}{
   \author{(hidden for double-blind review)}
 }{
@@ -426,81 +423,17 @@
 \input{introduction}
 % 1 page
 
-% - analyze if either of the BM suits has been used in other studies (not as individual apps but as the entire ECP/portK set
-% - analyze the usage of what type of apps/sciences is run on HPC systems -> give weights on the apps and requirements
-
-\input{Systems-and-applications}
-% follow bio papers: materials
+\input{systems-and-app}
 % 1.5 page
-
-% table with comparison/differences
-% incl non performance relevant info: name, type/domain, programming lang, etc., input type (dummy genome vs human genome, 3d sphere vs 2d stuff, etc); bytes-per-flop if in ref.?
 
 \input{methodology}
 % 1.5 page
 
-% no changes to any code (unless fixing bug)
-% 2 similar architecture, executed lots of bench for flops/memory/power
-% normalize results on #cores (avoid bad numa settings); change freq to 1.3Ghz; etc -> to reduce obvious differences betw KNL/KNM
-% xhost, intel, same compile
-% run parameter sweep
-%    #runs per app -> min/max/avg???
-% strong scaling vs weak scaling
-% tools/profileer/etc used ("exclusive" to intel SW stack + open-source)
-% subsection on oddities of our config:
-%    compiler/OS/kernel (w/ meltdown patch)
-%    stupid mcdram behavior -> warm up ...
-%    intel_pstate=disable for freq
-%    fixed uncore freq.
-
-\input{evaluation-incl-result-"summary"}
+\input{eval-incl-result-summary}
 % 2.5 -- 3 pages
 
-% runtime overall
-% time in solver
-% percentage instructions
-% performance in (sp/dp) gflop/s
-% total #flops
-% memory usage
-% resource stall counter
-% LLC hit/miss rate
-% fp64/fp32/int/(branch?)/(unconditional memory ops; -> LOAD/STORE) instructions
-% power usage
-% memory-boundness, multitude of tests based on:
-%  - educated guess
-%  - roofline
-%  - stalled instructions
-%  - frequ. scaling
-%  - mcdram? vs ddr?
-%  - traffic betw. LLC and RAM
-%  (-- how much does each of these contribute to the ground-truth???)
-% normalized based on number of core or absolute numbers, dep. on context/what to show
-% ** create all graphs and check for the **anomalies**
-%
-% => all 3 systems (find kiev w/ right pcm results)
-
-% put uninteresting stuff into TechReport
-
-\input{discussion-on-implications-and-outlooks}
+\input{discussion-and-outlooks}
 % 1 page
-
-% - themes: time-to-solution is most important metric
-% - instructions doesn't matter too much because most are memory-bound
-% - apps have different requirements
-% - people need to dive deeper into their workloads
-% - suggestion: decouple notion of hpc apps need high FP64 and which architecture to choose => see if NASA has papers on their design choices?!
-
-
-% - option: suggest to ditch fp32 and emulate fp32 ops in fp64 units
-% - mixed precision can't work (requ. hand tuning in each app) -> not practical
-% - compute bound codes -> what if no FP64 anymore in new chips -> what will they do?
-% - memory bound: doesn't matter if fp64 is gone
-% lay out options for comp.-bound guys:
-% a) library
-% b) mixed precision
-% c) emulated by 2 fp32
-% d) hope for cpu support for faster emulation
-% e) accept the perf hit :-(
 
 \input{related-work}
 % 1/2 page

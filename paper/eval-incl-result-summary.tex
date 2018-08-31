@@ -1,0 +1,62 @@
+\section{Evaluation}
+% goal: 2.5 -- 3 pages
+
+% language (report) + program desciption + (Minami-san classication M1-M6 or so for apps)
+% run time overall (can measure but not strickly needed)
+% time in solver
+% abs numbers / percentage instructions
+% performance in (sp/dp) gflop/s
+% total #flops (part of 2. above)
+% memory usage (peak mem util ; memory throughput; info from vtune?? for L1/L2/L3?) -> try carefully vtune
+% !! fix uncore to max.
+% !! KNL+KNM keep at max freq. (perf govenour + max fequ)
+% resource stall counter (abs/percentage) -> vtune
+% LLC hit/miss rate (also +L2 rates if in mcdram in cache; skip flat mode)
+% fp64/fp32/int/(branch?)/(unconditional memory ops; -> LOAD/STORE) instructions -> get load/store from SDE (ask artur for details)
+% power usage (use pcm-power and report per kernel number)
+% memory-boundness, multitude of tests based on, and list all:
+%  - educated guess + flops/to/bytes
+%  - roof line (!skip)
+%  - stalled instructions (artur: diff from resource stall counter)
+%  - frequ. scaling -> least important item (skip if not needed)
+%  - mcdram? vs ddr? (skip flat mode but report that we tried -> faster memory -> faster exec?)
+%  - traffic betw. LLC and RAM (pcm-mem and CAREFUL about broken numbers on socket 1 on kiev)
+%  (-- how much does each of these contribute to the ground-truth???)
+% normalized based on number of core or absolute numbers, dep. on context/what to show
+% ** create all graphs and check for the **anomalies**
+%
+% => all 3 systems (find kiev w/ right pcm results)
+
+% put uninteresting stuff into TechReport
+
+
+%% BM list
+%
+%  - memory foot print (ignore KNM because heaptrack broken -> but use lyon numbers to extrapolate)
+%  - running scripts: jens has all
+%  - scipts for  analysin g results : matsumura
+%  - script for figure creating : matsumura
+%  - master script: jens
+%  - FORCED blackout aug! ->careful when to run
+%  - solo on system (init 3?); any OS variance? SAME kernel! -> avoid the one with gnome (maybe lyon3+mill1+kiev5) -> maybe 3 ssd or ask nomura what best to isolate node (init 3 plus network stack maybe)
+%  - take best time and recalculate mem throughput / power reported based on best time and not based on time in the run of pcm (if vastly different)
+
+%matsumura: memory used on ngsa? heaptrack -> broken?
+%matsumura: what is "copy of ..." sheets? flat or cache?
+%yashima: KNL numbers updated for SW4lite: forgot to update colors or no yet updated?
+%artur: powsample: reports processor or cpu+mem? we see 234W in one app on KNL whihc is above TDP (230W)
+%jens: pcm-pwer: main result is cpu or node??? -> hamid: everything on the package
+%jens: compare pcm-pwer vs powsameple for sw4lite
+%artur: how can you have higher than TDP power? esp if BM/powersample reports power over time (avg?) and has like sw4lite a "big" init phase
+%haoyu+yashima: compile CoMD/Sw4Lite with -mtune=core-avx2 instead of -xHost (to check if code has unvectorized instructions -> artur's theory)
+%artur: original modylas problem: how to get instruction mix? to test this theory? which counters?
+%hayou: perf defined as image per sec (instead of gflops or so)
+%everyone: check jens's config skript for input data set? cross check -> want to run same everyone
+%everyone: check analysis scripts together
+
+\subsection{System Description}
+
+\subsection{analysis of metrics}
+
+\subsection{Power, Area, etc}
+
