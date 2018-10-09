@@ -1,0 +1,77 @@
+\section{Introduction}\label{sec:intro}
+% goal: 1 page
+% - analyze if either of the BM suits has been used in other studies (not as individual apps but as the entire ECP/portK set
+% - analyze the usage of what type of apps/sciences is run on HPC systems -> give weights on the apps and requirements
+
+%\todo{==========GUIDE LINES=========\\}
+%\todo{everyone make heavy use of cross-ref to sections and figs\\}
+%\todo{write clear, short (~1/3 of a half-side) paragraphs, short sentences, "we" and "active" form!\\}
+%\todo{never use abbreviations unless previously written somewhere like "...Knights Mill (KNM)..."\\}
+%\todo{every fact, statement: BACK IT UP by cross-ref in this paper, ref to other
+%papers/books/write-papers/manuals(/blogs/websites), or proof it otherwise\\}
+%\todo{avoid "fancy" writing such as: fantastic, great, extreme high, poor, ...\\}
+%\todo{please use newlines after 70--100 characters and not one or multiple sentences on single line\\}
+%\todo{don't delete large sections of your writing; NEVER delete section of others; use \% to comment stuff
+%out and notify the person\\}
+%\todo{make heavy use of \textbackslash label and \textbackslash ref command for figs, tables, sections,
+%subsections, equations, etc\\}
+
+It is becoming increasingly clear that the road forward in High-Performance Computing (HPC) is one full of obstacles.
+With the ending of Dennard’s scaling~\cite{dennard_design_1974} and the ending of Moore’s law~\cite{moore_lithography_1995},
+there is today an ever-increasing need to oversee how we allocate the silicon to various functional unit in modern many-core
+processors. Amongst these decisions is how we distributed the hardware support for various level of compute-precision.
+
+Historically, most of the compute silicon has been allocated to double-precision (64-bit) compute.
+Nowadays -- in processors such as the forthcoming AA64FX~\cite{yoshida_fujitsu_2018} and Nvidia
+Volta~\cite{choquette_volta:_2018} -- the trend, mostly driven by market/AI demands, is to replace
+some of the double-precision units with lower-precision units.
+Lower-precision units occupy less area (up-to ~3x going from single- to double-precision
+Fused-Multiply-Accumulate~\cite{pu_fpmax:_2016}), leading to more on-chip resources (more
+instruction-level parallelism), potentially lowered energy consumption, and a definitive
+decrease in external memory bandwidth pressure (more values per unit bandwidth).
+The gains -- up-to four times over their DP variants with little loss in
+accuracy~\cite{haidar_harnessing_2018} -- are attractive and clear, but what is the impact on
+performance (if any) on existing legacy HPC applications? What performance impact can legacy
+HPC users expect when migrating their code to future processors with a different distribution
+in floating-point precision support? Finally, how can we empirically quantify this impact on
+performance using existing processors in an apple-to-apple fashion on real-life use-case
+without relying on tedious and slow simulators? %\cJD{note: make sure we actually will answer these}
+
+The Xeon Phi was supposed to be the high-end for many-core processor technology for nearly
+a decade (Knight’s Ferry was announced in 2010), and has changed drastically since its first released.
+The latest (and also last) two revisions -- the Knight’s Landing and Knight’s Mill -- are of
+particular importance since they arguable reflect two different ways of thinking. Knight’s Landing
+has relatively large support for double-precision (64-bit) computations, and follows an arguable
+old school of thought. The Knight’s Mill follows a different direction, which is the replace
+the double-precision compute units with lower-precision (single-, half-precision and integer)
+compute capabilities.
+
+In the present paper, we quantify and analyze the performance, power and compute bottlenecks of the
+Intel Xeon Knight’s Landing~\cite{sodani_knights_2016} and Mill architectures~\cite{bradford_knights_2017} -- two
+processors with identical micro-architecture where the main difference is in the distribution of double-precision compute.
+We stress both processors with numerous realistic benchmarks from both the ECP proxy apps~\cite{noauthor_ecp_2018}
+and RIKEN's mini apps~\cite{riken_aics_fiber_2015} -- benchmarks used in HPC system acquisition.
+Through an extensive (and robust) performance measurement process (which we also open-source), we
+empirically show the architecture’s relative weaknesses. In short, the contributions of the present paper are:
+\begin{enumerate}
+    \item An empirical performance evaluation of the Knight’s Landing and Mill family of processors -- both proxies for previous and future architectural trends -- with respect to benchmarks derived from realistic HPC workloads,
+    \item  An in-depth analysis of results, including identification of bottlenecks and power-profiles for the different application/architecture combinations\cJD{do we really do power profiling?}, and
+    \item An open-source compilation of our evaluation methodology, including experience and fallacies encountered, revealing gaps in state-of-the-art profiling tools and debuggers (including their work-around).
+\end{enumerate}
+%
+%\cJD{if possible include some small figure as result teaser}
+%
+%The remaining paper is organized as follows: \textbf{Artur: TODO. Likely will omitt.}\cJD{yes, omit}.
+%% OLD TEXT BELOW. COMMENTED OUT BY ARTUR
+%Common wisdom in HPC is that double precision floating point calculations is what matters, with respect to both application requirements and performance.
+%Accordingly, chip manufacturers in HPC have traditionally allocated a significant portion of chip area to double precision FPUs.
+%Double precision FPUs, however, occupy larger chip area, i.e. provide less compute/silicon, and reduces the bandwidth utilization, i.e. less compute/bandwidth. One approach, that runs against the common wisdom in HPC, is to reduce the number of double precision units, and otherwise require the codes with heavy double precision requirements to emulate double precision with lower precision, which comes along with an obvious penalty.
+%The goal of this study is to quantify the requirements of double precision and penalties of instead using lower precision units to emulate double precision.
+%The results of this study can provide insight about the potential trade-off of different precision requirements to the practitioners, and vendors, of HPC.
+
+%We conduct our study by using ECP proxy apps and post-K miniapps that are used for procuring future top-tier supercomputers, in USA and Japan, respectively.
+%For the hardware, we use Intel Xeon Phi Knights landing (KNL) and Xeon Phi Knights Mill (KNL).
+%Both processors share the same architecture and memory hierarchy.
+%With the only differences of: a) KNM having more cores, and b) KNM having less FP64 units (replaced with FP32 units and VNNI INT16 units, to cater for AI/ML workloads).
+%The similarity in of the new processors provides a good chance to investigate the precision requirements and emulation penalties, while controlling for the differences in architecture.
+

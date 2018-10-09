@@ -1,0 +1,44 @@
+%
+% PACKAGES
+%
+\usepackage{etoolbox}
+\usepackage{units}
+%\usepackage{graphicx} % STOP commenting this in and upload EPS
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{breakurl}
+\usepackage{comment} % TODO remove later
+%
+\usepackage[ruled,vlined]{algorithm2e}
+\DontPrintSemicolon
+\SetAlFnt{\scriptsize}
+%
+\newtoggle{doubleblind}
+%\toggletrue{doubleblind}
+\togglefalse{doubleblind}
+%
+\newtoggle{includeappendix}
+\toggletrue{includeappendix}
+%\togglefalse{includeappendix}
+%
+\newtoggle{includeacknowl}
+%\toggletrue{includeacknowl}
+\togglefalse{includeacknowl}
+%
+\usepackage[table,xcdraw]{xcolor}
+%\usepackage{booktabs}
+%
+% NEW COMMANDS
+%
+\newcommand{\struc}[1]{\textcolor{blue}{ToWrite: #1 \\}}
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\cJD}[1]{\textcolor{red}{\small{FIX: #1}}}
+\newcommand{\rC}[0]{\rowcolor[HTML]{CCCCCC}}
+\newcommand{\hC}[0]{\rowcolor[HTML]{333333}}
+\newcommand{\tH}[1]{\multicolumn{1}{c}{\textcolor{white}{#1}}}
+
+\makeatletter
+\patchcmd{\@setref}{\bfseries ??}{\colorbox{red}{?r?}}{}{}
+\patchcmd{\@citex}{\bfseries ?}{\colorbox{red}{?c?}}{}{}
+\renewcommand{\algorithmcfname}{PseudoCode}
+\makeatother

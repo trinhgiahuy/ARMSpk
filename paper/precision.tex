@@ -126,12 +126,12 @@
   % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
   % will default to the driver specified in the system graphics.cfg if no
   % driver is specified.
-  % \usepackage[dvips]{graphicx}
+  \usepackage[dvips]{graphicx}
   % declare the path(s) where your graphic files are
-  % \graphicspath{{../eps/}}
+  \graphicspath{{./figures/}{./eps/}}
   % and their extensions so you won't have to specify these with
   % every instance of \includegraphics
-  % \DeclareGraphicsExtensions{.eps}
+  \DeclareGraphicsExtensions{.eps}
 \fi
 % graphicx was written by David Carlisle and Sebastian Rahtz. It is
 % required if you want graphics, photos, etc. graphicx.sty is already
@@ -308,7 +308,7 @@
 % to submit to, of course. )
 
 
-\input{extra-packages}
+\input{00-extra-packages}
 
 
 % correct bad hyphenation here
@@ -316,6 +316,10 @@
 
 
 \begin{document}
+%%%% DONT TOUCH FOR DRAFT
+\bstctlcite{IEEEexample:BSTcontrol}
+%%%% DONT TOUCH FOR DRAFT
+
 %
 % paper title
 % Titles are generally capitalized except for words such as a, an, and, as,
@@ -325,6 +329,11 @@
 % Do not put math or special symbols in the title.
 %\title{Less FP64 Units for Everyone: Investigating the Impact of Having Less Double Precision FPUs on Processors for HPC Applications}
 \title{Bottlenecks in Modern Systems: Studying the Impact of FP64 Units on HPC Workloads}
+%\cJD{All: add suggested commented better titles if you have any}}
+%%Alternative titles 
+%Busting the FLOPS Myth: The Relevance of FP64 Units to HPC Workloads
+%Studying the Impact of FP64 Units on HPC Workloads
+
 
 % author names and affiliations
 % use a multiple column layout for up to three different
@@ -333,7 +342,7 @@
   \author{(hidden for double-blind review)}
 }{
   \author{
-    \input{authors}
+    \input{01-authors}
   }
 }
 
@@ -376,7 +385,7 @@
 %\begin{abstract}
 %The abstract goes here.
 %\end{abstract}
-\input{abstract}
+\input{02-abstract.tex}
 
 % no keywords
 
@@ -420,29 +429,33 @@
 %   - option i: knm now real advantage over knm for our use case, so safe power and money to get near similar time-to-solution
 %   - option j: We have empiric evidence that zealously allocating silicon to DP is unwise and it might be high time to revice how silicon is distributed.
 
-\input{introduction}
+\input{10-introduction}
 % 1 page
 
-\input{systems-and-app}
+\input{20-systems-and-app}
 % 1.5 page
 
-\input{methodology}
+\input{30-methodology}
 % 1.5 page
 
-\input{eval-incl-result-summary}
+\input{40-eval-incl-result-summary}
 % 2.5 -- 3 pages
 
-\input{discussion-and-outlooks}
+\input{50-discussion-and-outlooks}
 % 1 page
 
-\input{related-work}
+\input{60-related-work}
 % 1/2 page
 
-\input{conclusion}
+\input{70-conclusion}
 % 1/2 page
 
-\input{acknowledgment}
-% 1/2 page
+\iftoggle{includeacknowl}{
+  \input{80-acknowledgment}
+  % 1/2 page
+}{
+  %
+}
 
 % references:
 % 3/4 page
@@ -601,7 +614,7 @@
 % http://www.michaelshell.org/tex/ieeetran/bibtex/
 \bibliographystyle{IEEEtran}
 % argument is your BibTeX string definitions and bibliography database(s)
-\bibliography{IEEEabrv,precision}
+\bibliography{IEEEabrv,99-precision}
 %
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
@@ -615,9 +628,12 @@
 %\end{thebibliography}
 
 
-
+\iftoggle{includeappendix}{
+  \clearpage
+  \input{90-appendix}
+}{
+  %
+}
 
 % that's all folks
 \end{document}
-
-

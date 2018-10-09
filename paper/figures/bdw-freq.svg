@@ -1,0 +1,5787 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 1513.1923 443.34036"
+   version="1.1"
+   id="svg2831"
+   sodipodi:docname="bdw-freq.svg"
+   width="1513.1923"
+   height="443.34036"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <metadata
+     id="metadata2837">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Gnuplot</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2835">
+    <defs
+       id="defs34">
+      <circle
+         r="0.5"
+         id="gpDot"
+         cx="0"
+         cy="0"
+         style="stroke-width:0.5" />
+      <path
+         d="M -1,0 H 1 M 0,-1 v 2"
+         id="gpPt0"
+         inkscape:connector-curvature="0"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <path
+         d="M -1,-1 1,1 M 1,-1 -1,1"
+         id="gpPt1"
+         inkscape:connector-curvature="0"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <path
+         d="M -1,0 H 1 M 0,-1 v 2 m -1,-2 2,2 m -2,0 2,-2"
+         id="gpPt2"
+         inkscape:connector-curvature="0"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <rect
+         height="2"
+         width="2"
+         y="-1"
+         x="-1"
+         id="gpPt3"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <rect
+         height="2"
+         width="2"
+         y="-1"
+         x="-1"
+         id="gpPt4"
+         style="fill:currentColor;stroke:currentColor;stroke-width:0.121" />
+      <circle
+         r="1"
+         cy="0"
+         cx="0"
+         id="gpPt5"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <use
+         id="gpPt6"
+         xlink:href="#gpPt5"
+         style="fill:currentColor;stroke:none"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <path
+         d="m 0,-1.33 -1.33,2 h 2.66 z"
+         id="gpPt7"
+         inkscape:connector-curvature="0"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <use
+         id="gpPt8"
+         xlink:href="#gpPt7"
+         style="fill:currentColor;stroke:none"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <use
+         transform="scale(-1)"
+         id="gpPt9"
+         xlink:href="#gpPt7"
+         style="stroke:currentColor"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <use
+         id="gpPt10"
+         xlink:href="#gpPt9"
+         style="fill:currentColor;stroke:none"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <use
+         transform="rotate(45)"
+         id="gpPt11"
+         xlink:href="#gpPt3"
+         style="stroke:currentColor"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <use
+         id="gpPt12"
+         xlink:href="#gpPt11"
+         style="fill:currentColor;stroke:none"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <path
+         d="M 0,1.33 1.265,0.411 0.782,-1.067 -0.782,-1.076 -1.265,0.411 Z"
+         id="gpPt13"
+         inkscape:connector-curvature="0"
+         style="stroke:currentColor;stroke-width:0.121" />
+      <use
+         id="gpPt14"
+         xlink:href="#gpPt13"
+         style="fill:currentColor;stroke:none"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+      <filter
+         width="1"
+         height="1"
+         y="0"
+         x="0"
+         filterUnits="objectBoundingBox"
+         id="textbox">
+        <feFlood
+           id="feFlood24"
+           result="bgnd"
+           flood-opacity="1"
+           flood-color="white" />
+        <feComposite
+           id="feComposite26"
+           operator="atop"
+           in2="bgnd"
+           in="SourceGraphic" />
+      </filter>
+      <filter
+         width="1"
+         height="1"
+         y="0"
+         x="0"
+         filterUnits="objectBoundingBox"
+         id="greybox">
+        <feFlood
+           id="feFlood29"
+           result="grey"
+           flood-opacity="1"
+           flood-color="lightgrey" />
+        <feComposite
+           id="feComposite31"
+           operator="atop"
+           in2="grey"
+           in="SourceGraphic" />
+      </filter>
+    </defs>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     id="namedview2833"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.73875"
+     inkscape:cx="783.726"
+     inkscape:cy="216.56836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2831" />
+  <title
+     id="title2">Gnuplot</title>
+  <desc
+     id="desc4">Produced by GNUPLOT 5.0 patchlevel 6 </desc>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g44"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path42"
+       d="M 133.1,401.7 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g56"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path48"
+       d="m 133.1,401.7 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g54"
+       font-size="22.00"
+       transform="translate(117.7,408.9)">
+      <text
+         id="text52">
+        <tspan
+           style="font-family:Times"
+           id="tspan50">1</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g64"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path62"
+       d="M 133.1,327.5 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g76"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path68"
+       d="m 133.1,327.5 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g74"
+       font-size="22.00"
+       transform="translate(117.7,334.7)">
+      <text
+         id="text72">
+        <tspan
+           style="font-family:Times"
+           id="tspan70">1.2</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g84"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path82"
+       d="M 133.1,253.4 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g96"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path88"
+       d="m 133.1,253.4 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g94"
+       font-size="22.00"
+       transform="translate(117.7,260.6)">
+      <text
+         id="text92">
+        <tspan
+           style="font-family:Times"
+           id="tspan90">1.4</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g104"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path102"
+       d="M 133.1,179.2 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g116"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path108"
+       d="m 133.1,179.2 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g114"
+       font-size="22.00"
+       transform="translate(117.7,186.4)">
+      <text
+         id="text112">
+        <tspan
+           style="font-family:Times"
+           id="tspan110">1.6</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g124"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path122"
+       d="M 133.1,105.1 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g136"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path128"
+       d="m 133.1,105.1 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g134"
+       font-size="22.00"
+       transform="translate(117.7,112.3)">
+      <text
+         id="text132">
+        <tspan
+           style="font-family:Times"
+           id="tspan130">1.8</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g144"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path142"
+       d="M 133.1,30.9 H 1275.4"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g156"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path148"
+       d="m 133.1,30.9 h 16.5 m 1125.8,0 h -16.5" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:end;fill:#000000;stroke:none"
+       id="g154"
+       font-size="22.00"
+       transform="translate(117.7,38.1)">
+      <text
+         id="text152">
+        <tspan
+           style="font-family:Times"
+           id="tspan150">2</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g164"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path162"
+       d="M 175.4,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g176"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path168"
+       d="m 175.4,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g174"
+       font-size="20.00"
+       transform="rotate(45,-423.63693,417.02384)">
+      <text
+         id="text172">
+        <tspan
+           style="font-family:Times"
+           id="tspan170">AMG</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g184"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path182"
+       d="M 217.7,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g196"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path188"
+       d="m 217.7,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g194"
+       font-size="20.00"
+       transform="rotate(45,-402.48693,468.08446)">
+      <text
+         id="text192">
+        <tspan
+           style="font-family:Times"
+           id="tspan190">CNDL</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g204"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path202"
+       d="M 260,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g216"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path208"
+       d="M 260,401.7 M 260,30.9" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g214"
+       font-size="20.00"
+       transform="rotate(45,-381.33693,519.14507)">
+      <text
+         id="text212">
+        <tspan
+           style="font-family:Times"
+           id="tspan210">CoMD</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g224"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path222"
+       d="M 302.3,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g236"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path228"
+       d="m 302.3,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g234"
+       font-size="20.00"
+       transform="rotate(45,-360.18693,570.20569)">
+      <text
+         id="text232">
+        <tspan
+           style="font-family:Times"
+           id="tspan230">LAGO</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g244"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path242"
+       d="M 344.6,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g256"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path248"
+       d="m 344.6,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g254"
+       font-size="20.00"
+       transform="rotate(45,-339.03693,621.26631)">
+      <text
+         id="text252">
+        <tspan
+           style="font-family:Times"
+           id="tspan250">MxIO</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g264"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path262"
+       d="M 386.9,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g276"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path268"
+       d="m 386.9,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g274"
+       font-size="20.00"
+       transform="rotate(45,-317.88693,672.32692)">
+      <text
+         id="text272">
+        <tspan
+           style="font-family:Times"
+           id="tspan270">MAMR</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g284"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path282"
+       d="M 429.3,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g296"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path288"
+       d="m 429.3,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g294"
+       font-size="20.00"
+       transform="rotate(45,-296.68693,723.50825)">
+      <text
+         id="text292">
+        <tspan
+           style="font-family:Times"
+           id="tspan290">MiFE</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g304"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path302"
+       d="M 471.6,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g316"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path308"
+       d="m 471.6,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g314"
+       font-size="20.00"
+       transform="rotate(45,-275.53693,774.56887)">
+      <text
+         id="text312">
+        <tspan
+           style="font-family:Times"
+           id="tspan310">MTri</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g324"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path322"
+       d="M 513.9,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g336"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path328"
+       d="m 513.9,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g334"
+       font-size="20.00"
+       transform="rotate(45,-254.38693,825.62948)">
+      <text
+         id="text332">
+        <tspan
+           style="font-family:Times"
+           id="tspan330">NekB</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g344"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path342"
+       d="M 556.2,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g356"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path348"
+       d="m 556.2,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g354"
+       font-size="20.00"
+       transform="rotate(45,-233.23693,876.6901)">
+      <text
+         id="text352">
+        <tspan
+           style="font-family:Times"
+           id="tspan350">SW4L</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g364"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path362"
+       d="M 598.5,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g376"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path368"
+       d="m 598.5,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g374"
+       font-size="20.00"
+       transform="rotate(45,-212.08693,927.75072)">
+      <text
+         id="text372">
+        <tspan
+           style="font-family:Times"
+           id="tspan370">FFT</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g384"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path382"
+       d="M 640.8,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g396"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path388"
+       d="m 640.8,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g394"
+       font-size="20.00"
+       transform="rotate(45,-190.93693,978.81133)">
+      <text
+         id="text392">
+        <tspan
+           style="font-family:Times"
+           id="tspan390">XSBn</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g404"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path402"
+       d="M 683.1,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g414"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path408"
+       d="m 683.1,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g412"
+       font-size="20.00"
+       transform="rotate(45,-169.78693,1029.872)">
+      <text
+         id="text410" />
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g422"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path420"
+       d="M 725.4,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g434"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path426"
+       d="m 725.4,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g432"
+       font-size="20.00"
+       transform="rotate(45,-148.63693,1080.9326)">
+      <text
+         id="text430">
+        <tspan
+           style="font-family:Times"
+           id="tspan428">FFB</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g442"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path440"
+       d="M 767.7,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g454"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path446"
+       d="m 767.7,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g452"
+       font-size="20.00"
+       transform="rotate(45,-127.48693,1131.9932)">
+      <text
+         id="text450">
+        <tspan
+           style="font-family:Times"
+           id="tspan448">FFVC</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g462"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path460"
+       d="M 810,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g474"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path466"
+       d="M 810,401.7 M 810,30.9" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g472"
+       font-size="20.00"
+       transform="rotate(45,-106.33693,1183.0538)">
+      <text
+         id="text470">
+        <tspan
+           style="font-family:Times"
+           id="tspan468">MDYL</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g482"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path480"
+       d="M 852.3,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g494"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path486"
+       d="m 852.3,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g492"
+       font-size="20.00"
+       transform="rotate(45,-85.18693,1234.1144)">
+      <text
+         id="text490">
+        <tspan
+           style="font-family:Times"
+           id="tspan488">mVMC</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g502"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path500"
+       d="M 894.6,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g514"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path506"
+       d="m 894.6,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g512"
+       font-size="20.00"
+       transform="rotate(45,-64.03693,1285.175)">
+      <text
+         id="text510">
+        <tspan
+           style="font-family:Times"
+           id="tspan508">NGSA</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g522"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path520"
+       d="M 936.9,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g534"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path526"
+       d="m 936.9,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g532"
+       font-size="20.00"
+       transform="rotate(45,-42.88693,1336.2357)">
+      <text
+         id="text530">
+        <tspan
+           style="font-family:Times"
+           id="tspan528">NICM</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g542"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path540"
+       d="M 979.2,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g554"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path546"
+       d="m 979.2,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g552"
+       font-size="20.00"
+       transform="rotate(45,-21.73693,1387.2963)">
+      <text
+         id="text550">
+        <tspan
+           style="font-family:Times"
+           id="tspan548">NTCh</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g562"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path560"
+       d="M 1021.6,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g574"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path566"
+       d="m 1021.6,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g572"
+       font-size="20.00"
+       transform="rotate(45,-0.53692963,1438.4776)">
+      <text
+         id="text570">
+        <tspan
+           style="font-family:Times"
+           id="tspan568">QCD</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g582"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path580"
+       d="M 1063.9,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g592"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path586"
+       d="m 1063.9,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g590"
+       font-size="20.00"
+       transform="rotate(45,20.61307,1489.5382)">
+      <text
+         id="text588" />
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g600"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path598"
+       d="M 1106.2,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g612"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path604"
+       d="m 1106.2,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g610"
+       font-size="20.00"
+       transform="rotate(45,41.76307,1540.5988)">
+      <text
+         id="text608">
+        <tspan
+           style="font-family:Times"
+           id="tspan606">HPL</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g620"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path618"
+       d="M 1148.5,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g632"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path624"
+       d="m 1148.5,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g630"
+       font-size="20.00"
+       transform="rotate(45,62.91307,1591.6594)">
+      <text
+         id="text628">
+        <tspan
+           style="font-family:Times"
+           id="tspan626">HPCG</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g640"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path638"
+       d="M 1190.8,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g650"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path644"
+       d="m 1190.8,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g648"
+       font-size="20.00"
+       transform="rotate(45,84.06307,1642.7201)">
+      <text
+         id="text646" />
+    </g>
+  </g>
+  <g
+     style="color:#808080;fill:none;stroke:currentColor;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g658"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#808080;stroke-dasharray:2, 4"
+       inkscape:connector-curvature="0"
+       id="path656"
+       d="M 1233.1,401.7 V 30.9"
+       class="gridline" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g670"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path662"
+       d="m 1233.1,401.7 m 0,-370.8" />
+    <g
+       style="font-size:20px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g668"
+       font-size="20.00"
+       transform="rotate(45,105.21307,1693.7807)">
+      <text
+         id="text666">
+        <tspan
+           style="font-family:Times"
+           id="tspan664">ThPeak</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g682"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path674"
+       d="M 133.1,30.9 V 401.7 H 1275.4 V 30.9 Z" />
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+       id="g680"
+       font-size="22.00"
+       transform="translate(154.3,56.6)">
+      <text
+         id="text678">
+        <tspan
+           style="font-family:Times"
+           id="tspan676">Broadwell-EP (2x)</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g690"
+     transform="translate(-16.274,-23.228)">
+    <g
+       style="font-size:22px;font-family:Times;text-anchor:middle;fill:#000000;stroke:none"
+       id="g688"
+       font-size="22.00"
+       transform="rotate(-90,123.8,92.5)">
+      <text
+         id="text686">
+        <tspan
+           style="font-family:Times"
+           id="tspan684">Speedup</tspan>
+      </text>
+    </g>
+  </g>
+  <g
+     id="gnuplot_plot_1"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title694">1.2 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g700">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g698"
+         font-size="22.00"
+         transform="translate(1415.1,417.6)">
+        <text
+           id="text696">1.2 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g708">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g704">
+        <polygon
+           style="fill:#9400d3"
+           id="polygon702"
+           points="1321.6,418.6 1399.7,418.6 1399.7,402.1 1321.6,402.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path706"
+         d="m 1321.6,418.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g710" />
+  </g>
+  <g
+     id="gnuplot_plot_2"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title713">1.3 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g719">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g717"
+         font-size="22.00"
+         transform="translate(1415.1,384.6)">
+        <text
+           id="text715">1.3 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g727">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g723">
+        <polygon
+           style="fill:#009e73"
+           id="polygon721"
+           points="1321.6,385.6 1399.7,385.6 1399.7,369.1 1321.6,369.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path725"
+         d="m 1321.6,385.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g735">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g731">
+        <polygon
+           style="fill:#009e73"
+           id="polygon729"
+           points="158.5,401.7 192.4,401.7 192.4,398.8 158.5,398.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path733"
+         d="m 158.5,401.7 v -2.8 h 33.8 v 2.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g743">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g739">
+        <polygon
+           style="fill:#009e73"
+           id="polygon737"
+           points="200.8,401.7 234.7,401.7 234.7,395 200.8,395 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path741"
+         d="m 200.8,401.7 v -6.6 h 33.8 v 6.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g751">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g747">
+        <polygon
+           style="fill:#009e73"
+           id="polygon745"
+           points="243.1,401.7 277,401.7 277,372.7 243.1,372.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path749"
+         d="m 243.1,401.7 v -28.9 h 33.8 v 28.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g759">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g755">
+        <polygon
+           style="fill:#009e73"
+           id="polygon753"
+           points="285.4,401.7 319.4,401.7 319.4,373.3 285.4,373.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path757"
+         d="m 285.4,401.7 v -28.3 h 33.9 v 28.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g767">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g763">
+        <polygon
+           style="fill:#009e73"
+           id="polygon761"
+           points="327.7,401.7 361.7,401.7 361.7,374.8 327.7,374.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path765"
+         d="m 327.7,401.7 v -26.8 h 33.9 v 26.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g775">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g771">
+        <polygon
+           style="fill:#009e73"
+           id="polygon769"
+           points="370,401.7 404,401.7 404,385.6 370,385.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path773"
+         d="m 370,401.7 v -16 h 33.9 v 16 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g783">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g779">
+        <polygon
+           style="fill:#009e73"
+           id="polygon777"
+           points="412.3,401.7 446.3,401.7 446.3,397.4 412.3,397.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path781"
+         d="m 412.3,401.7 v -4.2 h 33.9 v 4.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g791">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g787">
+        <polygon
+           style="fill:#009e73"
+           id="polygon785"
+           points="454.6,401.7 488.6,401.7 488.6,373.3 454.6,373.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path789"
+         d="m 454.6,401.7 v -28.3 h 33.9 v 28.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g799">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g795">
+        <polygon
+           style="fill:#009e73"
+           id="polygon793"
+           points="496.9,401.7 530.9,401.7 530.9,387.9 496.9,387.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path797"
+         d="M 496.9,401.7 V 388 h 33.9 v 13.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g807">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g803">
+        <polygon
+           style="fill:#009e73"
+           id="polygon801"
+           points="539.3,401.7 573.2,401.7 573.2,371.8 539.3,371.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path805"
+         d="m 539.3,401.7 v -29.8 h 33.8 v 29.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g815">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g811">
+        <polygon
+           style="fill:#009e73"
+           id="polygon809"
+           points="581.6,401.7 615.5,401.7 615.5,385.4 581.6,385.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path813"
+         d="m 581.6,401.7 v -16.2 h 33.8 v 16.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g823">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g819">
+        <polygon
+           style="fill:#009e73"
+           id="polygon817"
+           points="623.9,401.7 657.8,401.7 657.8,394.8 623.9,394.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path821"
+         d="m 623.9,401.7 v -6.8 h 33.8 v 6.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g831">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g827">
+        <polygon
+           style="fill:#009e73"
+           id="polygon825"
+           points="708.5,401.7 742.4,401.7 742.4,373.9 708.5,373.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path829"
+         d="M 708.5,401.7 V 374 h 33.8 v 27.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g839">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g835">
+        <polygon
+           style="fill:#009e73"
+           id="polygon833"
+           points="750.8,401.7 784.7,401.7 784.7,371.4 750.8,371.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path837"
+         d="m 750.8,401.7 v -30.2 h 33.8 v 30.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g847">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g843">
+        <polygon
+           style="fill:#009e73"
+           id="polygon841"
+           points="793.1,401.7 827,401.7 827,370.4 793.1,370.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path845"
+         d="m 793.1,401.7 v -31.2 h 33.8 v 31.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g855">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g851">
+        <polygon
+           style="fill:#009e73"
+           id="polygon849"
+           points="835.4,401.7 869.3,401.7 869.3,372.6 835.4,372.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path853"
+         d="m 835.4,401.7 v -29 h 33.8 v 29 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g863">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g859">
+        <polygon
+           style="fill:#009e73"
+           id="polygon857"
+           points="877.7,401.7 911.7,401.7 911.7,372.5 877.7,372.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path861"
+         d="m 877.7,401.7 v -29.1 h 33.9 v 29.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g871">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g867">
+        <polygon
+           style="fill:#009e73"
+           id="polygon865"
+           points="920,401.7 954,401.7 954,383.4 920,383.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path869"
+         d="m 920,401.7 v -18.2 h 33.9 v 18.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g879">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g875">
+        <polygon
+           style="fill:#009e73"
+           id="polygon873"
+           points="962.3,401.7 996.3,401.7 996.3,374.3 962.3,374.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path877"
+         d="m 962.3,401.7 v -27.3 h 33.9 v 27.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g887">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g883">
+        <polygon
+           style="fill:#009e73"
+           id="polygon881"
+           points="1004.6,401.7 1038.6,401.7 1038.6,398.5 1004.6,398.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path885"
+         d="m 1004.6,401.7 v -3.1 h 33.9 v 3.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g895">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g891">
+        <polygon
+           style="fill:#009e73"
+           id="polygon889"
+           points="1089.2,401.7 1123.2,401.7 1123.2,374.6 1089.2,374.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path893"
+         d="m 1089.2,401.7 v -27 h 33.9 v 27 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g903">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g899">
+        <polygon
+           style="fill:#009e73"
+           id="polygon897"
+           points="1131.6,401.7 1165.5,401.7 1165.5,382.9 1131.6,382.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path901"
+         d="M 1131.6,401.7 V 383 h 33.8 v 18.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g911">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g907">
+        <polygon
+           style="fill:#009e73"
+           id="polygon905"
+           points="1216.2,401.7 1250.1,401.7 1250.1,370.7 1216.2,370.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path909"
+         d="m 1216.2,401.7 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g913" />
+  </g>
+  <g
+     id="gnuplot_plot_3"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title916">1.4 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g922">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g920"
+         font-size="22.00"
+         transform="translate(1415.1,351.6)">
+        <text
+           id="text918">1.4 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g930">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g926">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon924"
+           points="1321.6,352.6 1399.7,352.6 1399.7,336.1 1321.6,336.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path928"
+         d="m 1321.6,352.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g938">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g934">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon932"
+           points="158.5,398.9 192.4,398.9 192.4,396.3 158.5,396.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path936"
+         d="m 158.5,398.9 v -2.5 h 33.8 v 2.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g946">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g942">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon940"
+           points="200.8,395.1 234.7,395.1 234.7,380.7 200.8,380.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path944"
+         d="m 200.8,395.1 v -14.3 h 33.8 v 14.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g954">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g950">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon948"
+           points="243.1,372.8 277,372.8 277,346.2 243.1,346.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path952"
+         d="m 243.1,372.8 v -26.5 h 33.8 v 26.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g962">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g958">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon956"
+           points="285.4,373.4 319.4,373.4 319.4,347 285.4,347 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path960"
+         d="m 285.4,373.4 v -26.3 h 33.9 v 26.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g970">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g966">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon964"
+           points="327.7,374.9 361.7,374.9 361.7,340.5 327.7,340.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path968"
+         d="m 327.7,374.9 v -34.3 h 33.9 v 34.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g978">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g974">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon972"
+           points="370,385.7 404,385.7 404,376 370,376 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path976"
+         d="m 370,385.7 v -9.6 h 33.9 v 9.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g986">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g982">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon980"
+           points="412.3,397.5 446.3,397.5 446.3,393.6 412.3,393.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path984"
+         d="m 412.3,397.5 v -3.8 h 33.9 v 3.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g994">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g990">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon988"
+           points="454.6,373.4 488.6,373.4 488.6,347.8 454.6,347.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path992"
+         d="m 454.6,373.4 v -25.5 h 33.9 v 25.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1002">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g998">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon996"
+           points="496.9,388 530.9,388 530.9,376.8 496.9,376.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1000"
+         d="m 496.9,388 v -11.1 h 33.9 V 388 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1010">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1006">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1004"
+           points="539.3,371.9 573.2,371.9 573.2,345.3 539.3,345.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1008"
+         d="m 539.3,371.9 v -26.5 h 33.8 v 26.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1018">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1014">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1012"
+           points="581.6,385.5 615.5,385.5 615.5,370.1 581.6,370.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1016"
+         d="m 581.6,385.5 v -15.3 h 33.8 v 15.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1026">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1022">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1020"
+           points="623.9,394.9 657.8,394.9 657.8,383.5 623.9,383.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1024"
+         d="m 623.9,394.9 v -11.3 h 33.8 v 11.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1034">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1030">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1028"
+           points="708.5,374 742.4,374 742.4,345.7 708.5,345.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1032"
+         d="m 708.5,374 v -28.2 h 33.8 V 374 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1042">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1038">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1036"
+           points="750.8,371.5 784.7,371.5 784.7,341.3 750.8,341.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1040"
+         d="m 750.8,371.5 v -30.1 h 33.8 v 30.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1050">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1046">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1044"
+           points="793.1,370.5 827,370.5 827,343 793.1,343 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1048"
+         d="m 793.1,370.5 v -27.4 h 33.8 v 27.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1058">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1054">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1052"
+           points="835.4,372.7 869.3,372.7 869.3,342.5 835.4,342.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1056"
+         d="m 835.4,372.7 v -30.1 h 33.8 v 30.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1066">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1062">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1060"
+           points="877.7,372.6 911.7,372.6 911.7,343.6 877.7,343.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1064"
+         d="m 877.7,372.6 v -28.9 h 33.9 v 28.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1074">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1070">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1068"
+           points="920,383.5 954,383.5 954,367.1 920,367.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1072"
+         d="m 920,383.5 v -16.3 h 33.9 v 16.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1082">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1078">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1076"
+           points="962.3,374.4 996.3,374.4 996.3,343.2 962.3,343.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1080"
+         d="m 962.3,374.4 v -31.1 h 33.9 v 31.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1090">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1086">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1084"
+           points="1004.6,398.6 1038.6,398.6 1038.6,387.3 1004.6,387.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1088"
+         d="m 1004.6,398.6 v -11.2 h 33.9 v 11.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1098">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1094">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1092"
+           points="1089.2,374.7 1123.2,374.7 1123.2,345.2 1089.2,345.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1096"
+         d="m 1089.2,374.7 v -29.4 h 33.9 v 29.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1106">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1102">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1100"
+           points="1131.6,383 1165.5,383 1165.5,354.1 1131.6,354.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1104"
+         d="m 1131.6,383 v -28.8 h 33.8 V 383 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1114">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1110">
+        <polygon
+           style="fill:#56b4e9"
+           id="polygon1108"
+           points="1216.2,370.8 1250.1,370.8 1250.1,339.8 1216.2,339.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1112"
+         d="m 1216.2,370.8 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1116" />
+  </g>
+  <g
+     id="gnuplot_plot_4"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title1119">1.5 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1125">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g1123"
+         font-size="22.00"
+         transform="translate(1415.1,318.6)">
+        <text
+           id="text1121">1.5 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1133">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1129">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1127"
+           points="1321.6,319.6 1399.7,319.6 1399.7,303.1 1321.6,303.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1131"
+         d="m 1321.6,319.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1141">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1137">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1135"
+           points="158.5,396.4 192.4,396.4 192.4,394.5 158.5,394.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1139"
+         d="m 158.5,396.4 v -1.8 h 33.8 v 1.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1149">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1145">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1143"
+           points="200.8,380.8 234.7,380.8 234.7,372 200.8,372 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1147"
+         d="m 200.8,380.8 v -8.7 h 33.8 v 8.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1157">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1153">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1151"
+           points="243.1,346.3 277,346.3 277,313.4 243.1,313.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1155"
+         d="m 243.1,346.3 v -32.8 h 33.8 v 32.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1165">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1161">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1159"
+           points="285.4,347.1 319.4,347.1 319.4,318.6 285.4,318.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1163"
+         d="m 285.4,347.1 v -28.4 h 33.9 v 28.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1173">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1169">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1167"
+           points="327.7,340.6 361.7,340.6 361.7,310.1 327.7,310.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1171"
+         d="m 327.7,340.6 v -30.4 h 33.9 v 30.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1181">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1177">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1175"
+           points="370,376.1 404,376.1 404,366 370,366 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1179"
+         d="m 370,376.1 v -10 h 33.9 v 10 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1189">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1185">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1183"
+           points="412.3,393.7 446.3,393.7 446.3,392.8 412.3,392.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1187"
+         d="m 412.3,393.7 v -0.8 h 33.9 v 0.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1197">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1193">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1191"
+           points="454.6,347.9 488.6,347.9 488.6,335.8 454.6,335.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1195"
+         d="m 454.6,347.9 v -12 h 33.9 v 12 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1205">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1201">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1199"
+           points="496.9,376.9 530.9,376.9 530.9,365.7 496.9,365.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1203"
+         d="m 496.9,376.9 v -11.1 h 33.9 v 11.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1213">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1209">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1207"
+           points="539.3,345.4 573.2,345.4 573.2,320.2 539.3,320.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1211"
+         d="m 539.3,345.4 v -25.1 h 33.8 v 25.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1221">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1217">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1215"
+           points="581.6,370.2 615.5,370.2 615.5,356.1 581.6,356.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1219"
+         d="m 581.6,370.2 v -14 h 33.8 v 14 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1229">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1225">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1223"
+           points="623.9,383.6 657.8,383.6 657.8,374.6 623.9,374.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1227"
+         d="m 623.9,383.6 v -8.9 h 33.8 v 8.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1237">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1233">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1231"
+           points="708.5,345.8 742.4,345.8 742.4,315.4 708.5,315.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1235"
+         d="m 708.5,345.8 v -30.3 h 33.8 v 30.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1245">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1241">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1239"
+           points="750.8,341.4 784.7,341.4 784.7,312.7 750.8,312.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1243"
+         d="m 750.8,341.4 v -28.6 h 33.8 v 28.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1253">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1249">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1247"
+           points="793.1,343.1 827,343.1 827,312.3 793.1,312.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1251"
+         d="m 793.1,343.1 v -30.7 h 33.8 v 30.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1261">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1257">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1255"
+           points="835.4,342.6 869.3,342.6 869.3,316.5 835.4,316.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1259"
+         d="m 835.4,342.6 v -26 h 33.8 v 26 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1269">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1265">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1263"
+           points="877.7,343.7 911.7,343.7 911.7,315.1 877.7,315.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1267"
+         d="m 877.7,343.7 v -28.5 h 33.9 v 28.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1277">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1273">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1271"
+           points="920,367.2 954,367.2 954,351.8 920,351.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1275"
+         d="m 920,367.2 v -15.3 h 33.9 v 15.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1285">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1281">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1279"
+           points="962.3,343.3 996.3,343.3 996.3,318.9 962.3,318.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1283"
+         d="M 962.3,343.3 V 319 h 33.9 v 24.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1293">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1289">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1287"
+           points="1004.6,387.4 1038.6,387.4 1038.6,370.2 1004.6,370.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1291"
+         d="m 1004.6,387.4 v -17.1 h 33.9 v 17.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1301">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1297">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1295"
+           points="1089.2,345.3 1123.2,345.3 1123.2,315.2 1089.2,315.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1299"
+         d="m 1089.2,345.3 v -30 h 33.9 v 30 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1309">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1305">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1303"
+           points="1131.6,354.2 1165.5,354.2 1165.5,340.2 1131.6,340.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1307"
+         d="m 1131.6,354.2 v -13.9 h 33.8 v 13.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1317">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1313">
+        <polygon
+           style="fill:#e69f00"
+           id="polygon1311"
+           points="1216.2,339.9 1250.1,339.9 1250.1,308.9 1216.2,308.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1315"
+         d="M 1216.2,339.9 V 309 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1319" />
+  </g>
+  <g
+     id="gnuplot_plot_5"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title1322">1.6 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1328">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g1326"
+         font-size="22.00"
+         transform="translate(1415.1,285.6)">
+        <text
+           id="text1324">1.6 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1336">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1332">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1330"
+           points="1321.6,286.6 1399.7,286.6 1399.7,270.1 1321.6,270.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1334"
+         d="m 1321.6,286.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1344">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1340">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1338"
+           points="158.5,394.6 192.4,394.6 192.4,393 158.5,393 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1342"
+         d="m 158.5,394.6 v -1.5 h 33.8 v 1.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1352">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1348">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1346"
+           points="200.8,372.1 234.7,372.1 234.7,364.5 200.8,364.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1350"
+         d="m 200.8,372.1 v -7.5 h 33.8 v 7.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1360">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1356">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1354"
+           points="243.1,313.5 277,313.5 277,285.6 243.1,285.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1358"
+         d="m 243.1,313.5 v -27.8 h 33.8 v 27.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1368">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1364">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1362"
+           points="285.4,318.7 319.4,318.7 319.4,291.6 285.4,291.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1366"
+         d="m 285.4,318.7 v -27 h 33.9 v 27 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1376">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1372">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1370"
+           points="327.7,310.2 361.7,310.2 361.7,278.8 327.7,278.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1374"
+         d="m 327.7,310.2 v -31.3 h 33.9 v 31.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1384">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1380">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1378"
+           points="370,366.1 404,366.1 404,355.8 370,355.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1382"
+         d="m 370,366.1 v -10.2 h 33.9 v 10.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1392">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1388">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1386"
+           points="412.3,392.9 446.3,392.9 446.3,391.8 412.3,391.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1390"
+         d="m 412.3,392.9 v -1 h 33.9 v 1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1400">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1396">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1394"
+           points="454.6,335.9 488.6,335.9 488.6,322.6 454.6,322.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1398"
+         d="m 454.6,335.9 v -13.2 h 33.9 v 13.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1408">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1404">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1402"
+           points="496.9,365.8 530.9,365.8 530.9,358 496.9,358 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1406"
+         d="m 496.9,365.8 v -7.7 h 33.9 v 7.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1416">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1412">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1410"
+           points="539.3,320.3 573.2,320.3 573.2,298.8 539.3,298.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1414"
+         d="m 539.3,320.3 v -21.4 h 33.8 v 21.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1424">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1420">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1418"
+           points="581.6,356.2 615.5,356.2 615.5,343.1 581.6,343.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1422"
+         d="m 581.6,356.2 v -13 h 33.8 v 13 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1432">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1428">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1426"
+           points="623.9,374.7 657.8,374.7 657.8,370.8 623.9,370.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1430"
+         d="m 623.9,374.7 v -3.8 h 33.8 v 3.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1440">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1436">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1434"
+           points="708.5,315.5 742.4,315.5 742.4,288 708.5,288 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1438"
+         d="m 708.5,315.5 v -27.4 h 33.8 v 27.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1448">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1444">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1442"
+           points="750.8,312.8 784.7,312.8 784.7,283.8 750.8,283.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1446"
+         d="m 750.8,312.8 v -28.9 h 33.8 v 28.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1456">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1452">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1450"
+           points="793.1,312.4 827,312.4 827,283.7 793.1,283.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1454"
+         d="m 793.1,312.4 v -28.6 h 33.8 v 28.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1464">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1460">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1458"
+           points="835.4,316.6 869.3,316.6 869.3,283.4 835.4,283.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1462"
+         d="m 835.4,316.6 v -33.1 h 33.8 v 33.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1472">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1468">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1466"
+           points="877.7,315.2 911.7,315.2 911.7,286.8 877.7,286.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1470"
+         d="m 877.7,315.2 v -28.3 h 33.9 v 28.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1480">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1476">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1474"
+           points="920,351.9 954,351.9 954,337.7 920,337.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1478"
+         d="m 920,351.9 v -14.1 h 33.9 v 14.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1488">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1484">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1482"
+           points="962.3,319 996.3,319 996.3,289.4 962.3,289.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1486"
+         d="m 962.3,319 v -29.5 h 33.9 V 319 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1496">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1492">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1490"
+           points="1089.2,315.3 1123.2,315.3 1123.2,284.2 1089.2,284.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1494"
+         d="m 1089.2,315.3 v -31 h 33.9 v 31 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1504">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1500">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1498"
+           points="1131.6,340.3 1165.5,340.3 1165.5,318.3 1131.6,318.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1502"
+         d="m 1131.6,340.3 v -21.9 h 33.8 v 21.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1512">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1508">
+        <polygon
+           style="fill:#f0e442"
+           id="polygon1506"
+           points="1216.2,309 1250.1,309 1250.1,278 1216.2,278 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1510"
+         d="M 1216.2,309 V 278.1 H 1250 V 309 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1514" />
+  </g>
+  <g
+     id="gnuplot_plot_6"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title1517">1.7 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1523">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g1521"
+         font-size="22.00"
+         transform="translate(1415.1,252.6)">
+        <text
+           id="text1519">1.7 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1531">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1527">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1525"
+           points="1321.6,253.6 1399.7,253.6 1399.7,237.1 1321.6,237.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1529"
+         d="m 1321.6,253.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1539">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1535">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1533"
+           points="158.5,393.1 192.4,393.1 192.4,392.5 158.5,392.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1537"
+         d="m 158.5,393.1 v -0.5 h 33.8 v 0.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1547">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1543">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1541"
+           points="200.8,364.6 234.7,364.6 234.7,357.3 200.8,357.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1545"
+         d="m 200.8,364.6 v -7.2 h 33.8 v 7.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1555">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1551">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1549"
+           points="243.1,285.7 277,285.7 277,254.7 243.1,254.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1553"
+         d="m 243.1,285.7 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1563">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1559">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1557"
+           points="285.4,291.7 319.4,291.7 319.4,260.4 285.4,260.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1561"
+         d="m 285.4,291.7 v -31.2 h 33.9 v 31.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1571">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1567">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1565"
+           points="327.7,278.9 361.7,278.9 361.7,247.8 327.7,247.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1569"
+         d="m 327.7,278.9 v -31 h 33.9 v 31 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1579">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1575">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1573"
+           points="370,355.9 404,355.9 404,344.7 370,344.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1577"
+         d="m 370,355.9 v -11.1 h 33.9 v 11.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1587">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1583">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1581"
+           points="412.3,391.9 446.3,391.9 446.3,388 412.3,388 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1585"
+         d="m 412.3,391.9 v -3.8 h 33.9 v 3.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1595">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1591">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1589"
+           points="454.6,322.7 488.6,322.7 488.6,307.8 454.6,307.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1593"
+         d="m 454.6,322.7 v -14.8 h 33.9 v 14.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1603">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1599">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1597"
+           points="496.9,358.1 530.9,358.1 530.9,347.5 496.9,347.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1601"
+         d="m 496.9,358.1 v -10.5 h 33.9 v 10.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1611">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1607">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1605"
+           points="539.3,298.9 573.2,298.9 573.2,272.3 539.3,272.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1609"
+         d="m 539.3,298.9 v -26.5 h 33.8 v 26.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1619">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1615">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1613"
+           points="581.6,343.2 615.5,343.2 615.5,330.5 581.6,330.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1617"
+         d="m 581.6,343.2 v -12.6 h 33.8 v 12.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1627">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1623">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1621"
+           points="623.9,370.9 657.8,370.9 657.8,361.6 623.9,361.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1625"
+         d="m 623.9,370.9 v -9.2 h 33.8 v 9.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1635">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1631">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1629"
+           points="708.5,288.1 742.4,288.1 742.4,258.9 708.5,258.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1633"
+         d="M 708.5,288.1 V 259 h 33.8 v 29.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1643">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1639">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1637"
+           points="750.8,283.9 784.7,283.9 784.7,255.3 750.8,255.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1641"
+         d="m 750.8,283.9 v -28.5 h 33.8 v 28.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1651">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1647">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1645"
+           points="793.1,283.8 827,283.8 827,241.7 793.1,241.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1649"
+         d="m 793.1,283.8 v -42 h 33.8 v 42 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1659">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1655">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1653"
+           points="835.4,283.5 869.3,283.5 869.3,260.1 835.4,260.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1657"
+         d="m 835.4,283.5 v -23.3 h 33.8 v 23.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1667">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1663">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1661"
+           points="877.7,286.9 911.7,286.9 911.7,258.8 877.7,258.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1665"
+         d="m 877.7,286.9 v -28 h 33.9 v 28 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1675">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1671">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1669"
+           points="920,337.8 954,337.8 954,325.3 920,325.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1673"
+         d="m 920,337.8 v -12.4 h 33.9 v 12.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1683">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1679">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1677"
+           points="962.3,289.5 996.3,289.5 996.3,262.1 962.3,262.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1681"
+         d="m 962.3,289.5 v -27.3 h 33.9 v 27.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1691">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1687">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1685"
+           points="1089.2,284.3 1123.2,284.3 1123.2,258.4 1089.2,258.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1689"
+         d="m 1089.2,284.3 v -25.8 h 33.9 v 25.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1699">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1695">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1693"
+           points="1131.6,318.4 1165.5,318.4 1165.5,304.8 1131.6,304.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1697"
+         d="m 1131.6,318.4 v -13.5 h 33.8 v 13.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1707">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1703">
+        <polygon
+           style="fill:#0072b2"
+           id="polygon1701"
+           points="1216.2,278.1 1250.1,278.1 1250.1,247.1 1216.2,247.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1705"
+         d="m 1216.2,278.1 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1709" />
+  </g>
+  <g
+     id="gnuplot_plot_7"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title1712">1.8 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1718">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g1716"
+         font-size="22.00"
+         transform="translate(1415.1,219.6)">
+        <text
+           id="text1714">1.8 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1726">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1722">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1720"
+           points="1321.6,220.6 1399.7,220.6 1399.7,204.1 1321.6,204.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1724"
+         d="m 1321.6,220.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1734">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1730">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1728"
+           points="200.8,357.4 234.7,357.4 234.7,347.8 200.8,347.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1732"
+         d="m 200.8,357.4 v -9.5 h 33.8 v 9.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1742">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1738">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1736"
+           points="243.1,254.8 277,254.8 277,226 243.1,226 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1740"
+         d="m 243.1,254.8 v -28.7 h 33.8 v 28.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1750">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1746">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1744"
+           points="285.4,260.5 319.4,260.5 319.4,232.6 285.4,232.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1748"
+         d="m 285.4,260.5 v -27.8 h 33.9 v 27.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1758">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1754">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1752"
+           points="327.7,247.9 361.7,247.9 361.7,217.1 327.7,217.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1756"
+         d="m 327.7,247.9 v -30.7 h 33.9 v 30.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1766">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1762">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1760"
+           points="370,344.8 404,344.8 404,338.7 370,338.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1764"
+         d="m 370,344.8 v -6 h 33.9 v 6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1774">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1770">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1768"
+           points="412.3,388.1 446.3,388.1 446.3,387.5 412.3,387.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1772"
+         d="m 412.3,388.1 v -0.5 h 33.9 v 0.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1782">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1778">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1776"
+           points="454.6,307.9 488.6,307.9 488.6,293.1 454.6,293.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1780"
+         d="m 454.6,307.9 v -14.7 h 33.9 v 14.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1790">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1786">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1784"
+           points="496.9,347.6 530.9,347.6 530.9,341 496.9,341 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1788"
+         d="m 496.9,347.6 v -6.5 h 33.9 v 6.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1798">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1794">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1792"
+           points="539.3,272.4 573.2,272.4 573.2,249.3 539.3,249.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1796"
+         d="m 539.3,272.4 v -23 h 33.8 v 23 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1806">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1802">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1800"
+           points="581.6,330.6 615.5,330.6 615.5,320.5 581.6,320.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1804"
+         d="m 581.6,330.6 v -10 h 33.8 v 10 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1814">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1810">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1808"
+           points="623.9,361.7 657.8,361.7 657.8,353.5 623.9,353.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1812"
+         d="m 623.9,361.7 v -8.1 h 33.8 v 8.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1822">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1818">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1816"
+           points="708.5,259 742.4,259 742.4,231.8 708.5,231.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1820"
+         d="m 708.5,259 v -27.1 h 33.8 V 259 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1830">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1826">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1824"
+           points="750.8,255.4 784.7,255.4 784.7,227.7 750.8,227.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1828"
+         d="m 750.8,255.4 v -27.6 h 33.8 v 27.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1838">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1834">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1832"
+           points="793.1,241.8 827,241.8 827,210.1 793.1,210.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1836"
+         d="m 793.1,241.8 v -31.6 h 33.8 v 31.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1846">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1842">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1840"
+           points="835.4,260.2 869.3,260.2 869.3,236.8 835.4,236.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1844"
+         d="m 835.4,260.2 v -23.3 h 33.8 v 23.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1854">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1850">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1848"
+           points="877.7,258.9 911.7,258.9 911.7,231.3 877.7,231.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1852"
+         d="m 877.7,258.9 v -27.5 h 33.9 v 27.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1862">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1858">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1856"
+           points="920,325.4 954,325.4 954,313.9 920,313.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1860"
+         d="M 920,325.4 V 314 h 33.9 v 11.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1870">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1866">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1864"
+           points="962.3,262.2 996.3,262.2 996.3,236.3 962.3,236.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1868"
+         d="m 962.3,262.2 v -25.8 h 33.9 v 25.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1878">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1874">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1872"
+           points="1004.6,370.3 1038.6,370.3 1038.6,369.1 1004.6,369.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1876"
+         d="m 1004.6,370.3 v -1.1 h 33.9 v 1.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1886">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1882">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1880"
+           points="1089.2,258.5 1123.2,258.5 1123.2,228.7 1089.2,228.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1884"
+         d="m 1089.2,258.5 v -29.7 h 33.9 v 29.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1894">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1890">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1888"
+           points="1131.6,304.9 1165.5,304.9 1165.5,296.2 1131.6,296.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1892"
+         d="m 1131.6,304.9 v -8.6 h 33.8 v 8.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1902">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1898">
+        <polygon
+           style="fill:#e51e10"
+           id="polygon1896"
+           points="1216.2,247.2 1250.1,247.2 1250.1,216.2 1216.2,216.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1900"
+         d="m 1216.2,247.2 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1904" />
+  </g>
+  <g
+     id="gnuplot_plot_8"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title1907">1.9 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1913">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g1911"
+         font-size="22.00"
+         transform="translate(1415.1,186.6)">
+        <text
+           id="text1909">1.9 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1921">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1917">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1915"
+           points="1321.6,187.6 1399.7,187.6 1399.7,171.1 1321.6,171.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1919"
+         d="m 1321.6,187.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1929">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1925">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1923"
+           points="158.5,392.6 192.4,392.6 192.4,390.6 158.5,390.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1927"
+         d="m 158.5,392.6 v -1.9 h 33.8 v 1.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1937">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1933">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1931"
+           points="200.8,347.9 234.7,347.9 234.7,346.6 200.8,346.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1935"
+         d="m 200.8,347.9 v -1.2 h 33.8 v 1.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1945">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1941">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1939"
+           points="243.1,226.1 277,226.1 277,197.6 243.1,197.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1943"
+         d="m 243.1,226.1 v -28.4 h 33.8 v 28.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1953">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1949">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1947"
+           points="285.4,232.7 319.4,232.7 319.4,208.8 285.4,208.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1951"
+         d="m 285.4,232.7 v -23.8 h 33.9 v 23.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1961">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1957">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1955"
+           points="327.7,217.2 361.7,217.2 361.7,191.6 327.7,191.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1959"
+         d="m 327.7,217.2 v -25.5 h 33.9 v 25.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1969">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1965">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1963"
+           points="370,338.8 404,338.8 404,331.8 370,331.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1967"
+         d="m 370,338.8 v -6.9 h 33.9 v 6.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1977">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1973">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1971"
+           points="412.3,387.6 446.3,387.6 446.3,385.1 412.3,385.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1975"
+         d="m 412.3,387.6 v -2.4 h 33.9 v 2.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1985">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1981">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1979"
+           points="454.6,293.2 488.6,293.2 488.6,274.1 454.6,274.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1983"
+         d="m 454.6,293.2 v -19 h 33.9 v 19 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g1993">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1989">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1987"
+           points="496.9,341.1 530.9,341.1 530.9,332.2 496.9,332.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1991"
+         d="m 496.9,341.1 v -8.8 h 33.9 v 8.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2001">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g1997">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon1995"
+           points="539.3,249.4 573.2,249.4 573.2,231.3 539.3,231.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path1999"
+         d="m 539.3,249.4 v -18 h 33.8 v 18 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2009">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2005">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2003"
+           points="581.6,320.6 615.5,320.6 615.5,310.4 581.6,310.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2007"
+         d="m 581.6,320.6 v -10.1 h 33.8 v 10.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2017">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2013">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2011"
+           points="708.5,231.9 742.4,231.9 742.4,207 708.5,207 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2015"
+         d="m 708.5,231.9 v -24.8 h 33.8 v 24.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2025">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2021">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2019"
+           points="750.8,227.8 784.7,227.8 784.7,191.9 750.8,191.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2023"
+         d="M 750.8,227.8 V 192 h 33.8 v 35.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2033">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2029">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2027"
+           points="793.1,210.2 827,210.2 827,178.5 793.1,178.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2031"
+         d="m 793.1,210.2 v -31.6 h 33.8 v 31.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2041">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2037">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2035"
+           points="835.4,236.9 869.3,236.9 869.3,205.7 835.4,205.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2039"
+         d="m 835.4,236.9 v -31.1 h 33.8 v 31.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2049">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2045">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2043"
+           points="877.7,231.4 911.7,231.4 911.7,204 877.7,204 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2047"
+         d="m 877.7,231.4 v -27.3 h 33.9 v 27.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2057">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2053">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2051"
+           points="920,314 954,314 954,303.9 920,303.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2055"
+         d="m 920,314 v -10 h 33.9 v 10 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2065">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2061">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2059"
+           points="962.3,236.4 996.3,236.4 996.3,217.2 962.3,217.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2063"
+         d="m 962.3,236.4 v -19.1 h 33.9 v 19.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2073">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2069">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2067"
+           points="1004.6,369.2 1038.6,369.2 1038.6,366.9 1004.6,366.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2071"
+         d="M 1004.6,369.2 V 367 h 33.9 v 2.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2081">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2077">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2075"
+           points="1089.2,228.8 1123.2,228.8 1123.2,203.3 1089.2,203.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2079"
+         d="m 1089.2,228.8 v -25.4 h 33.9 v 25.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2089">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2085">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2083"
+           points="1131.6,296.3 1165.5,296.3 1165.5,289.7 1131.6,289.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2087"
+         d="m 1131.6,296.3 v -6.5 h 33.8 v 6.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2097">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2093">
+        <polygon
+           style="fill:#000000;fill-opacity:0.5"
+           id="polygon2091"
+           points="1216.2,216.3 1250.1,216.3 1250.1,185.3 1216.2,185.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2095"
+         d="m 1216.2,216.3 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2099" />
+  </g>
+  <g
+     id="gnuplot_plot_9"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title2102">2.0 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2108">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g2106"
+         font-size="22.00"
+         transform="translate(1415.1,153.6)">
+        <text
+           id="text2104">2.0 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2116">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2112">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2110"
+           points="1321.6,154.6 1399.7,154.6 1399.7,138.1 1321.6,138.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2114"
+         d="m 1321.6,154.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2124">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2120">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2118"
+           points="158.5,390.7 192.4,390.7 192.4,389.2 158.5,389.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2122"
+         d="m 158.5,390.7 v -1.4 h 33.8 v 1.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2132">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2128">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2126"
+           points="200.8,346.7 234.7,346.7 234.7,339 200.8,339 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2130"
+         d="m 200.8,346.7 v -7.6 h 33.8 v 7.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2140">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2136">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2134"
+           points="243.1,197.7 277,197.7 277,169.2 243.1,169.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2138"
+         d="m 243.1,197.7 v -28.4 h 33.8 v 28.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2148">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2144">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2142"
+           points="285.4,208.9 319.4,208.9 319.4,183.7 285.4,183.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2146"
+         d="m 285.4,208.9 v -25.1 h 33.9 v 25.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2156">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2152">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2150"
+           points="327.7,191.7 361.7,191.7 361.7,155.7 327.7,155.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2154"
+         d="m 327.7,191.7 v -35.9 h 33.9 v 35.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2164">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2160">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2158"
+           points="370,331.9 404,331.9 404,325.4 370,325.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2162"
+         d="m 370,331.9 v -6.4 h 33.9 v 6.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2172">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2168">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2166"
+           points="412.3,385.2 446.3,385.2 446.3,383.9 412.3,383.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2170"
+         d="M 412.3,385.2 V 384 h 33.9 v 1.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2180">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2176">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2174"
+           points="454.6,274.2 488.6,274.2 488.6,260.8 454.6,260.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2178"
+         d="m 454.6,274.2 v -13.3 h 33.9 v 13.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2188">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2184">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2182"
+           points="496.9,332.3 530.9,332.3 530.9,327.3 496.9,327.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2186"
+         d="m 496.9,332.3 v -4.9 h 33.9 v 4.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2196">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2192">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2190"
+           points="539.3,231.4 573.2,231.4 573.2,204.7 539.3,204.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2194"
+         d="m 539.3,231.4 v -26.6 h 33.8 v 26.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2204">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2200">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2198"
+           points="581.6,310.5 615.5,310.5 615.5,301.1 581.6,301.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2202"
+         d="m 581.6,310.5 v -9.3 h 33.8 v 9.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2212">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2208">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2206"
+           points="708.5,207.1 742.4,207.1 742.4,179.4 708.5,179.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2210"
+         d="m 708.5,207.1 v -27.6 h 33.8 v 27.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2220">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2216">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2214"
+           points="750.8,192 784.7,192 784.7,171 750.8,171 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2218"
+         d="m 750.8,192 v -20.9 h 33.8 V 192 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2228">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2224">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2222"
+           points="793.1,178.6 827,178.6 827,146.8 793.1,146.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2226"
+         d="m 793.1,178.6 v -31.7 h 33.8 v 31.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2236">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2232">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2230"
+           points="835.4,205.8 869.3,205.8 869.3,179.9 835.4,179.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2234"
+         d="M 835.4,205.8 V 180 h 33.8 v 25.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2244">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2240">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2238"
+           points="877.7,204.1 911.7,204.1 911.7,176.5 877.7,176.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2242"
+         d="m 877.7,204.1 v -27.5 h 33.9 v 27.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2252">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2248">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2246"
+           points="920,304 954,304 954,294.4 920,294.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2250"
+         d="m 920,304 v -9.5 h 33.9 v 9.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2260">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2256">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2254"
+           points="962.3,217.3 996.3,217.3 996.3,184 962.3,184 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2258"
+         d="m 962.3,217.3 v -33.2 h 33.9 v 33.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2268">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2264">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2262"
+           points="1089.2,203.4 1123.2,203.4 1123.2,177.1 1089.2,177.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2266"
+         d="m 1089.2,203.4 v -26.2 h 33.9 v 26.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2276">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2272">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2270"
+           points="1131.6,289.8 1165.5,289.8 1165.5,284.9 1131.6,284.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2274"
+         d="M 1131.6,289.8 V 285 h 33.8 v 4.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2284">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2280">
+        <polygon
+           style="fill:#9400d3;fill-opacity:0.5"
+           id="polygon2278"
+           points="1216.2,185.4 1250.1,185.4 1250.1,154.4 1216.2,154.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2282"
+         d="m 1216.2,185.4 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2286" />
+  </g>
+  <g
+     id="gnuplot_plot_10"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title2289">2.1 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2295">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g2293"
+         font-size="22.00"
+         transform="translate(1415.1,120.6)">
+        <text
+           id="text2291">2.1 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2303">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2299">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2297"
+           points="1321.6,121.6 1399.7,121.6 1399.7,105.1 1321.6,105.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2301"
+         d="m 1321.6,121.6 h 78.1 v -16.4 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2311">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2307">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2305"
+           points="158.5,389.3 192.4,389.3 192.4,388.6 158.5,388.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2309"
+         d="m 158.5,389.3 v -0.6 h 33.8 v 0.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2319">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2315">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2313"
+           points="200.8,339.1 234.7,339.1 234.7,338.1 200.8,338.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2317"
+         d="m 200.8,339.1 v -0.9 h 33.8 v 0.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2327">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2323">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2321"
+           points="243.1,169.3 277,169.3 277,141.8 243.1,141.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2325"
+         d="m 243.1,169.3 v -27.4 h 33.8 v 27.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2335">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2331">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2329"
+           points="285.4,183.8 319.4,183.8 319.4,156.3 285.4,156.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2333"
+         d="m 285.4,183.8 v -27.4 h 33.9 v 27.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2343">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2339">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2337"
+           points="327.7,155.8 361.7,155.8 361.7,125.5 327.7,125.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2341"
+         d="m 327.7,155.8 v -30.2 h 33.9 v 30.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2351">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2347">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2345"
+           points="370,325.5 404,325.5 404,318.9 370,318.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2349"
+         d="M 370,325.5 V 319 h 33.9 v 6.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2359">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2355">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2353"
+           points="454.6,260.9 488.6,260.9 488.6,255.9 454.6,255.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2357"
+         d="M 454.6,260.9 V 256 h 33.9 v 4.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2367">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2363">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2361"
+           points="496.9,327.4 530.9,327.4 530.9,322.2 496.9,322.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2365"
+         d="m 496.9,327.4 v -5.1 h 33.9 v 5.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2375">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2371">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2369"
+           points="539.3,204.8 573.2,204.8 573.2,182.5 539.3,182.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2373"
+         d="m 539.3,204.8 v -22.2 h 33.8 v 22.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2383">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2379">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2377"
+           points="581.6,301.2 615.5,301.2 615.5,293.4 581.6,293.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2381"
+         d="m 581.6,301.2 v -7.7 h 33.8 v 7.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2391">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2387">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2385"
+           points="708.5,179.5 742.4,179.5 742.4,154.2 708.5,154.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2389"
+         d="m 708.5,179.5 v -25.2 h 33.8 v 25.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2399">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2395">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2393"
+           points="750.8,171.1 784.7,171.1 784.7,139.3 750.8,139.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2397"
+         d="m 750.8,171.1 v -31.7 h 33.8 v 31.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2407">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2403">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2401"
+           points="793.1,146.9 827,146.9 827,116.1 793.1,116.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2405"
+         d="m 793.1,146.9 v -30.7 h 33.8 v 30.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2415">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2411">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2409"
+           points="835.4,180 869.3,180 869.3,153.7 835.4,153.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2413"
+         d="m 835.4,180 v -26.2 h 33.8 V 180 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2423">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2419">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2417"
+           points="877.7,176.6 911.7,176.6 911.7,149.8 877.7,149.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2421"
+         d="m 877.7,176.6 v -26.7 h 33.9 v 26.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2431">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2427">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2425"
+           points="920,294.5 954,294.5 954,284.5 920,284.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2429"
+         d="m 920,294.5 v -9.9 h 33.9 v 9.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2439">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2435">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2433"
+           points="962.3,184.1 996.3,184.1 996.3,156.6 962.3,156.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2437"
+         d="m 962.3,184.1 v -27.4 h 33.9 v 27.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2447">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2443">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2441"
+           points="1004.6,367 1038.6,367 1038.6,355.6 1004.6,355.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2445"
+         d="m 1004.6,367 v -11.3 h 33.9 V 367 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2455">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2451">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2449"
+           points="1089.2,177.2 1123.2,177.2 1123.2,152.5 1089.2,152.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2453"
+         d="m 1089.2,177.2 v -24.6 h 33.9 v 24.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2463">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2459">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2457"
+           points="1131.6,285 1165.5,285 1165.5,282 1131.6,282 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2461"
+         d="m 1131.6,285 v -2.9 h 33.8 v 2.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2471">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2467">
+        <polygon
+           style="fill:#009e73;fill-opacity:0.5"
+           id="polygon2465"
+           points="1216.2,154.5 1250.1,154.5 1250.1,123.5 1216.2,123.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2469"
+         d="m 1216.2,154.5 v -30.9 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2473" />
+  </g>
+  <g
+     id="gnuplot_plot_11"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title2476">2.2 Ghz</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2482">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g2480"
+         font-size="22.00"
+         transform="translate(1415.1,87.6)">
+        <text
+           id="text2478">2.2 Ghz</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2490">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2486">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2484"
+           points="1321.6,88.6 1399.7,88.6 1399.7,72.1 1321.6,72.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2488"
+         d="m 1321.6,88.6 h 78.1 V 72.2 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2498">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2494">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2492"
+           points="158.5,388.7 192.4,388.7 192.4,388 158.5,388 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2496"
+         d="m 158.5,388.7 v -0.6 h 33.8 v 0.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2506">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2502">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2500"
+           points="200.8,338.2 234.7,338.2 234.7,330.6 200.8,330.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2504"
+         d="m 200.8,338.2 v -7.5 h 33.8 v 7.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2514">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2510">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2508"
+           points="243.1,141.9 277,141.9 277,113.5 243.1,113.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2512"
+         d="m 243.1,141.9 v -28.3 h 33.8 v 28.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2522">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2518">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2516"
+           points="285.4,156.4 319.4,156.4 319.4,127 285.4,127 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2520"
+         d="m 285.4,156.4 v -29.3 h 33.9 v 29.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2530">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2526">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2524"
+           points="327.7,125.6 361.7,125.6 361.7,98.8 327.7,98.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2528"
+         d="M 327.7,125.6 V 98.9 h 33.9 v 26.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2538">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2534">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2532"
+           points="370,319 404,319 404,311.6 370,311.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2536"
+         d="m 370,319 v -7.3 h 33.9 v 7.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2546">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2542">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2540"
+           points="412.3,384 446.3,384 446.3,383 412.3,383 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2544"
+         d="m 412.3,384 v -0.9 h 33.9 v 0.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2554">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2550">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2548"
+           points="454.6,256 488.6,256 488.6,246.9 454.6,246.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2552"
+         d="m 454.6,256 v -9 h 33.9 v 9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2562">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2558">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2556"
+           points="496.9,322.3 530.9,322.3 530.9,315.9 496.9,315.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2560"
+         d="M 496.9,322.3 V 316 h 33.9 v 6.3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2570">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2566">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2564"
+           points="539.3,182.6 573.2,182.6 573.2,160.8 539.3,160.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2568"
+         d="m 539.3,182.6 v -21.7 h 33.8 v 21.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2578">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2574">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2572"
+           points="581.6,293.5 615.5,293.5 615.5,285.2 581.6,285.2 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2576"
+         d="m 581.6,293.5 v -8.2 h 33.8 v 8.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2586">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2582">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2580"
+           points="623.9,353.6 657.8,353.6 657.8,336.6 623.9,336.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2584"
+         d="m 623.9,353.6 v -16.9 h 33.8 v 16.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2594">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2590">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2588"
+           points="708.5,154.3 742.4,154.3 742.4,125.5 708.5,125.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2592"
+         d="m 708.5,154.3 v -28.7 h 33.8 v 28.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2602">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2598">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2596"
+           points="750.8,139.4 784.7,139.4 784.7,116.5 750.8,116.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2600"
+         d="m 750.8,139.4 v -22.8 h 33.8 v 22.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2610">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2606">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2604"
+           points="793.1,116.2 827,116.2 827,85.5 793.1,85.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2608"
+         d="M 793.1,116.2 V 85.6 h 33.8 v 30.6 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2618">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2614">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2612"
+           points="835.4,153.8 869.3,153.8 869.3,125.6 835.4,125.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2616"
+         d="m 835.4,153.8 v -28.1 h 33.8 v 28.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2626">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2622">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2620"
+           points="877.7,149.9 911.7,149.9 911.7,120.4 877.7,120.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2624"
+         d="m 877.7,149.9 v -29.4 h 33.9 v 29.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2634">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2630">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2628"
+           points="920,284.6 954,284.6 954,275.8 920,275.8 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2632"
+         d="m 920,284.6 v -8.7 h 33.9 v 8.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2642">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2638">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2636"
+           points="962.3,156.7 996.3,156.7 996.3,120.6 962.3,120.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2640"
+         d="m 962.3,156.7 v -36 h 33.9 v 36 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2650">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2646">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2644"
+           points="1089.2,152.6 1123.2,152.6 1123.2,126.3 1089.2,126.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2648"
+         d="m 1089.2,152.6 v -26.2 h 33.9 v 26.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2658">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2654">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2652"
+           points="1131.6,282.1 1165.5,282.1 1165.5,279.3 1131.6,279.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2656"
+         d="m 1131.6,282.1 v -2.7 h 33.8 v 2.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2666">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2662">
+        <polygon
+           style="fill:#56b4e9;fill-opacity:0.5"
+           id="polygon2660"
+           points="1216.2,123.6 1250.1,123.6 1250.1,92.6 1216.2,92.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2664"
+         d="M 1216.2,123.6 V 92.7 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2668" />
+  </g>
+  <g
+     id="gnuplot_plot_12"
+     transform="translate(-16.274,-23.228)">
+    <title
+       id="title2671">2.2 Ghz +TB</title>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2677">
+      <g
+         style="font-size:22px;font-family:Times;text-anchor:start;fill:#000000;stroke:none"
+         id="g2675"
+         font-size="22.00"
+         transform="translate(1415.1,54.6)">
+        <text
+           id="text2673">2.2 Ghz +TB</text>
+      </g>
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2685">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2681">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2679"
+           points="1321.6,55.6 1399.7,55.6 1399.7,39.1 1321.6,39.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2683"
+         d="m 1321.6,55.6 h 78.1 V 39.2 h -78.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2693">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2689">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2687"
+           points="158.5,388.1 192.4,388.1 192.4,387.5 158.5,387.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2691"
+         d="m 158.5,388.1 v -0.5 h 33.8 v 0.5 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2701">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2697">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2695"
+           points="243.1,113.6 277,113.6 277,113.3 243.1,113.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2699"
+         d="m 243.1,113.6 v -0.2 h 33.8 v 0.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2709">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2705">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2703"
+           points="285.4,127.1 319.4,127.1 319.4,123 285.4,123 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2707"
+         d="m 285.4,127.1 v -4 h 33.9 v 4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2717">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2713">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2711"
+           points="327.7,98.9 361.7,98.9 361.7,94.4 327.7,94.4 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2715"
+         d="m 327.7,98.9 v -4.4 h 33.9 v 4.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2725">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2721">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2719"
+           points="370,311.7 404,311.7 404,306.9 370,306.9 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2723"
+         d="M 370,311.7 V 307 h 33.9 v 4.7 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2733">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2729">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2727"
+           points="412.3,383.1 446.3,383.1 446.3,380 412.3,380 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2731"
+         d="m 412.3,383.1 v -3 h 33.9 v 3 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2741">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2737">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2735"
+           points="454.6,247 488.6,247 488.6,220.5 454.6,220.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2739"
+         d="m 454.6,247 v -26.4 h 33.9 V 247 Z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2749">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2745">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2743"
+           points="496.9,316 530.9,316 530.9,313.5 496.9,313.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2747"
+         d="m 496.9,316 v -2.4 h 33.9 v 2.4 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2757">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2753">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2751"
+           points="581.6,285.3 615.5,285.3 615.5,283.3 581.6,283.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2755"
+         d="m 581.6,285.3 v -1.9 h 33.8 v 1.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2765">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2761">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2759"
+           points="708.5,125.6 742.4,125.6 742.4,122.7 708.5,122.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2763"
+         d="m 708.5,125.6 v -2.8 h 33.8 v 2.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2773">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2769">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2767"
+           points="750.8,116.6 784.7,116.6 784.7,111.7 750.8,111.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2771"
+         d="m 750.8,116.6 v -4.8 h 33.8 v 4.8 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2781">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2777">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2775"
+           points="793.1,85.6 827,85.6 827,83.5 793.1,83.5 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2779"
+         d="m 793.1,85.6 v -2 h 33.8 v 2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2789">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2785">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2783"
+           points="877.7,120.5 911.7,120.5 911.7,120.3 877.7,120.3 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2787"
+         d="m 877.7,120.5 v -0.1 h 33.9 v 0.1 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2797">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2793">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2791"
+           points="1004.6,355.7 1038.6,355.7 1038.6,345.6 1004.6,345.6 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2795"
+         d="m 1004.6,355.7 v -10 h 33.9 v 10 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2805">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2801">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2799"
+           points="1089.2,126.4 1123.2,126.4 1123.2,121.1 1089.2,121.1 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2803"
+         d="m 1089.2,126.4 v -5.2 h 33.9 v 5.2 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2813">
+      <g
+         style="stroke:none;shape-rendering:crispEdges"
+         id="g2809">
+        <polygon
+           style="fill:#e69f00;fill-opacity:0.25"
+           id="polygon2807"
+           points="1216.2,92.7 1250.1,92.7 1250.1,61.7 1216.2,61.7 " />
+      </g>
+      <path
+         style="stroke:#000000"
+         inkscape:connector-curvature="0"
+         id="path2811"
+         d="M 1216.2,92.7 V 61.8 h 33.8 v 30.9 z" />
+    </g>
+    <g
+       style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+       id="g2815" />
+  </g>
+  <g
+     style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
+     id="g2826"
+     transform="translate(-16.274,-23.228)">
+    <path
+       style="stroke:#000000"
+       inkscape:connector-curvature="0"
+       id="path2824"
+       d="M 133.1,30.9 V 401.7 H 1275.4 V 30.9 Z" />
+  </g>
+</svg>
