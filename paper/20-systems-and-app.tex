@@ -6,12 +6,11 @@
 
 %In this section we will mainly discuss the environment of our testing platforms and briefly introducing the benchmarks.
 %In order to run our experiments, we need to setup our testing environment first.
-Our research objective was to evaluate the impact of migration from an architecture with (relatively) high amount of double-precision compute to an architecture with less. By high amount of double-precision compute we mean architectures whose Floating-Point Unit (FPU) has most of its silicon dedicated to 64-bit IEEE-754 floating-point operations, and by less double-precision compute we mean architectures that replace those same double-precision FPUs with lower -- potentially hybrid -- precision units.
+Our research objective is to evaluate the impact of migrating from an architecture with (relatively) high amount of double-precision compute to an architecture with less. By high amount of double-precision compute we mean architectures whose Floating-Point Unit (FPU) has most of its silicon dedicated to 64-bit IEEE-754 floating-point operations, and by less double-precision compute we mean architectures that replace those same double-precision FPUs with lower -- potentially hybrid -- precision units.
 
-We know that several emerging application domains can aggressively exploit lower-precision arithmetic with little-to-no impact on solution quality (e.g. Deep-Learning[ref]); at the same time, we also know that many traditional applications demand double-precision arithmetic, and the applicability of hybrid precision in these is still an open question. Finally, given that the trend in processor design seem to be re-allocating double-precision silicon to single- and half-precision units (e.g. Fujitsu ARM64FX and NVIDIA Volta-100), how will the execution performance of these traditional application suffer (if at all?) when we migrate our HPC systems to host the new wave of processors?
+%We are aware that several emerging application domains can aggressively exploit lower-precision arithmetic with little-to-no impact on solution quality, such as Deep-Learning~\cite{mixed_precision}. At the same time, we also know that many traditional applications demand double-precision arithmetic, and the applicability of hybrid precision in these is still an open research question. Finally, given that the trend in processor design seem to be re-allocating double-precision silicon to single- and half-precision units (e.g., Fujitsu's ARM64FX and NVIDIA's Volta-100), the question arises: How will the execution performance of these traditional application suffer (if at all?) when we migrate our HPC systems to host the new wave of processors?
 
-To understand and explore the intersection of architecture with high-amount of double-precision and those with hybrid-precision, there is a need to find a processor whose architecture is unchanged with the sole exception of its floating-point unit silicon distribution. We found that only one modern processor family allow for such apple-to-apple comparison: The Xeon PHI family of processors.
-
+To understand and explore the intersection of architectures with high-amount of double-precision and those with hybrid-precision, there is a need to find a processor whose architecture is unchanged with the sole exception of its floating-point unit to silicon distribution. Only one modern processor family allows for such an apples-to-apples comparison: the Xeon Phi family of processors.
 
 \subsection{Hardware \& Software Environment}\label{ssec:hw}
 %\cJD{fixed uncore freq!}
@@ -28,20 +27,17 @@ To understand and explore the intersection of architecture with high-amount of d
 %To make our experiments more convincing, we make sure that the severs we use for the experiments using the same OS, same SSD, same rack, same air cooling, same frequency setting, in order to minimize potential side-effects resulting in incorrect conclusions.
 %Noted that, to make sure our tests are not disturbed by other users, we run all our tests exclusively.
 
-
-
-
 \begin{table}[tbp]
     \caption{\label{table:HW} Detailed compute node hardware information; Differences between Knights Landing \& Mill highlighted in bold; Shown bandwidth (BW) measured with BabelStream (see Sec.\ref{ssec:bm}); Numbers for dual-socket reference system accumulated}
-    \centering
+    \centering\scriptsize
     \newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
     \begin{tabular}{|l|r|r|r|}
         \hline \hC
         \tH{Feature}                & \tH{KNL}                          & \tH{KNM}                          & \tH{Broadwell-EP} \\ \hline
         CPU Model                   & \textbf{7210F}                    & \textbf{7295}                     & 2x E5-2650v4              \\ \hline \rC
         \#\{Cores\} (HT)            & \textbf{64} (4x)                  & \textbf{72} (4x)                  & 24 (2x)                   \\ \hline
-        Base Frequency              & \textbf{\unit[1.3]{Ghz}}          & \textbf{\unit[1.5]{Ghz}}          & \unit[2.2]{Ghz}           \\ \hline \rC
-        Max Turbo Freq.             & \textbf{\unit[1.4]{Ghz}}          & \textbf{\unit[1.6]{Ghz}}          & \unit[2.9]{Ghz}           \\ \hline
+        Base Frequency              & \textbf{\unit[1.3]{GHz}}          & \textbf{\unit[1.5]{GHz}}          & \unit[2.2]{GHz}           \\ \hline \rC
+        Max Turbo Freq.             & \textbf{\unit[1.4]{GHz}}          & \textbf{\unit[1.6]{GHz}}          & \unit[2.9]{GHz}           \\ \hline
         CPU Mode                    & Quadrant                          & Quadrant                          & \textit{N/A}              \\ \hline \rC
         TDP                         & \textbf{\unit[230]{W}}            & \textbf{\unit[320]{W}}            & \unit[210]{W}             \\ \hline
         DRAM Size                   & \unit[96]{GiB}                    & \unit[96]{GiB}                    & \unit[256]{GiB}           \\ \hline
@@ -67,26 +63,40 @@ To understand and explore the intersection of architecture with high-amount of d
 %        Compiler    &\multicolumn{3}{c|}{icc/ifort version 18.0.1 (gcc version 4.8.5 compatibility)}  \\ \hline
 %        MPI         &\multicolumn{3}{c|}{Intel(R) MPI Library for Linux* OS, Version 2018 Update 1 Build 20171011} \\ \hline
 \end{tabular}
+        %\vspace{-1em}
 \end{table}
 
 %There are several differences between KNL and KNM many-core architectures. One of the main differences is single-/double-precision ratio. As is shown in Figure \ref{fig:knlvsknm}, KNM has half the DP flops/cyc while gets double SP flops/cyc compared with KNL. Which is an important reasion why we choose these two archetectures for our experiments.
-
+\begin{comment}
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=.4\linewidth]{KNLvsKNM}
-    \caption{\label{fig:knlvsknm}Comparison of KNL and KNM architecture\cJD{maybe too big for this little of for us relevant information?!; also have we referenced the original web/paper/etc?}}
+    \caption{\label{fig:knlvsknm}Comparison of KNL and KNM architecture\cJD{Is this figure necessary? Isn't Table 1 enough?}}
 \end{figure}
+\end{comment}
 
-Intel Knight’s Landing (KNL) and Knight’s Mill (KNM) are the latest incarnations of a long line of architectures in the Intel’s accelerator family. Both processor consists of a large (64 and 72) number of processors cores, interconnected in a mesh interconnection (prior to KNL this was ring). Each core has a private L1 cache and a slice of the distributed L2 cache. Caches are kept coherent through directory-based MESIF protocol.
-Both processors come with two types of external memory: MCDRAM (or, Hybrid Memory Cube, HMC) and Double-Data Rate-synchronous (DDR4) memory. Unique to the Xeon PHI processors is that the MCDRAM memory can be configured to one of two modes of operation: (1) it’s is either directly addressable in the global memory address space (memory-mapped), or (2) it acts as last-level cache before the DDR. The first configuration is called \texttt{flat} mode, and the second configuration is called \texttt{cache} mode, and a hybrid-mode mode\cite{heinecke_high_2016}) that combines properties from the the first two.
-There are several policies governing where data is homed. A common high-performance configuration~\cite{gawande_scaling_2017}, which is also the one we used in our study, is the quadrant mode, meaning that the physical cores are divided into four logical parts, where each logical part is assigned two memory controllers; each logical group is treated as a unique Non-Uniform Memory-Access (NUMA) node, allowing the operating system to data-locality optimizations.
-Table~\ref{table:HW} surveys and contrast the processors against each other, where the main differences are highlighted. The main architectural difference (Figure \ref{fig:knlvsknm}) – which is also the difference we seek to empirically quantify the impact of – is the Floating-Point Unit (FPU). In KNL, this unit features two 512-bit wide vector units (AVX), capable of executing 32 double-precision or 64 single-precision operations per cycle, totaling 2.6 and 13.8 TeraFLOP/s of double- and single-precision performance respectively across all 64 processing cores. In KNM, however, the FPU is redesigned to replace one of the 512-bit vector units with two Virtual Neural Network Instruction (VNNI) units; these units, although specializing in hybrid-precision FMA, can execute single-precision vector instructions, but have no support for double-precision compute. Thus, in total, the KNM can execute up-to 1.7 TeraFLOP of double-precision or 13.8 TeraFLOP of single-precision computations per second. In summary, the KNM has 2.59x more single-precision compute, while the KNL have 1.54x more double-precision compute.
-While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences. First, the operating frequency of the processor vary: the KNL operates at a frequency of 1.3 GHz (and up-to 1.5 GHz in Turbo mode), while KNM operates at 1.5 GHz (1.6 GHz turbo) -- KNM executes 15\% more cycles per second over KNM. Furthermore, although the cores of KNM and KNL are similar (except the FPU), the number of cores are different: KNL has 63 cores while KNM has 72 cores. Both processors are manufactured in 14 nm technology. Finally, the amount of on-chip last-level cache between the two processors is different, where KNM has a 4 MB advantage over KNL.
-Finally, for verification reasons, we included a modern Intel Xeon processor in our evaluation. Although vastly different than the Xeon PHI systems, the Xeon general-purpose processor was used to cross-check metrics against, metrics such as: execution time and performance (Xeon PHI’s should perform better), frequency-scaling impact experiments (The Xeon has more frequency domains), and performance counters (the Xeon has far more performance counters).
-Aside from the difference mentioned here (and highlighted in Table~\ref{table:HW}), the setup between the Xeon PHIs was \textit{identical}, including the same operating system, software stack, and solid state disk (mSSD SATA, 500 GB, Crucial).
+Intel's Knights Landing (KNL) and Knights Mill (KNM) are the latest incarnations of a long line of architectures in the Intel's accelerator family. Both processor consist of a large number of processors cores (64 and 72, respectively), interconnected in a mesh interconnection (prior to KNL: ring interconnection). Each core has a private L1 cache and a slice of the distributed L2 cache. Caches are kept coherent through the directory-based MESIF protocol.
+Both processors come with two types of external memory: MCDRAM (or, Hybrid Memory Cube) and Double-Data Rate-synchronous (DDR4) memory. Unique to the Xeon Phi processors is that the MCDRAM memory can be configured to one of three modes of operation: it is either (1) directly addressable in the global memory address space (memory-mapped), called \texttt{flat} mode, or it (2) acts as last-level cache before the DDR, called \texttt{cache} mode. Finally, the third mode (hybrid mode~\cite{heinecke_high_2016}) is a combination of the properties from the first two modes.
 
-\struc{add important notes on: linux kernel version and parameters, spector/meltdown patches, run levels, OS noise
-from NFS, other users, special settings to pre-installed OS/gnu/linux tools, ...; since we removed the info from the table}
+There are several policies governing where data is homed. A common high-performance configuration~\cite{gawande_scaling_2017}, which is also the one we used in our study, is the quadrant mode. Quadrant mode means that the physical cores are divided into four logical parts, where each logical part is assigned two memory controllers; each logical group is treated as a unique Non-Uniform Memory-Access (NUMA) node, allowing the operating system to perform data-locality optimizations.
+Table~\ref{table:HW} surveys and contrast the processors against each other, where the main differences are highlighted. The main architectural difference -- which is also the difference and its impact we seek to empirically quantify -- is the Floating-Point Unit (FPU). In KNL, this unit features two 512-bit wide vector units (AVX), together capable of executing 32 double-precision or 64 single-precision operations per cycle, totaling~\unit[2.6]{Tflop/s} of double- and~\unit[5.3]{Tflop/s} of single-precision performance, respectively, across all 64 processing cores. In KNM, however, the FPU is redesigned to replace one 512-bit vector unit with two Virtual Neural Network Instruction (VNNI) units. Those units, although specializing in hybrid-precision FMA, can execute single-precision vector instructions, but have no support for double-precision compute. Thus, in total, the KNM can execute up to~\unit[1.7]{Tflop/s} of double-precision or~\unit[13.8]{Tflop/s} of single-precision computations. In summary, the KNM has~2.59x more single-precision compute, while the KNL have~1.54x more double-precision compute.
+
+While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences. First, the operating frequency of the processors vary: the KNL operates at a frequency of~\unit[1.3]{GHz} (and up to~\unit[1.5]{GHz} in Turbo mode), while KNM operates at~\unit[1.5]{GHz} (\unit[1.6]{GHz} turbo). Hence, KNM executes~15\% more cycles per second over KNM. Furthermore, although the cores of KNM and KNL are similar (except the FPU), the number of cores are different: KNL has~64 cores while KNM has~72 cores. Both processors are manufactured in~\unit[14]{nm} technology. Finally, the amount of on-chip last-level cache between the two processors is different, where KNM has a~\unit[4]{MiB} advantage over KNL.
+
+Additionally, for verification reasons, we include a modern dual-socket Xeon-based compute node in our evaluation. Despite being vastly different from the Xeon Phi systems, our Xeon Broadwell-EP (BDW) general-purpose processor is used to cross-check metrics, such as: execution time and performance (Xeon Phi should perform better), frequency-scaling experiments (BDW has more frequency domains), and performance counters (BDW exposes more performance counters).
+Aside from those differences mentioned above (and highlighted in Table~\ref{table:HW}), the setup between the Xeon Phi nodes (and BDW node) is \textit{identical}, including the same operating system, software stack, and solid state disk. %(one Crucial mSSD SATA with \unit[480]{GiB} per node).
+
+%\struc{add important notes on: linux kernel version and parameters, spector/meltdown patches, run levels, OS noise
+%from NFS, other users, special settings to pre-installed OS/gnu/linux tools, ...; since we removed the info from the table}
+For the operating system (OS) and software environment, we use equivalent setups across our three compute nodes.
+The OS is a fresh installation of CentOS~7~(minimal) with Linux kernel version 3.10.0-862, which has the latest versions of
+the Meltdown and Spectre patches enabled. During our experiments, we limit potential OS noise by disabling all
+remote storage (Network File System in our case) and allowing only a single user on the system.
+Most of our applications are compiled with Intel's Parallel Studio~XE (version 2018; update 3) compilers, and we
+install the latest versions of Intel TensorFlow and Intel MKL-DNN for the deep learning proxy application, since
+our assumption is that Intel's software stack allows for the highest utilization of their hardware.
+Exceptions to this compiler selection are listed in the subsequent Section~\ref{sec:materials}.
+We use Intel MPI from the Parallel Studio~XE suite to execute our measurements.
 
 %Meanwhile, KNM has new instructions such as Quad Fused Multiply Add (QFMA),Variable precision instructions and Quad Virtual Neural Network Instruction (QVNNI). It is claimed by Intel that QFMA instructions enable 2x of the SP performance against KNL. Variable precision instructions help to get higher throughput in machine learning tasks. And QVNNI, the 16-bit INT operations are 4x faster than KNL's SP under the condition that Intel claims users can achieve “similar accuracy to single-precision.” with INT32 accumulated output.[see comment]
 %[refer to slide https://indico.cern.ch/event/595059/contributions/2499304/attachments/1430242/2196659/Intel_and_ML_Talk_HansPabst.pdf]
@@ -105,19 +115,19 @@ from NFS, other users, special settings to pre-installed OS/gnu/linux tools, ...
 
 %\struc{write short info about each application: what does it do, which science field it belongs to, what subproblem does the input data/parameter simulate, which category does it belong to (see riken study about code categories), byte2flop ratio if know from prev. publications}
 
-The HPC community has developed many benchmarks representing real workloads or testing the
-capabilities of a system, primarily for comparisons across architectures but also for system
+Over the years, the HPC community developed many benchmarks representing real workloads or for testing the
+capabilities of a system -- primarily for comparisons across architectures but also for system
 procurement purposes.
 The so-called Exascale Computing Project (ECP) proxy applications~\cite{noauthor_ecp_2018} and
 RIKEN AICS' Fiber Miniapp Suite~\cite{riken_aics_fiber_2015}, which we will focus on for this study, are just
-two examples representing the modern HPC workloads.
-These benchmarks are designed to evaluate single-node and small-scale test installations,
-and hence adequate for our study.
+two examples representing modern HPC workloads.
+Those benchmarks are designed to evaluate single-node and small-scale test installations,
+and hence are adequate for our study.
 
 
-\subsubsection{ECP Proxy-Apps}\label{ssec:ecp}
-The ECP benchmark suite (release 1.0) consists of twelve proxy applications primarily written in C (5x),
-FORTRAN (3x), C++ (3x), and Python (1x).
+\subsubsection{The ECP Proxy-Apps}\label{ssec:ecp}
+The ECP suite (release~v1.0) consists of 12 proxy applications primarily written in C~(5x),
+FORTRAN~(3x), C++~(3x), and Python~(1x), listed hereafter.
 
 \paragraph{Algebraic multi-grid (AMG)} solver of the \textit{hypre} library is a parallel solver
 for unstructured grids~\cite{park_high-performance_2015} arising from fluid dynamics problems.
@@ -131,8 +141,8 @@ research~\cite{wozniak_candle/supervisor:_2018}.
 We select benchmark 1 of pilot 1 (\textit{P1B1}), which builds an autoencoder from a sample of gene
 expression data to improve the prediction of drug responses.
 
-\paragraph{Co-designed Molecular Dynamics (CoMD)} serves as reference implementation for
-ExMatEx~\cite{mohd-yusof_co-design_2013} to facilitate co-design for and evaluation of classical molecular
+\paragraph{Co-designed Molecular Dynamics (CoMD)} serves as the reference implementation for
+ExMatEx~\cite{mohd-yusof_co-design_2013} to facilitate co-design for (and evaluation of) classical molecular
 dynamics algorithms.
 We are using the included strong-scaling example to calculate the inter-atomic potential for 256,000 atoms.
 %https://www.lanl.gov/orgs/adtsc/publications/science_highlights_2013/docs/Pg88_89.pdf
@@ -148,17 +158,17 @@ HPC applications~\cite{dickson_replicating_2016}. Our input causes MACSio to wri
 
 \paragraph{MiniAMR (MAMR)} is a adaptive mesh refinement proxy application of the Mantevo 
 project~\cite{heroux_improving_2009} which applies a stencil computation on a 3-dimensional space,
-in our case a sphere moving diagonally through the cubic medium.
+in our case a sphere moving diagonally through a cubic medium.
 %The cube is evenly distributed onto the processes, and adaptive meshing is performed for workload balancing.
 
-\paragraph{MiniFE (MiFE)} is a reference implementation of a implicit finite elements 
+\paragraph{MiniFE (MiFE)} is a reference implementation of an implicit finite elements 
 solver~\cite{heroux_improving_2009} for scientific methods resulting in unstructured 3-dimensional grids.
 For our study, we use 128$\times$128$\times$128 input dimensions for the grid.
 
 \paragraph{MiniTri (MTri)} is able to apply different graph detection algorithms for a given graph,
 such as community detection or dense subgraph detection~\cite{wolf_task-based_2015}.
-As input for the triangle detection and approximation of the graph's largest clique, we downloaded
-BCSSTK30 from the MatrixMarket~\cite{boisvert_matrix_1997}.
+As input for the triangle detection and approximation of the graph's largest clique, we download
+\textit{BCSSTK30} from the MatrixMarket~\cite{boisvert_matrix_1997}.
 
 \paragraph{Nekbone (NekB)} is a proxy for the Nek5000 application~\cite{argonne_national_laboratory_nek5000_nodate}, and uses the conjugate
 gradient method for solving the standard Poisson equation for computational fluid dynamics problems.
@@ -220,20 +230,51 @@ lattice (3-D plus time), represented by a sparse coefficient matrix, to investig
 interaction between quarks~\cite{boku_multi-block/multi-core_2012}. We evaluate QCD with the \textit{Class 2}
 input for a $32^3 \times 32$ lattice discretization.
 
+\begin{table}[tbp]
+    \caption{\label{table:APP} Application Categorization, Compute Patterns, and main Programming Languages used; MACSio, HPL, HPCG, and BabelStream Benchmarks omitted}
+    \centering\scriptsize
+    \begin{tabular}{|l|l|l|l|}
+        \hline \hC
+        \tH{ECP}    & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}  & \tH{Language} \\ \hline
+        AMG         & Physics and Bioscience                & Stencil               & C \\ \hline \rC
+        CANDLE      & Bioscience                            & Dense matrix          & Python \\ \hline
+        CoMD        & Material Science/Engineering          & N-body                & C \\ \hline  \rC
+        Laghos      & Physics                               & Irregular             & C++\\ \hline
+        %MACSio      & \textit{I/O benchmark}                & \textit{read/write}   \\ \hline
+        miniAMR     & Geoscience/Earthscience               & Stencil               & C \\ \hline \rC
+        miniFE      & Physics                               & Irregular             & C++ \\ \hline
+        miniTRI     & Math/Computer Science                 & Irregular             & C++ \\ \hline \rC
+        Nekbone     & Math/Computer Science                 & Sparse matrix         & Fortan \\ \hline
+        SW4lite     & Geoscience/Earthscience               & Stencil               & C \\ \hline \rC
+        SWFFT       & Physics                               & FFT                   & C/Fortran \\ \hline
+        XSBench     & Physics                               & Irregular             & C \\ \hline\hline \hC
+        \tH{RIKEN}  & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}  & \tH{Language} \\ \hline
+        FFB         & Engineering (Mechanics, CFD)          & Stencil               & Fortran \\ \hline \rC
+        FFVC        & Engineering (Mechanics, CFD)          & Stencil               & C++/Fortran \\ \hline
+        mVMC        & Physics                               & Dense matrix          & C \\ \hline \rC
+        NICAM       & Geoscience/Earthscience               & Stencil               & Fortran \\ \hline
+        NGSA        & Bioscience                            & Irregular             & C \\ \hline \rC
+        MODYLAS     & Physics and Chemistry                 & N-body                & Fortran \\ \hline
+        NTChem      & Chemistry                             & Dense matrix          & Fortran \\ \hline \rC
+        QCD         & Lattice QCD                           & Stencil               & Fortran/C \\ \hline
+    \end{tabular}      
+    \vspace{-0.4em}
+\end{table}
+
 
 \subsubsection{Reference Benchmarks}\label{ssec:refbm}
 
-Additionally, to these 20 applications, we will be using the compute intensive HPL~\cite{dongarra_linpack_1988} benchmark,
+In addition to those 20 applications, we use the compute intensive HPL~\cite{dongarra_linpack_1988} benchmark,
 and HPCG~\cite{dongarra_new_2016} and stream (both memory intensive) to evaluate
 the baseline of the investigated architectures. 
 
 \paragraph{High Performance Linpack (HPL)} is solving a dense system of linear equations $Ax = b$
 to demonstrate the double-precision compute capabilities of a (HPC)
-system~\cite{strohmaier_top500_2018}. The problem size is 64,512.
+system~\cite{strohmaier_top500_2018}. Our problem size is 64,512.
 % for a non-embarrassingly parallel problem and is used for system's placement in the TOP500
 %list~\cite{hpl,top500}.
 For both HPL and HPCG (see below), we employ highly tuned versions shipped with Intel's Parallel Studio
-XE suite with appropriate inputs for our systems.
+XE suite with appropriate parameters for our systems.
 
 \paragraph{High Performance Conjugate Gradients (HPCG)} is applying a conjugate gradient solver
 to a system of linear equation (sparse matrix $A$), with the intent to
@@ -268,32 +309,34 @@ workload/kernel classification, for which we use the classifiers employed by Has
 Both, the scientific domain as well as the kernel classification will be important for our subsequent
 analysis in Sections~\ref{sec:eval} and~\ref{sec:discuss}.
 %
+\begin{comment}
 \begin{table}[tbp]
-    \caption{\label{table:APP} Application Categorization and Compute Patterns; MACSio, HPL, HPCG, and BabelStream Benchmarks omitted\cJD{prof lang if space}}
-    \centering
-    \begin{tabular}{|l|l|l|}
+    \caption{\label{table:APP} Application Categorization, Compute Patterns, and main Programming Languages used; MACSio, HPL, HPCG, and BabelStream Benchmarks omitted}
+    \centering\scriptsize
+    \begin{tabular}{|l|l|l|l|}
         \hline \hC
-        \tH{ECP}    & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}    \\ \hline
-        AMG         & Physics and Bioscience                & stencil       \\ \hline \rC
-        CANDLE      & Bioscience                            & dense matrix  \\ \hline
-        CoMD        & Material Science/Engineering          & N-body        \\ \hline  \rC
-        Laghos      & Physics                               & \cJD{?}       \\ \hline
+        \tH{ECP}    & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}  & \tH{Language} \\ \hline
+        AMG         & Physics and Bioscience                & Stencil               & C \\ \hline \rC
+        CANDLE      & Bioscience                            & Dense matrix          & Python \\ \hline
+        CoMD        & Material Science/Engineering          & N-body                & C \\ \hline  \rC
+        Laghos      & Physics                               & Irregular             & C++\\ \hline
         %MACSio      & \textit{I/O benchmark}                & \textit{read/write}   \\ \hline
-        miniAMR     & Geoscience/Earthscience               & stencil       \\ \hline \rC
-        miniFE      & Physics                               & \cJD{?}       \\ \hline
-        miniTRI     & Math/Computer Science                 & irregular     \\ \hline \rC
-        Nekbone     & Math/Computer Science                 & \cJD{?}       \\ \hline
-        SW4lite     & Geoscience/Earthscience               & \cJD{?}       \\ \hline \rC
-        SWFFT       & Physics and Math/Computer Science\cJD{?}           & \cJD{?}  \\ \hline
-        XSBench     & Physics                               & \cJD{?}       \\ \hline\hline \hC
-        \tH{RIKEN}  & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}   \\ \hline
-        FFB         & Engineering (Mechanics, CFD)          & stencil       \\ \hline \rC
-        FFVC        & Engineering (Mechanics, CFD)          & stencil       \\ \hline
-        mVMC        & Physics                               & \cJD{?}       \\ \hline \rC
-        NICAM       & Geoscience/Earthscience               & stencil       \\ \hline
-        NGSA        & Bioscience                            & irregular     \\ \hline \rC
-        MODYLAS     & Physics and Chemistry                 & N-body        \\ \hline
-        NTChem      & Chemistry                             & dense matrix  \\ \hline \rC
-        QCD         & Lattice QCD                           & stencil       \\ \hline
+        miniAMR     & Geoscience/Earthscience               & Stencil               & C \\ \hline \rC
+        miniFE      & Physics                               & Irregular             & C++ \\ \hline
+        miniTRI     & Math/Computer Science                 & Irregular             & C++ \\ \hline \rC
+        Nekbone     & Math/Computer Science                 & Sparse matrix         & Fortan \\ \hline
+        SW4lite     & Geoscience/Earthscience               & Stencil               & C \\ \hline \rC
+        SWFFT       & Physics                               & FFT                   & C/Fortran \\ \hline
+        XSBench     & Physics                               & Irregular             & C \\ \hline\hline \hC
+        \tH{RIKEN}  & \tH{Scientific/Engineering Domain}    & \tH{Compute Pattern}  & \tH{Language} \\ \hline
+        FFB         & Engineering (Mechanics, CFD)          & Stencil               & Fortran \\ \hline \rC
+        FFVC        & Engineering (Mechanics, CFD)          & Stencil               & C++/Fortran \\ \hline
+        mVMC        & Physics                               & Dense matrix          & C \\ \hline \rC
+        NICAM       & Geoscience/Earthscience               & Stencil               & Fortran \\ \hline
+        NGSA        & Bioscience                            & Irregular             & C \\ \hline \rC
+        MODYLAS     & Physics and Chemistry                 & N-body                & Fortran \\ \hline
+        NTChem      & Chemistry                             & Dense matrix          & Fortran \\ \hline \rC
+        QCD         & Lattice QCD                           & Stencil               & Fortran/C \\ \hline
     \end{tabular}                                     
 \end{table}
+\end{comment}

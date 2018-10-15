@@ -328,7 +328,8 @@
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
 %\title{Less FP64 Units for Everyone: Investigating the Impact of Having Less Double Precision FPUs on Processors for HPC Applications}
-\title{Bottlenecks in Modern Systems: Studying the Impact of FP64 Units on HPC Workloads}
+%\title{Bottlenecks in Modern Systems: Studying the Impact of FP64 Units on HPC Workloads}
+\title{Double-precision FPUs in High-Performance Computing: an Embarrassment of Riches?}
 %\cJD{All: add suggested commented better titles if you have any}}
 %%Alternative titles 
 %Busting the FLOPS Myth: The Relevance of FP64 Units to HPC Workloads
@@ -627,13 +628,18 @@
 %
 %\end{thebibliography}
 
+%No appendix in first submission
 
+\input{41-rest-table}
+
+\begin{comment}
 \iftoggle{includeappendix}{
   \clearpage
-  \input{90-appendix}
-}{
-  %
+  \input{90-appendix}}
+{
+  
 }
+\end{comment}
 
 % that's all folks
 \end{document}

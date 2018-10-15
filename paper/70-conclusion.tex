@@ -1,6 +1,8 @@
 \section{Conclusion}\label{sec:conclusion}
 % goal: 1/4 page
 %
+\begin{comment}
+
 \struc{what did we learn which can be beneficial for others in the HPC community}
 
 \struc{what is our recommendation for vendors and centers buying new systems}
@@ -8,3 +10,16 @@
 \struc{praise our github w/ link so that others can perform similar stuff and
 check, study, validate our results, also link to our TR or extended version
 with appendix of less interesting results, etc.}
+\end{comment}
+
+We compared two architectural similar processors that have different double-precision
+silicon budget. By studying a large number of HPC proxy application, we found no significant 
+performance difference between these two processors, despite one having more double-precision
+compute than the other. Our study points toward a growing need to re-iterate and re-think
+architecture design decisions in high-performance computing, especially with respect
+to precision. 
+Do we really need the amount of double-precision compute that modern processors offer?
+Our results on the Intel Xeon Phi twins points towards a 'No', and we hope that this
+work inspires other researchers to also challenge the floating-point to silicon distribution
+for the available and future general-purpose processors, graphical processors, or
+accelerators in HPC systems.

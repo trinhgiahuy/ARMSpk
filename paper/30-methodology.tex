@@ -6,7 +6,7 @@ In this section, we present our rigor benchmarking approach into investigating t
 % goal: 1.5 page
 % no changes to any code (unless fixing bug)
 % 2 similar architecture, executed lots of bench for flops/memory/power
-% normalize results on #cores (avoid bad numa settings); change freq to 1.3Ghz; etc -> to reduce obvious differences betw KNL/KNM
+% normalize results on #cores (avoid bad numa settings); change freq to 1.3GHz; etc -> to reduce obvious differences betw KNL/KNM
 % xhost, intel, same compile
 % run parameter sweep
 %    #runs per app -> min/max/avg???
@@ -28,14 +28,14 @@ Hence, we refrain from both manual code optimization and alterations of the comp
 %
 %\struc{how we compiled}
 %
-The only modifications we performed were:
+The only modifications we perform are:
 \begin{itemize}
-    \item Enabling interprocedural optimization (\texttt{-ipo}) and compilation for the highest instruction set available (\texttt{-xHost})\footnote{~Exceptions: AMG compiled with \texttt{-xCORE-AVX2} to avoid arithmetic \\$~~~\,\quad$errors; NGSA's BWA tool compiled with GNU gcc to avoid segfaults.},
+    \item Enabling interprocedural optimization (\texttt{-ipo}) and compilation for the highest instruction set available (\texttt{-xHost})\footnote{~Exceptions: (a) AMG compiled with \texttt{-xCORE-AVX2} to avoid arithmetic \\$~~~\,\quad$errors; (b) NGSA's BWA tool compiled with GNU gcc to avoid segfaults.},
     \item Patching a segmentation fault in MACSio\footnote{~After our reporting, the developers patched the upstream version.}, and
     \item Injecting our measurement source code, see Section~\ref{ssec:metrics}.
 \end{itemize}
 %
-With respect to the measurement runs we followed this five step approach for each benchmark:
+With respect to the measurement runs, we follow this five step approach for each benchmark:
 \begin{enumerate}
     \item[0)] Install, patch, and compile the benchmark, see above, 
     \item Select appropriate inputs/parameters/seeds for execution,
@@ -43,29 +43,29 @@ With respect to the measurement runs we followed this five step approach for eac
     \item Execute a \textit{performance}, a \textit{profiling}, and a \textit{frequency} run,
     \item Analyze the results (go to 0. if anomalies are detected).
 \end{enumerate}
-and we will elaborate on each step hereafter.
+and we will further elaborate on those steps hereafter.
 
 % \struc{strong scaling vs weak scaling, and mention exceptions to this rule (if any)}
 %
 %\struc{using recommended parameters or finding input/parameter thru trail/error to get targeted runtime of multi-seconds to avoid large run-to-run flutuations}
 %
-For the input selection we have to balance between multiple constraints and choose based on: which
-recommended inputs are listed by the benchmark developers?, how long does the benchmark run?\footnote{~Our
-aim was~\unit[1]{sec}--\unit[10]{min} due to the large sample size we had to cover.}, does it occupy a
-realistic amount of main memory (e.g., cache-only executions)?, are the results repeatable
-(randomness/seeds)?, and we optimize for the metrics reported by the benchmark (e.g., select the input
+For the input selection we have to balance between multiple constraints and choose based on: Which
+recommended inputs are listed by the benchmark developers?, How long does the benchmark run?\footnote{~Our
+aim is~\unit[1]{sec}--\unit[10]{min} due to the large sample size we have to cover.} Does it occupy a
+realistic amount of main memory (e.g., avoid cache-only executions)? Are the results repeatable
+(randomness/seeds)? We optimize for the metrics reported by the benchmark (e.g., select the input
 with the highest~\unit[]{Gflop/s} rate).
 %
 % \struc{explain parameter-sweep for num\_mpi and num\_omp, why, reason, how on all system,( and examples maybe)}
 %
-Furthermore, one of the most important consideration while selecting the right inputs was
-\textit{strong-scaling}. We required strong-scaling properties of the benchmark for two reasons:
-the results collected in Step (2) need to be comparable, and even more importantly, the results
+Furthermore, one of the most important considerations while selecting the right inputs is
+\textit{strong-scaling}. We require strong-scaling properties of the benchmark for two reasons:
+the results collected in Step~(2) need to be comparable, and even more importantly, the results
 of Step (3) must be comparable between different architectures, since we may have to use different
 numbers of MPI processes for KNL and KNL (and our BDW reference architecture) due to their difference
-in core counts. The only exception is MiniAMR for which we were unable to find a strong-scaling
-input configuration and instead optimized for the reported~\unit[]{Gflop/s}. Accordingly, we then choose
-the same amount of MPI processes on our KNL and KNM compute nodes.
+in core counts. The only exception is MiniAMR for which we are unable to find a strong-scaling
+input configuration and instead optimized for the reported~\unit[]{Gflop/s} of the benchmark. Accordingly, we then choose
+the same amount of MPI processes on our KNL and KNM compute nodes for MiniAMR.
 
 In Step (2), we evaluate numerous combinations of MPI processes and OpenMP threads
 %\cJD{any other threadin models?} -> candle uses omp-ish too, see
@@ -73,10 +73,10 @@ In Step (2), we evaluate numerous combinations of MPI processes and OpenMP threa
 for each benchmark, including combinations which over-/undersubscribe the CPU cores, and test each
 combination with three runs to minimize the potential for outliers due to system noise.
 For all subsequent measurements, we select the number of processes and threads based on the ``best'' (w.r.t
-time-to-solution of the solver) combination among the tested versions, see~\ref{table:rest} for details.
+time-to-solution of the solver) combination among these tested versions, see Table~\ref{table:rest} for details.
 %\cJD{no specific intel' mpi tuning (except hpgc, babel) because initial test consistently resulted
 %in worse time to solution when non-default options where used}
-We are not applying specific tuning options to Intel MPI library, except for using Intel's recommended
+We are not applying specific tuning options to the Intel MPI library, except for using Intel's recommended
 settings for HPCG with respect to thread affinity and MPI\_allreduce implementation.
 The reason is that our pretests (with a subset of the benchmarks) with non-default parameters for
 Intel MPI consistently resulted in longer time-to-solution.
@@ -86,17 +86,17 @@ Intel MPI consistently resulted in longer time-to-solution.
 For Step (3), we run each benchmark ten times to identify the fastest time-to-solution for the
 (compute) kernel of the benchmark. Additionally, for the profiling runs, we execute the benchmark
 once for each of the profiling tools and/or metrics (in case the tool is used for multiple metrics),
-see Section~\ref{ssec:metrics} for details. Last but not least, we perform frequency scaling experiments
+see Section~\ref{ssec:metrics} for details. Finally, we perform frequency scaling experiments
 for each benchmark, where we throttle the CPU frequency to all the available lower CPU states
 below the maximum CPU frequency we use for the performance runs, and record the lowest kernel
 time-to-solution among ten trials per frequency. The reason and results of the frequency scaling
 test will be further explained in Section~\ref{ssec:eval_freq}.
 One may argue for more than ten runs per benchmark to find the optimal time-to-solution, however,
 given the prediction interval theory and our deterministic benchmarks executed on a single node,
-it is unlikely to obtain a much faster run and we confirmed that the fastest 50\% of executions per
-benchmark only vary by 3.9\% on average.
-
-The collected metrics, see hereafter, will be analyzed in Section~\ref{sec:eval} in detail.
+it is unlikely to obtain a much faster run and we confirmed that the fastest~50\% of executions per
+benchmark only vary by~3.9\% on average.
+%
+The collected metrics, see the following section, will be analyzed in Section~\ref{sec:eval} in detail.
 
 %We measured on all applications by strong scaling. In each application, we changed multiple parameters such as the number of threads, the number of processes, the problem size, etc. and performed the experiment with configuration with the shortest execution time.
 %
@@ -132,23 +132,24 @@ The collected metrics, see hereafter, will be analyzed in Section~\ref{sec:eval}
 %This section introduces the metrics we measured and the reason why we measured them.
 %
 To study and analyze the floating point requirements by applications, it is not only important to
-evaluate a established metric (floating point operations per second), but also other metrics,
+evaluate an established metric (floating point operations per second), but also other metrics,
 such as memory throughput, cache utilization, or speedup with increased CPU frequency.
-
-The detailed list of metrics (and derived metrics) and the methodology and tools we used to
+%
+The detailed list of metrics (and derived metrics) and the methodology and tools we use to
 collect these metrics will be explained hereafter.
+
 %\struc{identify solver/kernel/core of app and inject code for vtune/timeing/pcm/etc.}
 %\cJD{need a small pseudo code showing the extraction of the kernels}
-One observation is that the amount of runtime spend on initializing and post processing within
-each proxy application can be relatively high (e.g., HPCG spends only 11\% and 30\% of its
-runtime in the solver part on BDW and Phi, respectively) and is usually not consistent with the real workloads, e.g., one can
+One observation is that the amount of time spent on initializing and post processing within
+each proxy application can be relatively high (e.g., HPCG spends only~11\% and~30\% of its
+time in the solver part on BDW and Phi, respectively) and is usually not consistent with the real workloads, e.g., one can
 reduce the epochs for performance evaluation purposes in CANDLE but not the input data
 pre-processing to execute those epochs. These mismatches in kernel-to-[pre$|$post]processing ratio
 requires us to extract all metrics only for the (computational) kernel of the benchmark.
 Hence, we identify and inject profiling instructions around the kernels to start or pause the
 collection of raw metric data by the analysis tools. This code injection is exemplified in
 PseudoCode~\ref{code:inj}. Therefore, unless otherwise stated in this Section or subsequent sections,
-all presented data will be based exclusively on the kernel potion of each benchmark.
+all presented data will be based exclusively on the kernel portion of each benchmark.
 %
 \begin{algorithm}[tbp]
     \label{code:inj}
@@ -168,12 +169,13 @@ all presented data will be based exclusively on the kernel potion of each benchm
         START\_ASSAY\;
     }
     \caption{Injecting analysis instructions}
+%    \vspace{-0.5em}
 \end{algorithm}
 
 %\struc{what does each tool have in terms of capabilities, how is it applied to the benchmarks,
 %anything we had to fix, patch, do to the OS/kernel/benchmark to use tool XYZ}
 %
-For tool stability reason, attention to detail/accuracy, and overlap with our needs, we settled
+For tool stability reason, attention to detail/accuracy, and overlap with our needs, we settle
 on the use of the MPI API for runtime measurements, alongside with Intel's Processor Counter
 Monitor (PCM)~\cite{willhalm_intel_2017}, Intel's Software Development Emulator (SDE)~\cite{raman_calculating_2015}, and Intel's VTune
 Amplifier~\cite{sobhee_intel_2018}\footnote{~To avoid persistent compute node crashes, we had to use disable VTune's
@@ -182,12 +184,13 @@ Furthermore, as auxiliary tools we rely on RRZE's Likwid~\cite{treibig_likwid:_2
 scaling\footnote{~Our Linux kernel version required us to disable
 the default Intel P-State\\$~~~\,\quad$driver to have full access to the fine-grained frequency scaling.} and
 LLNL's msr-safe~\cite{walker_best_2016} for allowing access to CPU model-specific registers.
-An overview of (raw) metrics we extract with these tools for the benchmarks, listed in
+An overview of (raw) metrics which we extract with these tools for the benchmarks, listed in
 Section~\ref{ssec:bm}, is shown in Table~\ref{tb:Mtools}. Furthermore, derived metrics, such
-as~\unit[]{GFlop/s}, will be explained on-demand in Section~\ref{sec:eval}.
+as~\unit[]{Gflop/s}, will be explained on-demand in Section~\ref{sec:eval}.
 %
-\begin{table}[tbp]
-    \centering
+\begin{table}[tp]
+    \vspace{-0.5em}
+    \centering\scriptsize
     \caption{\label{tb:Mtools}Summary of metrics and method/tool to collect these metrics}
     \begin{tabular}{|l|l|}
         \hline \hC
@@ -201,6 +204,7 @@ as~\unit[]{GFlop/s}, will be explained on-demand in Section~\ref{sec:eval}.
         SIMD instructions per cycle         & perf + VTune (`hpc-performance')  \\\hline \rC
         Memory/Back-end boundedness         & perf + VTune (`memory-access')    \\\hline
     \end{tabular}
+    \vspace{-0.5em}
 \end{table}
 
 %

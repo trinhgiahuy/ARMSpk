@@ -1,16 +1,18 @@
 \section{Evaluation}\label{sec:eval}
 %
 %\struc{small introduction sentence to this section}
-The following subsections will primarily focus on visualizing and analyzing the key metrics we collected for each proxy- and mini-app,
+The following subsections will primarily focus on visualizing and analyzing the key metrics we collect for each proxy- and mini-app,
 such as \unit[]{Gflop/s}. The significance of our findings with respect to future software, CPU, and HPC system design will then
-be evaluated in the next Section~\ref{sec:discuss}.
-High or low \unit[]{operations/s}, see Section~\ref{ssec:eval_ops} and~\ref{ssec:eval_flops}, or \unit[]{byte/s}, see
-Section~\ref{ssec:eval_mem}, by itself is not a good indication about the system's bottlenecks.
-Especially, when reasoning about FPU requirements, we also have to understand the applications' compute-boundedness, which
-we evaluate in Section~\ref{ssec:eval_freq}.
-
-\struc{which metrics are we collecting, how is each collected, and/or derived from other metrics, and
-most importantly: why do we care about this metric; add formulae if necessary}
+be discussed in the next Section~\ref{sec:discuss}.
+%High or low \unit[]{operations/s}, see Section~\ref{ssec:eval_ops} and~\ref{ssec:eval_flops}, or \unit[]{byte/s}, see
+%Section~\ref{ssec:eval_mem}, by itself is not a good indication about the system's bottlenecks\cJD{This full sentence is ambiguous}.
+Analyzing the instruction mix, \unit[]{flop/s}, or memory throughput,
+see Section~\ref{ssec:eval_ops},~\ref{ssec:eval_flops}, and~\ref{ssec:eval_mem},
+in a isolated fashion is not a good indication about the system's bottlenecks,
+and hence, especially when reasoning about FPU requirements, we also have to understand
+the applications' compute-boundedness, which we evaluate in Section~\ref{ssec:eval_freq}.
+Table~\ref{tb:Mtools} summarizes the primary metrics and method/tool to collect these metrics. Table~\ref{table:rest} includes additional metrics. 
+%\struc{which metrics are we collecting, how is each collected, and/or derived from other metrics, and most importantly: why do we care about this metric; add formulae if necessary}
 %\struc{need at least: FP ratio, Int, freq scaling, memory BW, ...TBA}
 %\cJD{have to analzye the run2run variation among the 10 speed runs} done that
 %
@@ -78,10 +80,9 @@ most importantly: why do we care about this metric; add formulae if necessary}
 \end{figure}
 %
 %\cJD{discuss the problem with int over-represented because of sde counting method}
-The breakdown of total number of integer and single/double-precision FP operations, as depicted in Figure~\ref{fig:totalops},
-shows two rather unexpected trends. First, the numbers of proxy-apps relying on 32-bit FP instructions is with four out of 22
-surprisingly low, and furthermore, only one of them utilizes both 32-bit and 64-bit FP instructions.
-Minor variances in integer to FP ratio between the architecture can likely be explained by the difference in
+The breakdown of total number of integer and single/double-precision floating point (FP) operations, as depicted in Figure~\ref{fig:totalops},
+shows two rather unexpected trends. First, the number of proxy-apps relying on 32-bit FP instructions is four out of 22, which is surprisingly low, and furthermore, only one of them utilizes both 32-bit and 64-bit FP instructions.
+Minor variances in integer to FP ratio between the architectures can likely be explained by the difference in
 AVX vector length, quality of compiler optimization for each CPU, and execution/parallelization approach.
 The second unexpected trend is the imbalance of integer to FP operations, i.e., 16 of 22 applications issue at least 50\%
 integer operations. However, one has to keep in mind that Intel SDE output includes AVX vector instructions for integers, where
@@ -90,24 +91,27 @@ count might be slightly inflated.
 Lastly, the results for HPCG show a big discrepancy between BDW and KNL/KNM. While the total FP operations count is similar,
 the binary for KNL/KNM issues far more integer operations, see Table~\ref{table:rest} for details, and we are unaware of the reason.
 
-\subsection{Floating-Point Op/s and Time-to-Solution}\label{ssec:eval_flops}
+\subsection{Floating-Point Operation/s and Time-to-Solution}\label{ssec:eval_flops}
 %
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=\linewidth]{flops-rel}
     \caption{\label{fig:flops} Relative floating-point performance (FP32 and FP64 \unit[]{Gflop/s} accumulated) of KNL/KNM in comparison to dual-socket Broadwell-EP (see \textit{KEY}\textbf{\textsubscript{rel}}, left y-axis) and Absolute achieved \unit[]{Gflop/s} w.r.t dominant FP operations (cf. Fig.~\ref{fig:totalops}) in comparison to theoretical peak performance listed in Tab.~\ref{table:HW} (see \textit{KEY}\textbf{\textsubscript{abs}}, right y-axis); Due to missing SDE data for CANDLE, we assume the total number of FP operations is equivalent to BDW and divide by CANDLE's time-to-solution; Filtered proxy-apps with negligible FP operations: MxIO, MTri, and NGSA; Filtered out MiniAMR because of the strong-scaling issue described in Section~\ref{ssec:bmconf}; Proxy-app abbreviations acc. to Section~\ref{ssec:bm}}
+    \vspace{-0.6em}
 \end{figure}
+\begin{comment}
 \begin{figure}[tbp]
     \centering
     \includegraphics[width=\linewidth]{t2s-rel}
     \caption{\label{fig:t2s-knl-vs-knm} Speedup of KNM over KNL as baseline. MiniAMR included since the input is the same for both Phi\cJD{why call out MiniAMR?}; Proxy-app abbreviations acc. to Section~\ref{ssec:bm}}
 \end{figure}
+\end{comment}
 %
-Figure~\ref{fig:flops} shows the relative performance improvement of KNL/KNM over BDW dual socket and the absolute achieved GFLOPS on each processor. It is important to note that all proxy/miniapps, with the exception of HPL, have less than 21.5\% (BDW), 10.5\% (KNL), and 15.1\% (KNM) FP efficiency. Given that the proxy/miniapps are largely optimized, and still achieve this low efficiency, implies the limited 
-\cJD{Figure~\ref{fig:t2s-knl-vs-knm} mostly get faster from slightly higher freq it seem, ecept candle which benefits from VNNI and
-NTCh seem to be a strange outlier, some memory-bound apps (AMG, HPCG, MTri) get slower, maybe because of the difference in peak bw
-we see in figure~\ref{fig:memthru} and the increased core count competing for bandwidth}
-\cJD{hence, looking at fp 64 or 32 in the context of mini-apps is almost stupid...}
+Figure~\ref{fig:flops} shows the relative performance improvement of KNL/KNM over the dual-socket BDW node and the absolute achieved~\unit[]{Gflop/s} on each processor. It is important to note that all proxy-/mini-apps, with the exception of HPL, have less than~21.5\% (BDW), 10.5\% (KNL), and~15.1\%~(KNM) FP efficiency. Given that these applications are presumably optimized, and still achieve this low FP efficiency, implies a limited relevance of FP unit's availability. The figure shows that the majority of codes have comparable performance on KNM versus KNL. Notable mentions are: a)~CANDLE which benefits from VNNI units in mixed precision,
+b)~MiFE, NekB, and XSBn which improve probably due to increased core count and KNM's higher CPU frequency,
+%b)~NTChem as an outlier,
+and c)~some memory-bound applications (i.e., AMG, HPCG, and MTri) which get slower supposedly due to the difference in peak throughput demonstrated in Figure~\ref{fig:memthru} in addition to the increased core count causing higher competition for bandwidth. 
+%Finally, the results in figure~\ref{fig:t2s-knl-vs-knm} affirms that the FPU compute capacity, whether for fp64 or fp32, is marginally useful in the context of proxy/mini-apps.
 
 \subsection{Memory Throughput of (MC-)DRAM}\label{ssec:eval_mem}
 %
@@ -115,18 +119,19 @@ we see in figure~\ref{fig:memthru} and the increased core count competing for ba
     \centering
     \includegraphics[width=\linewidth]{mem-throughput}
     \caption{\label{fig:memthru} Memory throughput (only DRAM for BDW, DRAM+MCDRAM for Phi) per proxy-app; Dotted lines indicate Triad stream bandwidth (flat mode, cf. Tab.~\ref{table:HW}); BabelStream for \unit[2]{GiB} (BABL2) and \unit[14]{GiB} (BABL14) vector length added (measured in cache mode); Proxy-app labels acc. to Section~\ref{ssec:bm}}
+    \vspace{-0.6em}
 \end{figure}
 %
 For the memory throughput measurements, shown in Figure~\ref{fig:memthru}, we use Intel's PCM tool to analyze DRAM and MCDRAM throughput.
 Our measurements with BabelStream are included as well to demonstrate the maximum achievable bandwidth, see horizontal lines for MCDRAM
-in \textit{flat mode}), which is lower when the MCDRAM is used in \textit{cache mode}.
-We still achieve 86\% on KNL and 75\% on KNM when the vectors fit into MCDRAM, but drop to slightly
-higher than DRAM throughput (due to minor prefetching benefits) when the vectors do not fit (see BABL14 for \unit[14]{GB} vectors).
+(in \textit{flat} mode), which is lower when the MCDRAM is used in \textit{cache} mode.
+We still achieve~86\% on KNL and~75\% on KNM when the vectors fit into MCDRAM, but drop to slightly
+higher than DRAM throughput (due to minor prefetching benefits) when the vectors do not fit (see BABL14 for \unit[14]{GiB} vectors).
 This throughput advantage of the MCDRAM translates into a performance boost for six proxy-apps (AMG, MAMR, MiFE, NekB, XSBn, and QCD)
-which heavily utilize the available bandwidth, see Figure~\ref{fig:memthru}, and which are memory-bound on our reference system
+which heavily utilize the available bandwidth, see Figure~\ref{fig:memthru}, and which are memory-bound on our reference system.
 This can easily be verified when comparing the time-to-solution for the kernels listed in Table~\ref{table:rest}.
 Only HPCG cannot benefit from the higher bandwidth and, despite showing $\approx$2x throughput, the runtime drops by more than 10\%,
-indicating a memory-latency issue of HPCG on KNL/KNM, which was one of the design goals for the benchmark~\cite{dongarra_new_2016}.
+indicating a memory-latency issue of HPCG on KNL/KNM, which is one of the design goals for the benchmark~\cite{dongarra_new_2016}.
 %
 %\begin{figure}[tbp]
 %    \centering
@@ -141,9 +146,19 @@ indicating a memory-latency issue of HPCG on KNL/KNM, which was one of the desig
     \includegraphics[width=\linewidth]{knl-freq}
     \includegraphics[width=\linewidth]{knm-freq}
     \includegraphics[width=\linewidth]{bdw-freq}
-    \caption{\label{fig:freq} Speedup obtained through increased CPU frequency (w.r.t baseline frequency of \unit[1.0]{Ghz} on KNL/KNM and \unit[1.2]{Ghz} on BDW); \textbf{Top plot: KNL, middle plot: KNL, bottom plot: BDW}; Theoretical peak (ThPeak): furthest right bar; Labels/abbreviations of proxy-apps according to Section~\ref{ssec:bm} and 'TB' = Turbo Boost is assumed to be \unit[100]{Mhz} across all cores}
+    \vspace*{-5mm}
+    \caption{\label{fig:freq} Speedup obtained through increased CPU frequency (w.r.t baseline frequency of \unit[1.0]{GHz} on KNL/KNM and \unit[1.2]{GHz} on BDW); \textbf{Top plot: KNL, middle plot: KNL, bottom plot: BDW}; Theoretical peak (ThPeak): furthest right bar; Labels/abbreviations of proxy-apps according to Section~\ref{ssec:bm} and 'TB' = Turbo Boost is assumed to be \unit[100]{Mhz} across all cores}
+    \vspace{-0.2em}
 \end{figure}
-
+%
+\begin{figure}[tbp]
+    \centering
+    \includegraphics[width=\linewidth]{sys-util}
+    \vspace*{-7mm}
+    \caption{\label{fid:disc:breakdown} Annual HPC site/system utilization by domain; Labels acc. to Table~\ref{table:APP}: \texttt{geo} = Geo-/Earthscience, \texttt{chm} = Chemistry, \texttt{phy} = Physics, \texttt{qcd} = Lattice QCD, \texttt{mat} = Material Science/Engineering, \texttt{eng} = Engineering (Mechanics, CFD), \texttt{mcs} = Math/Computer Science, \texttt{bio} = Bioscience, \texttt{oth} = \textit{Other}}
+    \vspace{-1em}
+\end{figure}
+%
 For this test, we disable turbo boost and throttle core frequency, but keep uncore at maximum frequency which would otherwise negatively
 affect the memory subsystem, to identify each application's dependency on ALU/FPU performance. The shown speedup (w.r.t time-to-solution) in Figure~\ref{fig:freq}
 of each proxy-app is relative to the lowest CPU frequency on each architecture, and we include our \textit{performance} results
@@ -154,15 +169,15 @@ of each proxy-app is relative to the lowest CPU frequency on each architecture, 
 %\cJD{on phi almost all apps benefit from turbo, on bwd non do so (except mini-tri}
 While a benefit from enabled turbo boost on BDW is near invisible (except for MTri), the proxy-apps clearly reduce their
 time-to-solution on KNL and KNM when the CPUs are allowed to turbo. Overall, the benchmarks seem to be less memory-bound
-and more compute-bound, especially salient for AMG and MiniFE,  when moving to the Xeon Phi, indicating a clear benefit
+and more compute-bound, especially salient for AMG and MiniFE,  when moving to Xeon~Phi, indicating a clear benefit
 from the much bigger/faster MCDRAM used as last-level cache and indicating a more balanced
-(w.r.t bandwidth to \unit[]{flop/s}) architecture.
+(w.r.t bandwidth to \unit[]{flop/s} ratio) architecture.
 %\cJD{phi compute to memory ratio (thru mcdram caching/speed) turns some clearly memory bound apps (from bdw) into
 %semi-compute bound apps, see amg, minife for example}
-However, the limited speedup for HPL on KNL clearly shows the CPU's superabundance of FP64 units.
+However, the limited speedup for HPL on KNL clearly shows the CPU's abundance of FP64 units.
 Here, the successor, Knights Mill, shows a better balance.
 Another interesting observation is the inverse behavior of AMG and HPCG on our tested architecture.
-Both benchmarks are supposed to be memory-bound, but the absence of signs of any scalability with frequency on Xeon Phi
+Both benchmarks are supposed to be memory-bound, but the absence of signs of any scalability with frequency on Xeon~Phi
 strengthens our hypothesis from Section~\ref{ssec:eval_mem} that HPCG is primarily memory-latency bound.
 
 %\cJD{dd to verify IO scaling}
@@ -176,12 +191,18 @@ a micro-benchmark (with Unix's \texttt{dd} command).
 
 \subsection{Remaining Metrics}\label{ssec:eval_rest}
 %
-To disseminate the remaining collected results from our experiments, we create Table~\ref{table:rest}, which can be utilized for further
-analysis, and which contains some interesting data points. For example, the power measurements for CANDLE, which is just slightly
-higher than when running MACSio, indicate that Intel's MKL-DNN (used underneath to compute on the FP16 VNNI units) does not
-fully utilize the CPU's potential. Furthermore, the L2 hit rate on both Xeon Phi is considerably higher than on our reference
-hardware, indicating improvements in the hardware prefetcher and are presumably a direct effect of the high-bandwidth MCDRAM in cache mode.
-%
+To disseminate the remaining results from our experiments, we 
+attached Table~\ref{table:rest} to this paper, which can be utilized for
+further analysis, and which contains some interesting data points.
+For example, the power measurements for CANDLE, which is just slightly
+higher than when running MACSio, indicate that Intel's MKL-DNN (used
+underneath to compute on the FP16 VNNI units) does not
+fully utilize the CPU's potential. Furthermore, the L2 hit rate on both
+Xeon Phi is considerably higher than on our reference
+hardware, indicating improvements in the hardware prefetcher and are presumably
+a direct effect of the high-bandwidth MCDRAM in \textit{cache} mode.
+
+\begin{comment}
 \begin{table*}[tbp]
     \caption{\label{table:rest} Application configuration and measured metrics; Missing data for CANDLE due to SDE crashes on Phi; Measurements indicate CANDLE/MKL-DNN ignores OpenMP settings and tries to utilize full chip $\rightarrow$ listed in italic; Label explanation: t2sol = time-to-solution (kernel), Gop (D $|$ S $|$ I) = Giga operations (FP64 $|$ FP32 $|$ Integer), SIMDi/cyc = SIMD instructions per cycle, FPAIp[R $|$ W] = FP Arithmetic instructions per memory [read $|$ write], [B $|$ M]Bd = [Back-end $|$ Memory] Bound (see~\cite{sobhee_intel_2018} for details), L2h = L2 cache hit rate, LLh = Last level cache hit rate (L3 for BDW, MCDRAM for KNL/KNM), Gbra/s = Giga branches/s}%\cJD{highlight important?}}
     \centering\scriptsize
@@ -260,3 +281,4 @@ hardware, indicating improvements in the hardware prefetcher and are presumably 
         HPL	        &	24	&	1	&	271.794	&	181484.240	&	0	&	31919.479	&	189.37	&	\,~~2.280 : 122.693	&	3.9		&	10		&    3    	&	2.147	\\ \hline
     \end{tabular}
 \end{table*}
+\end{comment}
