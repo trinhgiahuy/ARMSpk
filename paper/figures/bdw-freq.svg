@@ -8,11 +8,11 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   viewBox="0 0 1513.1923 443.34036"
+   viewBox="0 0 1517.7469 443.34036"
    version="1.1"
    id="svg2831"
    sodipodi:docname="bdw-freq.svg"
-   width="1513.1923"
+   width="1517.7469"
    height="443.34036"
    inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <metadata
@@ -1293,7 +1293,7 @@
      id="gnuplot_plot_1"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title694">1.2 Ghz</title>
+       id="title694">1.2 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g700">
@@ -1303,7 +1303,7 @@
          font-size="22.00"
          transform="translate(1415.1,417.6)">
         <text
-           id="text696">1.2 Ghz</text>
+           id="text696">1.2 GHz</text>
       </g>
     </g>
     <g
@@ -1331,7 +1331,7 @@
      id="gnuplot_plot_2"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title713">1.3 Ghz</title>
+       id="title713">1.3 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g719">
@@ -1341,7 +1341,7 @@
          font-size="22.00"
          transform="translate(1415.1,384.6)">
         <text
-           id="text715">1.3 Ghz</text>
+           id="text715">1.3 GHz</text>
       </g>
     </g>
     <g
@@ -1760,7 +1760,7 @@
      id="gnuplot_plot_3"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title916">1.4 Ghz</title>
+       id="title916">1.4 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g922">
@@ -1770,7 +1770,7 @@
          font-size="22.00"
          transform="translate(1415.1,351.6)">
         <text
-           id="text918">1.4 Ghz</text>
+           id="text918">1.4 GHz</text>
       </g>
     </g>
     <g
@@ -2189,7 +2189,7 @@
      id="gnuplot_plot_4"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title1119">1.5 Ghz</title>
+       id="title1119">1.5 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g1125">
@@ -2199,7 +2199,7 @@
          font-size="22.00"
          transform="translate(1415.1,318.6)">
         <text
-           id="text1121">1.5 Ghz</text>
+           id="text1121">1.5 GHz</text>
       </g>
     </g>
     <g
@@ -2618,7 +2618,7 @@
      id="gnuplot_plot_5"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title1322">1.6 Ghz</title>
+       id="title1322">1.6 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g1328">
@@ -2628,7 +2628,7 @@
          font-size="22.00"
          transform="translate(1415.1,285.6)">
         <text
-           id="text1324">1.6 Ghz</text>
+           id="text1324">1.6 GHz</text>
       </g>
     </g>
     <g
@@ -3030,7 +3030,7 @@
      id="gnuplot_plot_6"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title1517">1.7 Ghz</title>
+       id="title1517">1.7 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g1523">
@@ -3040,7 +3040,7 @@
          font-size="22.00"
          transform="translate(1415.1,252.6)">
         <text
-           id="text1519">1.7 Ghz</text>
+           id="text1519">1.7 GHz</text>
       </g>
     </g>
     <g
@@ -3442,7 +3442,7 @@
      id="gnuplot_plot_7"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title1712">1.8 Ghz</title>
+       id="title1712">1.8 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g1718">
@@ -3452,7 +3452,7 @@
          font-size="22.00"
          transform="translate(1415.1,219.6)">
         <text
-           id="text1714">1.8 Ghz</text>
+           id="text1714">1.8 GHz</text>
       </g>
     </g>
     <g
@@ -3854,7 +3854,7 @@
      id="gnuplot_plot_8"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title1907">1.9 Ghz</title>
+       id="title1907">1.9 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g1913">
@@ -3864,7 +3864,7 @@
          font-size="22.00"
          transform="translate(1415.1,186.6)">
         <text
-           id="text1909">1.9 Ghz</text>
+           id="text1909">1.9 GHz</text>
       </g>
     </g>
     <g
@@ -4266,7 +4266,7 @@
      id="gnuplot_plot_9"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title2102">2.0 Ghz</title>
+       id="title2102">2.0 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g2108">
@@ -4276,7 +4276,7 @@
          font-size="22.00"
          transform="translate(1415.1,153.6)">
         <text
-           id="text2104">2.0 Ghz</text>
+           id="text2104">2.0 GHz</text>
       </g>
     </g>
     <g
@@ -4661,7 +4661,7 @@
      id="gnuplot_plot_10"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title2289">2.1 Ghz</title>
+       id="title2289">2.1 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g2295">
@@ -4671,7 +4671,7 @@
          font-size="22.00"
          transform="translate(1415.1,120.6)">
         <text
-           id="text2291">2.1 Ghz</text>
+           id="text2291">2.1 GHz</text>
       </g>
     </g>
     <g
@@ -5056,7 +5056,7 @@
      id="gnuplot_plot_11"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title2476">2.2 Ghz</title>
+       id="title2476">2.2 GHz</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g2482">
@@ -5066,7 +5066,7 @@
          font-size="22.00"
          transform="translate(1415.1,87.6)">
         <text
-           id="text2478">2.2 Ghz</text>
+           id="text2478">2.2 GHz</text>
       </g>
     </g>
     <g
@@ -5468,7 +5468,7 @@
      id="gnuplot_plot_12"
      transform="translate(-16.274,-23.228)">
     <title
-       id="title2671">2.2 Ghz +TB</title>
+       id="title2671">2.2 GHz +TB</title>
     <g
        style="color:#000000;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter"
        id="g2677">
@@ -5478,7 +5478,7 @@
          font-size="22.00"
          transform="translate(1415.1,54.6)">
         <text
-           id="text2673">2.2 Ghz +TB</text>
+           id="text2673">2.2 GHz +TB</text>
       </g>
     </g>
     <g

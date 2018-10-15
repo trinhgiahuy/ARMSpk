@@ -19,11 +19,11 @@ set grid
 set label "Knights Mill" left at -0.5,1.95
 
 plot \
-	"../data/knm-freq.data" using ($2<0 ? NaN : $2):xtic(1) title '1.0 Ghz', \
-	"" using ($3<0 ? NaN : $3) title '1.1 Ghz', \
-	"" using ($4<0 ? NaN : $4) title '1.2 Ghz', \
-	"" using ($5<0 ? NaN : $5) title '1.3 Ghz', \
-	"" using ($6<0 ? NaN : $6) title '1.4 Ghz', \
-	"" using ($7<0 ? NaN : $7) title '1.5 Ghz', \
-	"" using ($8<0 ? NaN : $8) title '1.5 Ghz +TB' fs pattern 1 fs solid 0.25
+	"../data/knm-freq.data" using ($2<0 ? NaN : $2):xtic(1) title '1.0 GHz', \
+	"" using ($3<0 ? NaN : $3) title '1.1 GHz', \
+	"" using ($4<0 ? NaN : $4) title '1.2 GHz', \
+	"" using ($5<0 ? NaN : $5) title '1.3 GHz', \
+	"" using ($6<0 ? NaN : $6) title '1.4 GHz', \
+	"" using ($7<0 ? NaN : $7) title '1.5 GHz', \
+	"" using ($8<0 ? NaN : $8) title '1.5 GHz +TB' fs pattern 1 fs solid 0.25
 

@@ -18,16 +18,16 @@ set grid
 set label "Broadwell-EP (2x)" left at -0.5,1.95
 
 plot \
-	"../data/bdw-freq.data" using ($2<0 ? NaN : $2):xtic(1) title '1.2 Ghz', \
-	"" using ($3<0 ? NaN : $3) title '1.3 Ghz', \
-	"" using ($4<0 ? NaN : $4) title '1.4 Ghz', \
-	"" using ($5<0 ? NaN : $5) title '1.5 Ghz', \
-	"" using ($6<0 ? NaN : $6) title '1.6 Ghz', \
-	"" using ($7<0 ? NaN : $7) title '1.7 Ghz', \
-	"" using ($8<0 ? NaN : $8) title '1.8 Ghz', \
-	"" using ($9<0 ? NaN : $9) title '1.9 Ghz' fs pattern 1 fs solid 0.5, \
-	"" using ($10<0 ? NaN : $10) title '2.0 Ghz' fs pattern 1 fs solid 0.5, \
-	"" using ($11<0 ? NaN : $11) title '2.1 Ghz' fs pattern 1 fs solid 0.5, \
-	"" using ($12<0 ? NaN : $12) title '2.2 Ghz' fs pattern 1 fs solid 0.5, \
-	"" using ($13<0 ? NaN : $13) title '2.2 Ghz +TB' fs pattern 1 fs solid 0.25
+	"../data/bdw-freq.data" using ($2<0 ? NaN : $2):xtic(1) title '1.2 GHz', \
+	"" using ($3<0 ? NaN : $3) title '1.3 GHz', \
+	"" using ($4<0 ? NaN : $4) title '1.4 GHz', \
+	"" using ($5<0 ? NaN : $5) title '1.5 GHz', \
+	"" using ($6<0 ? NaN : $6) title '1.6 GHz', \
+	"" using ($7<0 ? NaN : $7) title '1.7 GHz', \
+	"" using ($8<0 ? NaN : $8) title '1.8 GHz', \
+	"" using ($9<0 ? NaN : $9) title '1.9 GHz' fs pattern 1 fs solid 0.5, \
+	"" using ($10<0 ? NaN : $10) title '2.0 GHz' fs pattern 1 fs solid 0.5, \
+	"" using ($11<0 ? NaN : $11) title '2.1 GHz' fs pattern 1 fs solid 0.5, \
+	"" using ($12<0 ? NaN : $12) title '2.2 GHz' fs pattern 1 fs solid 0.5, \
+	"" using ($13<0 ? NaN : $13) title '2.2 GHz +TB' fs pattern 1 fs solid 0.25
 
