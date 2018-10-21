@@ -40,7 +40,7 @@ vim ./conf/amg.sh	# replace BESTCONF with config found in last step
 ./run/amg/freq.sh	# run freqency scaling tests
 ./run/amg/prof.sh	# use performance tools to extract raw metrics
 ```
-* all logs (results+raw data) will be placed in ./log/<hostname>/<test>/<proxy>
+* all logs (results+raw data) will be placed in ./log/\<hostname\>/\<test\>/\<proxy\>
 
 
 ## Author's previously colleted results for reference
@@ -51,7 +51,7 @@ tar xjf paper/data/kiev3.tar.bz2	# Broadwell
 tar xjf paper/data/lyon1.tar.bz2	# KNL
 tar xjf paper/data/mill1.tar.bz2	# KNM
 ```
-* afterwards, raw data will be in ./log/<hostname>
+* afterwards, raw data will be in ./log/\<hostname\>
 
 
 ## Additional notes:
