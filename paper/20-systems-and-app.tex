@@ -37,7 +37,7 @@ To understand and explore the intersection of architectures with high-amount of 
         CPU Model                   & \textbf{7210F}                    & \textbf{7295}                     & 2x E5-2650v4              \\ \hline \rC
         \#\{Cores\} (HT)            & \textbf{64} (4x)                  & \textbf{72} (4x)                  & 24 (2x)                   \\ \hline
         Base Frequency              & \textbf{\unit[1.3]{GHz}}          & \textbf{\unit[1.5]{GHz}}          & \unit[2.2]{GHz}           \\ \hline \rC
-        Max Turbo Freq.             & \textbf{\unit[1.4]{GHz}}          & \textbf{\unit[1.6]{GHz}}          & \unit[2.9]{GHz}           \\ \hline
+        Max Turbo Freq.             & \textbf{\unit[1.5]{GHz}}          & \textbf{\unit[1.6]{GHz}}          & \unit[2.9]{GHz}           \\ \hline
         CPU Mode                    & Quadrant                          & Quadrant                          & \textit{N/A}              \\ \hline \rC
         TDP                         & \textbf{\unit[230]{W}}            & \textbf{\unit[320]{W}}            & \unit[210]{W}             \\ \hline
         DRAM Size                   & \unit[96]{GiB}                    & \unit[96]{GiB}                    & \unit[256]{GiB}           \\ \hline
@@ -56,7 +56,7 @@ To understand and explore the intersection of architectures with high-amount of 
         %https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/performance-xeon-e5-v3-advanced-vector-extensions-paper.pdf
         %\rowcolor[HTML]{C0C0C0}
         %\multicolumn{4}{|c|}{Hardware (other) } \\ \hline
-        %SSD  &\multicolumn{3}{c|}{} \\ \hline        
+        %SSD  &\multicolumn{3}{c|}{} \\ \hline
 %        \rowcolor[HTML]{CCCCCC}
 %        \multicolumn{4}{|c|}{Software} \\ \hline
 %        OS          &\multicolumn{3}{c|}{Linux version 3.10.0-693.11.6.el7.x86\_64} \\ \hline
@@ -81,7 +81,7 @@ Both processors come with two types of external memory: MCDRAM (or, Hybrid Memor
 There are several policies governing where data is homed. A common high-performance configuration~\cite{gawande_scaling_2017}, which is also the one we used in our study, is the quadrant mode. Quadrant mode means that the physical cores are divided into four logical parts, where each logical part is assigned two memory controllers; each logical group is treated as a unique Non-Uniform Memory-Access (NUMA) node, allowing the operating system to perform data-locality optimizations.
 Table~\ref{table:HW} surveys and contrast the processors against each other, where the main differences are highlighted. The main architectural difference -- which is also the difference and its impact we seek to empirically quantify -- is the Floating-Point Unit (FPU). In KNL, this unit features two 512-bit wide vector units (AVX), together capable of executing 32 double-precision or 64 single-precision operations per cycle, totaling~\unit[2.6]{Tflop/s} of double- and~\unit[5.3]{Tflop/s} of single-precision performance, respectively, across all 64 processing cores. In KNM, however, the FPU is redesigned to replace one 512-bit vector unit with two Virtual Neural Network Instruction (VNNI) units. Those units, although specializing in hybrid-precision FMA, can execute single-precision vector instructions, but have no support for double-precision compute. Thus, in total, the KNM can execute up to~\unit[1.7]{Tflop/s} of double-precision or~\unit[13.8]{Tflop/s} of single-precision computations. In summary, the KNM has~2.59x more single-precision compute, while the KNL have~1.54x more double-precision compute.
 
-While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences. First, the operating frequency of the processors vary: the KNL operates at a frequency of~\unit[1.3]{GHz} (and up to~\unit[1.5]{GHz} in Turbo mode), while KNM operates at~\unit[1.5]{GHz} (\unit[1.6]{GHz} turbo). Hence, KNM executes~15\% more cycles per second over KNM. Furthermore, although the cores of KNM and KNL are similar (except the FPU), the number of cores are different: KNL has~64 cores while KNM has~72 cores. Both processors are manufactured in~\unit[14]{nm} technology. Finally, the amount of on-chip last-level cache between the two processors is different, where KNM has a~\unit[4]{MiB} advantage over KNL.
+While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences. First, the operating frequency of the processors vary: the KNL operates at a frequency of~\unit[1.3]{GHz} (and up to~\unit[1.5]{GHz} in Turbo mode), while KNM operates at~\unit[1.5]{GHz} (\unit[1.6]{GHz} turbo). Hence, KNM executes~15\% more cycles per second over KNL. Furthermore, although the cores of KNM and KNL are similar (except the FPU), the number of cores are different: KNL has~64 cores while KNM has~72 cores. Both processors are manufactured in~\unit[14]{nm} technology. Finally, the amount of on-chip last-level cache between the two processors is different, where KNM has a~\unit[4]{MiB} advantage over KNL.
 
 Additionally, for verification reasons, we include a modern dual-socket Xeon-based compute node in our evaluation. Despite being vastly different from the Xeon Phi systems, our Xeon Broadwell-EP (BDW) general-purpose processor is used to cross-check metrics, such as: execution time and performance (Xeon Phi should perform better), frequency-scaling experiments (BDW has more frequency domains), and performance counters (BDW exposes more performance counters).
 Aside from those differences mentioned above (and highlighted in Table~\ref{table:HW}), the setup between the Xeon Phi nodes (and BDW node) is \textit{identical}, including the same operating system, software stack, and solid state disk. %(one Crucial mSSD SATA with \unit[480]{GiB} per node).
@@ -156,12 +156,12 @@ Laghos proxy-app.
 Scalable I/O proxy designed to closely mimic realistic I/O workloads of
 HPC applications~\cite{dickson_replicating_2016}. Our input causes MACSio to write a total of \unit[433.8]{MB} to disk.
 
-\paragraph{MiniAMR (MAMR)} is a adaptive mesh refinement proxy application of the Mantevo 
+\paragraph{MiniAMR (MAMR)} is an adaptive mesh refinement proxy application of the Mantevo
 project~\cite{heroux_improving_2009} which applies a stencil computation on a 3-dimensional space,
 in our case a sphere moving diagonally through a cubic medium.
 %The cube is evenly distributed onto the processes, and adaptive meshing is performed for workload balancing.
 
-\paragraph{MiniFE (MiFE)} is a reference implementation of an implicit finite elements 
+\paragraph{MiniFE (MiFE)} is a reference implementation of an implicit finite elements
 solver~\cite{heroux_improving_2009} for scientific methods resulting in unstructured 3-dimensional grids.
 For our study, we use 128$\times$128$\times$128 input dimensions for the grid.
 
@@ -257,7 +257,7 @@ input for a $32^3 \times 32$ lattice discretization.
         MODYLAS     & Physics and Chemistry                 & N-body                & Fortran \\ \hline
         NTChem      & Chemistry                             & Dense matrix          & Fortran \\ \hline \rC
         QCD         & Lattice QCD                           & Stencil               & Fortran/C \\ \hline
-    \end{tabular}      
+    \end{tabular}
     \vspace{-0.4em}
 \end{table}
 

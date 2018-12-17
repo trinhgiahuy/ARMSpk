@@ -25,9 +25,9 @@ argue that convening on reporting relevant metrics would shift the focus of the 
 \end{figure}
 \end{comment}
 %
-This paper highlights the diminishing relevance of \unit[]{flop/s} when 
+This paper highlights the diminishing relevance of \unit[]{flop/s} when
 considering the actual requirements of representative proxy-apps.
-The relevance of \unit[]{flop/s} on a given supercomputer can be further 
+The relevance of \unit[]{flop/s} on a given supercomputer can be further
 diminished when considering the analysis of node-hours spent yearly on
 different scientific domains at supercomputing facilities.
 Figure~\ref{fid:disc:breakdown} summarizes the breakdown of node-hours by
@@ -38,39 +38,39 @@ ANL's ALCF and \mbox{R-CCS's} K-computer would be achieving $\approx$14\% and
 $\approx$11\%, respectively, of the peak \unit[]{flop/s} when projecting
 for the annual node-hours. %oversomplification?
 It is worth mentioning that the relevance of \unit[]{flop/s} is even more
-of an issue for supercomputers to dedicated to specific workloads: the relevance of
+of an issue for supercomputers dedicated to specific workloads: the relevance of
 \unit[]{flop/s} can vary widely. For instance, a supercomputer dedicated
-mainly to weather forecasting, e.g., the~\unit[18]{Pflop/s} system recently 
+mainly to weather forecasting, e.g., the~\unit[18]{Pflop/s} system recently
 installed at Japan's Meteorological Agency~\cite{japan_meteorological_agency_jma_jma_2018},
 should give minimal relevance to \unit[]{flop/s} since the proxy representing
 this workload on that supercomputer achieves $\approx$6\% of the peak \unit[]{flop/s},
 since those workloads are typically memory-bound. On the other hand, a
 supercomputer dedicated to AI/ML such as ABCI, the world 5\textsuperscript{th}
-fastest supercomputer as of June 2018, would put high emphasize on \unit[]{flop/s}
+fastest supercomputer as of June 2018, would put high emphasis on \unit[]{flop/s}
 since deep learning workloads rely heavily on dense matrix multiplication operations.
 
 
 \subsection{Memory-bound Applications}
-As demonstrated in Figure~\ref{fig:flops}, the performance of memory-bound 
-applications is mostly not affected by the peak \unit[]{flop/s} available. 
-Accordingly, investment in data-centric architectures and programming models 
+As demonstrated in Figure~\ref{fig:flops}, the performance of memory-bound
+applications is mostly not affected by the peak \unit[]{flop/s} available.
+Accordingly, investment in data-centric architectures and programming models
 should take priority over paying premium for \unit[]{flop/s}-centric systems.
-In one motivating instance, during the investigation that NASA Ames Research 
-Center conducted to identify planned upgrade of the Pleiades supercomputer in 
+In one motivating instance, during the investigation that NASA Ames Research
+Center conducted to identify planned upgrade of the Pleiades supercomputer in
 2016~\cite{saini_performance_2016}, the study concluded that the performance gain from upgrading to
 Intel Haswell processors was insignificant in comparison to using the older
 Ivy Bridge-based processors (the newer processor offered double the peak
 \unit[]{flop/s} at almost the same memory bandwidth). And hence the choice was only do a partial upgrade to Haswell processors.
 
 \subsection{Compute-bound Applications}
-Investing more in data-centric architectures to accommodate memory-bound 
-applications can have a negative impact on the remaining minority of 
+Investing more in data-centric architectures to accommodate memory-bound
+applications can have a negative impact on the remaining minority of
 applications: compute-bound applications. Considering the market trends that
 are already pushing away from dedicating the majority of chip area to
-FP64 units, it is likely that libraries with compute-bound code (e.g., BLAS) 
-would support mixed precision or emulation by lower precision FPUs. The 
-remaining applications that do not relay on external libraries might suffer a 
-performance hit. 
+FP64 units, it is likely that libraries with compute-bound code (e.g., BLAS)
+would support mixed precision or emulation by lower precision FPUs. The
+remaining applications that do not rely on external libraries might suffer a
+performance hit.
 
 %\subsection{More Diversity in FPUs\cJD{not less?}}
 % - option: suggest to ditch fp32 and emulate fp32 ops in fp64 units

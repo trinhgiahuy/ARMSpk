@@ -8,7 +8,7 @@
 \usepackage{hyperref}
 \usepackage{breakurl}
 \usepackage{comment} % TODO remove later
-\usepackage{draftwatermark}
+%\usepackage{draftwatermark}
 %
 \usepackage[ruled,vlined]{algorithm2e}
 \DontPrintSemicolon
@@ -44,20 +44,20 @@
 \renewcommand{\algorithmcfname}{PseudoCode}
 \makeatother
 
-\makeatletter
-\renewcommand\sc@wm@print[1]{% redefine positioning of mark (-1in to 330pt)
-  \if@sc@wm@stamp
-          \setbox\@tempboxa\vbox to \z@{%
-            \vskip 100pt \moveleft -0.5in \vbox{%
-              \hbox to \z@{%
-                #1\hss}}\vss}
-          \dp\@tempboxa\z@
-          \box\@tempboxa
-          \fi}
-\makeatother
-\SetWatermarkText{DRAFT}
-\SetWatermarkScale{1}
-\SetWatermarkColor[rgb]{.95,.95,.95}
+%\makeatletter
+%\renewcommand\sc@wm@print[1]{% redefine positioning of mark (-1in to 330pt)
+%  \if@sc@wm@stamp
+%          \setbox\@tempboxa\vbox to \z@{%
+%            \vskip 100pt \moveleft -0.5in \vbox{%
+%              \hbox to \z@{%
+%                #1\hss}}\vss}
+%          \dp\@tempboxa\z@
+%          \box\@tempboxa
+%          \fi}
+%\makeatother
+%\SetWatermarkText{DRAFT}
+%\SetWatermarkScale{1}
+%\SetWatermarkColor[rgb]{.95,.95,.95}
 
 %% preprint rules (this should cover most venues for us)
 % IEEE (2018-10-22)
