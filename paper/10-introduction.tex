@@ -21,7 +21,7 @@ With the ending of Dennard's scaling~\cite{dennard_design_1974} and the ending o
 there is today an ever-increasing need to oversee how we allocate the silicon to various functional units in modern many-core
 processors. Amongst those decisions is how we distributed the hardware support for various levels of compute-precision.
 
-Historically, most of the compute silicon has been allocated to double-precision (64-bit) compute.
+Historically, most of the compute silicon has been allocated to double-precision (DP; 64-bit) compute.
 Nowadays -- in processors such as the forthcoming AA64FX~\cite{yoshida_fujitsu_2018} and NVIDIA
 Volta~\cite{choquette_volta:_2018} -- the trend, mostly driven by market/AI demands, is to replace
 some of the double-precision units with lower-precision units.
@@ -41,16 +41,16 @@ a decade (Knights Ferry was announced in 2010), and has changed drastically sinc
 The latest (and also last) two revisions -- the Knights Landing and Knights Mill -- are of
 particular importance since they arguable reflect two different ways of thinking. Knights Landing
 has relatively large support for double-precision (64-bit) computations, and follows a
-more traditional school of thought. The Knights Mill follows a different direction, which is the replacement
+more traditional school of thought. While Knights Mill follows a different direction, which is the replacement
 of double-precision compute units with lower-precision (single-precision, half-precision, and integer)
 compute capabilities.
 
 In the present paper, we quantify and analyze the performance and compute bottlenecks of
-Intel's Knights Landing~\cite{sodani_knights_2016} and Mill architectures~\cite{bradford_knights_2017} -- two
+Intel's Knights Landing~\cite{sodani_knights_2016} and Knights Mill~\cite{bradford_knights_2017} architectures -- two
 processors with identical micro-architecture where the main difference is in the relative allocation of double-precision units.
 We stress both processors with numerous realistic benchmarks from both the
 Exascale Computing Project (ECP) proxy applications~\cite{noauthor_ecp_2018} and
-RIKEN-CCS Fiber Miniapp Suite~\cite{riken_aics_fiber_2015} -- benchmarks used in HPC system acquisition.
+RIKEN R-CCS Fiber Miniapp Suite~\cite{riken_aics_fiber_2015} -- benchmarks used in HPC system acquisition.
 Through an extensive (and robust) performance measurement process (which we also open-source), we
 empirically show the architecture's relative weaknesses. In short, the contributions of the present paper are:
 \begin{enumerate}

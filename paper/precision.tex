@@ -316,7 +316,35 @@
 
 
 \begin{document}
-%%%% DONT TOUCH FOR DRAFT
+\iftoggle{highlightChanges}{
+    \begin{titlepage}
+    \mbox{}\\{\Large \textbf{Cover Letter for Submission:}\\\\Double-precision FPUs in High-Performance Computing: an Embarrassment of Riches?}
+    \newline\newline\newline\newline\large
+    Summary of the implemented changes (also highlighted in blue on subsequent pages):
+    \begin{itemize}
+        \item Added discussion of why we report flop/s and why it is necessary in this paper
+        despite our later recommendation that the HPC community should not (only) report flop/s;
+        \item Split of Fig.~\ref{fig:flops} (rel./abs. flop/s comparison) into two subfigures for
+        easier readability and modification of text in Sec.~\ref{ssec:eval_flops} to reflect the
+        change;
+        \item Added Fig.~\ref{fig:t2s-rel} for ``Time-to-Solution'' and its explanation/discussion
+        in Sec.~\ref{ssec:eval_flops};
+        \item Added roofline analysis in Sec.~\ref{ssec:eval_roof} to determine the optimization
+        status of the FP-intensive proxy-apps, which we used for this study (incl 2 additional
+        references for this part)
+        \item Added details about the theoretical peak speedup with turbo boost shown in
+        Fig.~\ref{fig:freq} and explanation of why a pessimistic +100Mhz was chosen in this case
+        and why this resulted in ``superlinear speedup'' for some benchmarks
+        \item Added acknowledgement of funding resources and author's contributions;
+        \item Added note to Tab.~\ref{table:rest} to point out the multiuse of two columns by
+        similar metrics (VTune reports slightly different metrics for BDW vs. KNM/KNL for
+        arithmetic intensity and memory-boundedness; and readers can consult Ref. [41] for an
+        in-depth documentation on these metrics (as stated previously in the table's caption));
+        \item (+ multiple smaller grammar and text adjustments which will no be highlighted).
+    \end{itemize}
+    \end{titlepage}
+}{}
+%%%% DONT TOUCH FOR DRAFT => TODO take out if we buy 1 page 
 \bstctlcite{IEEEexample:BSTcontrol}
 %%%% DONT TOUCH FOR DRAFT
 
@@ -450,7 +478,6 @@
 
 \input{70-conclusion}
 % 1/2 page
-
 \iftoggle{includeacknowl}{
   \input{80-acknowledgment}
   % 1/2 page
@@ -630,16 +657,12 @@
 
 %No appendix in first submission
 
-\input{41-rest-table}
-
-\begin{comment}
 \iftoggle{includeappendix}{
-  \clearpage
-  \input{90-appendix}}
-{
-  
+    \clearpage
+    \input{90-appendix}
+}{
+    \input{41-rest-table}
 }
-\end{comment}
 
 % that's all folks
 \end{document}

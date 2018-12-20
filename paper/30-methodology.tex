@@ -22,8 +22,8 @@ In this section, we present our rigorous benchmarking approach into investigatin
 % \struc{assume BMs are well tuned}
 
 Due to the fact that the benchmarks, listed in Section~\ref{ssec:bm}, are firstly realistic proxies of the
-original applications~\cite{aaziz_methodology_2018} and secondly are used in the procurement process, we can confidently assume
-that these benchmarks are well tuned and come with appropriate compiler options for a variety of compilers.
+original applications~\cite{aaziz_methodology_2018} and secondly are used in the procurement process, we can assume
+that these benchmarks are well tuned and come with appropriate compiler options for a variety of compilers -- \added{a hypothesis we will test in Section~\ref{ssec:eval_roof}}.
 Hence, we refrain from both manual code optimization and alterations of the compiler options.
 %
 %\struc{how we compiled}
@@ -55,17 +55,17 @@ aim is~\unit[1]{sec}--\unit[10]{min} due to the large sample size we have to cov
 realistic amount of main memory (e.g., avoid cache-only executions)? Are the results repeatable
 (randomness/seeds)? We optimize for the metrics reported by the benchmark (e.g., select the input
 with the highest~\unit[]{Gflop/s} rate).
-%
+
 % \struc{explain parameter-sweep for num\_mpi and num\_omp, why, reason, how on all system,( and examples maybe)}
 %
-Furthermore, one of the most important considerations while selecting the right inputs is
+Furthermore, one of the most important consideration while selecting the right inputs is
 \textit{strong-scaling}. We require strong-scaling properties of the benchmark for two reasons:
 the results collected in Step~(2) need to be comparable, and even more importantly, the results
 of Step (3) must be comparable between different architectures, since we may have to use different
 numbers of MPI processes for KNL and KNL (and our BDW reference architecture) due to their difference
 in core counts. The only exception is MiniAMR for which we are unable to find a strong-scaling
-input configuration and instead optimized for the reported~\unit[]{Gflop/s} of the benchmark. Accordingly, we then choose
-the same amount of MPI processes on our KNL and KNM compute nodes for MiniAMR.
+input configuration and instead optimized for the reported~\unit[]{Gflop/s} of the benchmark.
+Accordingly, we then choose the same amount of MPI processes on our KNL and KNM compute nodes for MiniAMR.
 
 In Step (2), we evaluate numerous combinations of MPI processes and OpenMP threads
 %\cJD{any other threadin models?} -> candle uses omp-ish too, see
@@ -73,11 +73,12 @@ In Step (2), we evaluate numerous combinations of MPI processes and OpenMP threa
 for each benchmark, including combinations which over-/undersubscribe the CPU cores, and test each
 combination with three runs to minimize the potential for outliers due to system noise.
 For all subsequent measurements, we select the number of processes and threads based on the ``best'' (w.r.t
-time-to-solution of the solver) combination among these tested versions, see Table~\ref{table:rest} for details.
+time-to-solution of the solver) combination among these tested versions, see Table~\ref{table:rest} % for details.
+at the end of this paper for details.
 %\cJD{no specific intel' mpi tuning (except hpgc, babel) because initial test consistently resulted
 %in worse time to solution when non-default options where used}
-We are not applying specific tuning options to the Intel MPI library, except for using Intel's recommended
-settings for HPCG with respect to thread affinity and MPI\_allreduce implementation.
+We are not applying specific tuning options to Intel's MPI library, except for using Intel's recommended
+settings for HPCG with respect to thread affinity and MPI\_allreduce. % implementation.
 The reason is that our pretests (with a subset of the benchmarks) with non-default parameters for
 Intel MPI consistently resulted in longer time-to-solution.
 
@@ -87,8 +88,8 @@ For Step (3), we run each benchmark ten times to identify the fastest time-to-so
 (compute) kernel of the benchmark. Additionally, for the profiling runs, we execute the benchmark
 once for each of the profiling tools and/or metrics (in case the tool is used for multiple metrics),
 see Section~\ref{ssec:metrics} for details. Finally, we perform frequency scaling experiments
-for each benchmark, where we throttle the CPU frequency to all the available lower CPU states
-below the maximum CPU frequency we use for the performance runs, and record the lowest kernel
+for each benchmark, where we throttle the CPU frequency to all of the available lower CPU states
+below the maximum CPU frequency, which we use for the performance runs, and record the lowest kernel
 time-to-solution among ten trials per frequency. The reason and results of the frequency scaling
 test will be further explained in Section~\ref{ssec:eval_freq}.
 One may argue for more than ten runs per benchmark to find the optimal time-to-solution, however,
@@ -169,7 +170,7 @@ all presented data will be based exclusively on the kernel portion of each bench
         START\_ASSAY\;
     }
     \caption{Injecting analysis instructions}
-%    \vspace{-0.5em}
+    \vspace{-.5em}
 \end{algorithm}
 
 %\struc{what does each tool have in terms of capabilities, how is it applied to the benchmarks,
@@ -178,8 +179,8 @@ all presented data will be based exclusively on the kernel portion of each bench
 For tool stability reason, attention to detail/accuracy, and overlap with our needs, we settle
 on the use of the MPI API for runtime measurements, alongside with Intel's Processor Counter
 Monitor (PCM)~\cite{willhalm_intel_2017}, Intel's Software Development Emulator (SDE)~\cite{raman_calculating_2015}, and Intel's VTune
-Amplifier~\cite{sobhee_intel_2018}\footnote{~To avoid persistent compute node crashes, we had to use disable VTune's
-\\$~~~\,\quad$build-in sampling driver and instead rely on Linux' perf tool.}.
+Amplifier~\cite{sobhee_intel_2018}\footnote{~To avoid persistent compute node crashes (likely due to incompatibilities\\$~~~\,\quad$with the Spectre/Meltdown patches), we had to disable VTune's build-in 
+\\$~~~\,\quad$sampling driver and instead rely on Linux' \texttt{perf} tool.}.
 Furthermore, as auxiliary tools we rely on RRZE's Likwid~\cite{treibig_likwid:_2010} for frequency
 scaling\footnote{~Our Linux kernel version required us to disable
 the default Intel P-State\\$~~~\,\quad$driver to have full access to the fine-grained frequency scaling.} and
@@ -189,7 +190,7 @@ Section~\ref{ssec:bm}, is shown in Table~\ref{tb:Mtools}. Furthermore, derived m
 as~\unit[]{Gflop/s}, will be explained on-demand in Section~\ref{sec:eval}.
 %
 \begin{table}[tp]
-    \vspace{-0.5em}
+    %\vspace{-0.5em}
     \centering\scriptsize
     \caption{\label{tb:Mtools}Summary of metrics and method/tool to collect these metrics}
     \begin{tabular}{|l|l|}
@@ -204,7 +205,7 @@ as~\unit[]{Gflop/s}, will be explained on-demand in Section~\ref{sec:eval}.
         SIMD instructions per cycle         & perf + VTune (`hpc-performance')  \\\hline \rC
         Memory/Back-end boundedness         & perf + VTune (`memory-access')    \\\hline
     \end{tabular}
-    \vspace{-0.5em}
+    \vspace{-.5em}
 \end{table}
 
 %

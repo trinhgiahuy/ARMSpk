@@ -1,10 +1,10 @@
 % IPDPS requirement !Abstract (Maximum 250 words)!
 \begin{abstract}
-Among the (uncontended) common wisdom in High-Performance Computing (HPC) is the applications’ need for large amount of double-precision support in hardware.  Hardware manufacturers, the TOP500 list, and (rarely revisited) legacy software have without doubt followed and contributed to this~view. 
+Among the (uncontended) common wisdom in High-Performance Computing (HPC) is the applications' need for large amount of double-precision support in hardware.  Hardware manufacturers, the TOP500 list, and (rarely revisited) legacy software have without doubt followed and contributed to this~view. 
 
-In this paper, we challenge that wisdom, and we do so by exhaustively comparing a large number of HPC proxy application on two processors: Intel's Knights Landing (KNL) and Knights Mill (KNM). Although similar, the KNM and KNL architecturally deviate at one important point: the silicon area devoted to double-precision arithmetics. This fortunate discrepancy allows us to empirically quantify the performance impact in reducing the amount of hardware double-precision arithmetic. %this part reads strange
+In this paper, we challenge that wisdom, and we do so by exhaustively comparing a large number of HPC proxy applications on two processors: Intel's Knights Landing (KNL) and Knights Mill (KNM). Although similar, the KNL and KNM architecturally deviate at one important point: the silicon area devoted to double-precision arithmetics. This fortunate discrepancy allows us to empirically quantify the performance impact in reducing the amount of hardware double-precision arithmetic. %this part reads strange
 
-Our analysis shows that this common wisdom might not always be right. We find that the investigated HPC proxy applications do allow for a (significant) reduction in double-precision with little-to-no performance implications. With the advent of a failing of Moore's law, our results partially reinforce the view taken by modern industry (e.g. upcoming Fujitsu ARM64FX) to integrate hybrid-precision hardware units.
+Our analysis shows that this common wisdom might not always be right. We find that the investigated HPC proxy applications do allow for a (significant) reduction in double-precision with little-to-no performance implications. With the advent of a failing of Moore's law, our results partially reinforce the view taken by modern industry (e.g., upcoming Fujitsu ARM64FX) to integrate hybrid-precision hardware units.
 
 %\cJD{PLACEHOLDER: (Maximum 250 words)!}
 %Common perception in supercomputing is that double precision floating point

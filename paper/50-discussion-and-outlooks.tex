@@ -9,9 +9,10 @@ the three architectures, this section summarizes the relevant points to consider
 from our study, which should be taken into account when moving forward.
 
 \subsection{Performance Metrics}
-The de facto performance metric reported in HPC is \unit[]{flop/s}. Reporting \unit[]{flop/s} is not limited to applications that are compute-bound. Benchmarks that are designed to resemble realistic workloads, e.g., the
-memory-bound HPCG benchmark, typically report performance in \unit[]{flop/s}. The proxy-/mini-apps in this study as well typically report \unit[]{flop/s} despite only six out of 20 proxy-/mini-apps we analyze in this study appearing to be
-compute-bound (including NGSA that is bound by ALUs, not FPUs). We
+The de facto performance metric reported in HPC is \unit[]{flop/s}. However, reporting \unit[]{flop/s} is not limited to applications that are compute-bound. Benchmarks that are designed to resemble realistic workloads, e.g., the
+memory-bound HPCG benchmark, typically report performance in \unit[]{flop/s}. The proxy-/mini-apps in this study
+as well typically report \unit[]{flop/s} despite the fact that only six out of 20 proxy-/mini-apps we analyze in
+this study appear to be compute-bound (including NGSA that is bound by ALUs, not FPUs). We
 argue that convening on reporting relevant metrics would shift the focus of the community to be less \unit[]{flop/s}-centered.
 %It is important to mention that reporting only time-to-solution and scalability, without reporting performance, is a common pitfall that distorts the interpretation of results in HPC~\cite{hoefler_scientific_2015}.
 
@@ -35,7 +36,7 @@ scientific domain for different supercomputing facilities (based on yearly
 reports of mentioned facilities). For instance, by simply mapping the scientific
 domains in Figure~\ref{fid:disc:breakdown} to representative proxies,
 ANL's ALCF and \mbox{R-CCS's} K-computer would be achieving $\approx$14\% and
-$\approx$11\%, respectively, of the peak \unit[]{flop/s} when projecting
+$\approx$11\% of the peak \unit[]{flop/s}, respectively, when projecting
 for the annual node-hours. %oversomplification?
 It is worth mentioning that the relevance of \unit[]{flop/s} is even more
 of an issue for supercomputers dedicated to specific workloads: the relevance of
@@ -44,10 +45,10 @@ mainly to weather forecasting, e.g., the~\unit[18]{Pflop/s} system recently
 installed at Japan's Meteorological Agency~\cite{japan_meteorological_agency_jma_jma_2018},
 should give minimal relevance to \unit[]{flop/s} since the proxy representing
 this workload on that supercomputer achieves $\approx$6\% of the peak \unit[]{flop/s},
-since those workloads are typically memory-bound. On the other hand, a
-supercomputer dedicated to AI/ML such as ABCI, the world 5\textsuperscript{th}
+because those workloads are typically memory-bound. On the other hand, a
+supercomputer dedicated to AI/ML such as ABCI, the world's 5\textsuperscript{th}
 fastest supercomputer as of June 2018, would put high emphasis on \unit[]{flop/s}
-since deep learning workloads rely heavily on dense matrix multiplication operations.
+due to the fact that current deep learning workloads rely heavily on dense matrix multiplications.
 
 
 \subsection{Memory-bound Applications}
@@ -55,12 +56,13 @@ As demonstrated in Figure~\ref{fig:flops}, the performance of memory-bound
 applications is mostly not affected by the peak \unit[]{flop/s} available.
 Accordingly, investment in data-centric architectures and programming models
 should take priority over paying premium for \unit[]{flop/s}-centric systems.
-In one motivating instance, during the investigation that NASA Ames Research
-Center conducted to identify planned upgrade of the Pleiades supercomputer in
-2016~\cite{saini_performance_2016}, the study concluded that the performance gain from upgrading to
+In one motivating instance, an investigation conducted by the NASA Ames Research Center,
+for a planned upgrade of the Pleiades supercomputer in 2016~\cite{saini_performance_2016},
+concluded that the performance gain of their applications from upgrading to
 Intel Haswell processors was insignificant in comparison to using the older
 Ivy Bridge-based processors (the newer processor offered double the peak
-\unit[]{flop/s} at almost the same memory bandwidth). And hence the choice was only do a partial upgrade to Haswell processors.
+\unit[]{flop/s} at almost the same memory bandwidth).
+And hence the choice was to only do a partial upgrade to Haswell processors.
 
 \subsection{Compute-bound Applications}
 Investing more in data-centric architectures to accommodate memory-bound

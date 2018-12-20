@@ -15,7 +15,7 @@ $(PAPER).pdf: $(TEX) $(BIB) $(FIG) cleanall
 	rm $(PAPER).dvi
 
 clean:
-	rm -f *.ilg *.aux *.log *.dvi *.idx *.toc *.lof *.lot
+	rm -f *.ilg *.aux *.log *.dvi *.idx *.toc *.lof *.lot *.soc $(PAPER).out
 	rm -f *.blg *.bbl *~
 
 cleanall: clean

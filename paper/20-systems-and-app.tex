@@ -45,7 +45,7 @@ To understand and explore the intersection of architectures with high-amount of 
         MCDRAM Size                 & \unit[16]{GiB}                    & \unit[16]{GiB}                    & \textit{N/A}              \\ \hline \rC
         %$\hookrightarrow$ Triad BW  & \unit[490]{GB/s} (flat;\cite{X})  & \unit[490]{GB/s}                  & \textit{N/A}         \\ \hline
         %\cJD{410GB/s seemed wrong, see \url{https://software.intel.com/en-us/articles/optimizing-memory-bandwidth-in-knights-landing-on-stream-triad}}
-        $\hookrightarrow$ Triad BW  & \unit[439]{GB/s}                  & \unit[430]{GB/s}                  & \textit{N/A}              \\ \hline \rC
+        $\hookrightarrow$ Triad BW  & \textbf{\unit[439]{GB/s}}         & \textbf{\unit[430]{GB/s}}         & \textit{N/A}              \\ \hline \rC
         MCDRAM Mode                 & Cache                             & Cache                             & \textit{N/A}              \\ \hline
         LLC Size                    & \textbf{\unit[32]{MiB}}           & \textbf{\unit[36]{MiB}}           & \unit[60]{MiB}            \\ \hline \rC
         Inst. Set Extension         & AVX-512                           & AVX-512                           & AVX2                      \\ \hline
@@ -63,7 +63,7 @@ To understand and explore the intersection of architectures with high-amount of 
 %        Compiler    &\multicolumn{3}{c|}{icc/ifort version 18.0.1 (gcc version 4.8.5 compatibility)}  \\ \hline
 %        MPI         &\multicolumn{3}{c|}{Intel(R) MPI Library for Linux* OS, Version 2018 Update 1 Build 20171011} \\ \hline
 \end{tabular}
-        %\vspace{-1em}
+        \vspace{-1em}
 \end{table}
 
 %There are several differences between KNL and KNM many-core architectures. One of the main differences is single-/double-precision ratio. As is shown in Figure \ref{fig:knlvsknm}, KNM has half the DP flops/cyc while gets double SP flops/cyc compared with KNL. Which is an important reasion why we choose these two archetectures for our experiments.
@@ -75,13 +75,19 @@ To understand and explore the intersection of architectures with high-amount of 
 \end{figure}
 \end{comment}
 
-Intel's Knights Landing (KNL) and Knights Mill (KNM) are the latest incarnations of a long line of architectures in the Intel's accelerator family. Both processor consist of a large number of processors cores (64 and 72, respectively), interconnected in a mesh interconnection (prior to KNL: ring interconnection). Each core has a private L1 cache and a slice of the distributed L2 cache. Caches are kept coherent through the directory-based MESIF protocol.
-Both processors come with two types of external memory: MCDRAM (or, Hybrid Memory Cube) and Double-Data Rate-synchronous (DDR4) memory. Unique to the Xeon Phi processors is that the MCDRAM memory can be configured to one of three modes of operation: it is either (1) directly addressable in the global memory address space (memory-mapped), called \texttt{flat} mode, or it (2) acts as last-level cache before the DDR, called \texttt{cache} mode. Finally, the third mode (hybrid mode~\cite{heinecke_high_2016}) is a combination of the properties from the first two modes.
+Intel's Knights Landing (KNL) and Knights Mill (KNM) are the latest incarnations of a long line of architectures in the Intel's accelerator family. Both processor consist of a large number of processors cores (64 and 72, respectively), interconnected in a 2-D mesh (prior to KNL: ring interconnection). Each core has a private L1 cache and a slice of the distributed L2 cache. Caches are kept coherent through the directory-based MESIF protocol.
+Both processors come with two types of external memory: MCDRAM (or, Hybrid Memory Cube) and Double-Data Rate-synchronous (DDR4) memory. Unique to the Xeon Phi processors is that the MCDRAM memory can be configured to one of three modes of operation: it is either (1) directly addressable in the global memory address space (memory-mapped), called \texttt{flat} mode, or it (2) acts as last-level cache before the DDR, called \texttt{cache} mode. Finally, the third mode (\texttt{hybrid} mode~\cite{heinecke_high_2016}) is a combination of the properties from the first two modes.
 
 There are several policies governing where data is homed. A common high-performance configuration~\cite{gawande_scaling_2017}, which is also the one we used in our study, is the quadrant mode. Quadrant mode means that the physical cores are divided into four logical parts, where each logical part is assigned two memory controllers; each logical group is treated as a unique Non-Uniform Memory-Access (NUMA) node, allowing the operating system to perform data-locality optimizations.
-Table~\ref{table:HW} surveys and contrast the processors against each other, where the main differences are highlighted. The main architectural difference -- which is also the difference and its impact we seek to empirically quantify -- is the Floating-Point Unit (FPU). In KNL, this unit features two 512-bit wide vector units (AVX), together capable of executing 32 double-precision or 64 single-precision operations per cycle, totaling~\unit[2.6]{Tflop/s} of double- and~\unit[5.3]{Tflop/s} of single-precision performance, respectively, across all 64 processing cores. In KNM, however, the FPU is redesigned to replace one 512-bit vector unit with two Virtual Neural Network Instruction (VNNI) units. Those units, although specializing in hybrid-precision FMA, can execute single-precision vector instructions, but have no support for double-precision compute. Thus, in total, the KNM can execute up to~\unit[1.7]{Tflop/s} of double-precision or~\unit[13.8]{Tflop/s} of single-precision computations. In summary, the KNM has~2.59x more single-precision compute, while the KNL have~1.54x more double-precision compute.
+Table~\ref{table:HW} surveys and contrasts the processors against each other, where the main differences are highlighted. The main architectural difference -- which is also the difference and its impact we seek to empirically quantify -- is the Floating-Point Unit (FPU). In KNL, this unit features two 512-bit wide vector units (AVX), together capable of executing 32 double-precision or 64 single-precision operations per cycle, totaling~\unit[2.6]{Tflop/s} of double- and~\unit[5.3]{Tflop/s} of single-precision peak performance, respectively, across all 64 processing cores. In KNM, however, the FPU is redesigned to replace one 512-bit vector unit with two Virtual Neural Network Instruction (VNNI) units. Those units, although specializing in hybrid-precision FMA, can execute single-precision vector instructions, but have no support for double-precision compute. Thus, in total, the KNM can execute up to~\unit[1.7]{Tflop/s} of double-precision or~\unit[13.8]{Tflop/s} of single-precision computations. In summary, the KNM has~2.59x more single-precision compute, while the KNL have~1.54x more double-precision compute.
 
-While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences. First, the operating frequency of the processors vary: the KNL operates at a frequency of~\unit[1.3]{GHz} (and up to~\unit[1.5]{GHz} in Turbo mode), while KNM operates at~\unit[1.5]{GHz} (\unit[1.6]{GHz} turbo). Hence, KNM executes~15\% more cycles per second over KNL. Furthermore, although the cores of KNM and KNL are similar (except the FPU), the number of cores are different: KNL has~64 cores while KNM has~72 cores. Both processors are manufactured in~\unit[14]{nm} technology. Finally, the amount of on-chip last-level cache between the two processors is different, where KNM has a~\unit[4]{MiB} advantage over KNL.
+While both the KNL and KNM are functionally and architectural similar, there are some note-worth differences.
+First, the operating frequency of these processors varies: the KNL operates at a frequency of~\unit[1.3]{GHz}
+(and up to~\unit[1.5]{GHz} in Turbo mode), while KNM operates at~\unit[1.5]{GHz} (\unit[1.6]{GHz} turbo).
+Hence, KNM executes~15\% more cycles per second over KNL. Furthermore, although the cores of KNM and KNL are
+similar (except the FPU), the number of cores is different: KNL has~64 cores while KNM has~72 cores.
+Both processors are manufactured in~\unit[14]{nm} technology. Finally, the amount of on-chip last-level cache
+between the two processors is different, where KNM has a~\unit[4]{MiB} advantage over KNL.
 
 Additionally, for verification reasons, we include a modern dual-socket Xeon-based compute node in our evaluation. Despite being vastly different from the Xeon Phi systems, our Xeon Broadwell-EP (BDW) general-purpose processor is used to cross-check metrics, such as: execution time and performance (Xeon Phi should perform better), frequency-scaling experiments (BDW has more frequency domains), and performance counters (BDW exposes more performance counters).
 Aside from those differences mentioned above (and highlighted in Table~\ref{table:HW}), the setup between the Xeon Phi nodes (and BDW node) is \textit{identical}, including the same operating system, software stack, and solid state disk. %(one Crucial mSSD SATA with \unit[480]{GiB} per node).
@@ -89,14 +95,14 @@ Aside from those differences mentioned above (and highlighted in Table~\ref{tabl
 %\struc{add important notes on: linux kernel version and parameters, spector/meltdown patches, run levels, OS noise
 %from NFS, other users, special settings to pre-installed OS/gnu/linux tools, ...; since we removed the info from the table}
 For the operating system (OS) and software environment, we use equivalent setups across our three compute nodes.
-The OS is a fresh installation of CentOS~7~(minimal) with Linux kernel version 3.10.0-862, which has the latest versions of
+The OS is a fresh installation of CentOS~7~(minimal) with Linux kernel version 3.10.0-862, which by default has the latest versions of
 the Meltdown and Spectre patches enabled. During our experiments, we limit potential OS noise by disabling all
 remote storage (Network File System in our case) and allowing only a single user on the system.
 Most of our applications are compiled with Intel's Parallel Studio~XE (version 2018; update 3) compilers, and we
 install the latest versions of Intel TensorFlow and Intel MKL-DNN for the deep learning proxy application, since
 our assumption is that Intel's software stack allows for the highest utilization of their hardware.
 Exceptions to this compiler selection are listed in the subsequent Section~\ref{sec:materials}.
-We use Intel MPI from the Parallel Studio~XE suite to execute our measurements.
+Furthermore, we use Intel MPI from the Parallel Studio~XE suite to execute our measurements.
 
 %Meanwhile, KNM has new instructions such as Quad Fused Multiply Add (QFMA),Variable precision instructions and Quad Virtual Neural Network Instruction (QVNNI). It is claimed by Intel that QFMA instructions enable 2x of the SP performance against KNL. Variable precision instructions help to get higher throughput in machine learning tasks. And QVNNI, the 16-bit INT operations are 4x faster than KNL's SP under the condition that Intel claims users can achieve “similar accuracy to single-precision.” with INT32 accumulated output.[see comment]
 %[refer to slide https://indico.cern.ch/event/595059/contributions/2499304/attachments/1430242/2196659/Intel_and_ML_Talk_HansPabst.pdf]
@@ -115,12 +121,13 @@ We use Intel MPI from the Parallel Studio~XE suite to execute our measurements.
 
 %\struc{write short info about each application: what does it do, which science field it belongs to, what subproblem does the input data/parameter simulate, which category does it belong to (see riken study about code categories), byte2flop ratio if know from prev. publications}
 
-Over the years, the HPC community developed many benchmarks representing real workloads or for testing the
-capabilities of a system -- primarily for comparisons across architectures but also for system
-procurement purposes.
+Over the years, the HPC community developed many benchmarks
+that represent real workloads in order to test the capabilities of a system
+%representing real workloads or for testing the capabilities of a system
+-- primarily for comparisons across architectures but also for system procurement purposes.
 The so-called Exascale Computing Project (ECP) proxy applications~\cite{noauthor_ecp_2018} and
-RIKEN AICS' Fiber Miniapp Suite~\cite{riken_aics_fiber_2015}, which we will focus on for this study, are just
-two examples representing modern HPC workloads.
+RIKEN R-CCS' (f.k.a.~AICS) Fiber Miniapp Suite~\cite{riken_aics_fiber_2015}, which we will focus
+on for this study, are just two examples representing modern HPC workloads.
 Those benchmarks are designed to evaluate single-node and small-scale test installations,
 and hence are adequate for our study.
 
@@ -184,7 +191,7 @@ for N-body simulations. The 3-D fast Fourier transformation of SWFFT emulates
 one performance-critical part of HACC's Poisson solver. In our tests, we perform 32 repetitions on a
 128$\times$128$\times$128 grid.
 
-\paragraph{XSBench (XSBn)} is the proxy for a Monte Carlo calculations used by a neutron particle transport
+\paragraph{XSBench (XSBn)} is the proxy for the Monte Carlo calculations used by a neutron particle transport
 simulator for a Hoogenboom-Martin nuclear reactor~\cite{tramm_xsbench_2014}. We simulate a \textit{large} reactor model
 represented by a \textit{unionized} grid with $15\cdot10^6$ cross-section lookups per particle.
 
@@ -258,7 +265,7 @@ input for a $32^3 \times 32$ lattice discretization.
         NTChem      & Chemistry                             & Dense matrix          & Fortran \\ \hline \rC
         QCD         & Lattice QCD                           & Stencil               & Fortran/C \\ \hline
     \end{tabular}
-    \vspace{-0.4em}
+    \vspace{-1em}
 \end{table}
 
 

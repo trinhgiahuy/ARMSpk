@@ -1,5 +1,5 @@
 %
-% PACKAGES
+% PACKAGES and CONDITIONALS
 %
 \usepackage{etoolbox}
 \usepackage{units}
@@ -14,26 +14,42 @@
 \DontPrintSemicolon
 \SetAlFnt{\scriptsize}
 %
+\usepackage[table,xcdraw]{xcolor}
+%\usepackage{booktabs}
+%
+% TODO: take out rebuttal flag for final submission
+\newtoggle{highlightChanges}
+\toggletrue{highlightChanges}
+%\togglefalse{highlightChanges}
+%
+\iftoggle{highlightChanges}{
+    \usepackage{changes}
+}{
+    \newcommand{\added}[1]{{#1}}
+}
+%
 \newtoggle{doubleblind}
 %\toggletrue{doubleblind}
 \togglefalse{doubleblind}
 %
 \newtoggle{includeappendix}
-\toggletrue{includeappendix}
-%\togglefalse{includeappendix}
+%\toggletrue{includeappendix}
+\togglefalse{includeappendix}
 %
 \newtoggle{includeacknowl}
-%\toggletrue{includeacknowl}
-\togglefalse{includeacknowl}
-%
-\usepackage[table,xcdraw]{xcolor}
-%\usepackage{booktabs}
-%
+\toggletrue{includeacknowl}
+%\togglefalse{includeacknowl}
+
 % NEW COMMANDS
 %
-\newcommand{\struc}[1]{\textcolor{blue}{ToWrite: #1 \\}}
-\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
-\newcommand{\cJD}[1]{\textcolor{red}{\small{FIX: #1}}}
+% only during writing
+%
+%\newcommand{\struc}[1]{\textcolor{blue}{ToWrite: #1 \\}}
+%\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+%\newcommand{\cJD}[1]{\textcolor{red}{\small{FIX: #1}}}
+%
+% colored tables, rows, etc
+%
 \newcommand{\rC}[0]{\rowcolor[HTML]{CCCCCC}}
 \newcommand{\hC}[0]{\rowcolor[HTML]{333333}}
 \newcommand{\tH}[1]{\multicolumn{1}{c}{\textcolor{white}{#1}}}

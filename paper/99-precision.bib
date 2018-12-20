@@ -1,7 +1,9 @@
 @IEEEtranBSTCTL{IEEEexample:BSTcontrol,
 CTLuse_forced_etal       = "yes",
 CTLmax_names_forced_etal = "2",
-CTLnames_show_etal       = "1" }
+CTLnames_show_etal       = "1",
+CTLname_url_prefix = "URL: "
+}
 
 @misc{lawrence_livermore_national_laboratory_sierra_nodate,
 	title = {Sierra {Advanced} {Technology} {System}},
@@ -646,7 +648,8 @@ CTLnames_show_etal       = "1" }
 	urldate = {2018-10-01},
 	institution = {ExaNoDe},
 	author = {Asifuzzaman, Kazi and Radulovic, Milan and Radojkovic, Petar},
-	year = {2017}
+	year = {2017},
+	file = {Asifuzzaman et al. - 2017 - Report on the HPC application bottlenecks.pdf:/home/domke/Documents/Zotero/storage/CHGMBEUU/Asifuzzaman et al. - 2017 - Report on the HPC application bottlenecks.pdf:application/pdf}
 }
 
 @inproceedings{saini_performance_2016,
@@ -720,4 +723,32 @@ CTLnames_show_etal       = "1" }
 	author = {Lento, Gregory},
 	year = {2014},
 	file = {Lento - 2014 - Whitepaper Optimizing Performance with Intel{\textregistered} Adv.pdf:/home/domke/Documents/Zotero/storage/P9P8CA2W/Lento - 2014 - Whitepaper Optimizing Performance with Intel{\textregistered} Adv.pdf:application/pdf}
+}
+
+@inproceedings{ofenbeck_applying_2014,
+	title = {Applying the {Roofline} {Model}},
+	doi = {10.1109/ISPASS.2014.6844463},
+	abstract = {The recently introduced roofline model plots the performance of executed code against its operational intensity (operations count divided by memory traffic). It also includes two platform-specific performance ceilings: the processor's peak performance and a ceiling derived from the memory bandwidth, which is relevant for code with low operational intensity. The model thus makes more precise the notions of memory- and compute-bound and, despite its simplicity, can provide an insightful visualization of bottlenecks. As such it can be valuable to guide manual code optimization as well as in education. Unfortunately, to date the model has been used almost exclusively with back-of-the-envelope calculations and not with measured data. In this paper we show how to produce roofline plots with measured data on recent generations of Intel platforms. We show how to accurately measure the necessary quantities for a given program using performance counters, including threaded and vectorized code, and for warm and cold cache scenarios. We explain the measurement approach, its validation, and discuss limitations. Finally, we show, to this extent for the first time, a set of roofline plots with measured data for common numerical functions on a variety of platforms and discuss their possible uses.},
+	booktitle = {2014 {IEEE} {International} {Symposium} on {Performance} {Analysis} of {Systems} and {Software} ({ISPASS})},
+	author = {Ofenbeck, Georg and Steinmann, Ruedi and Caparros, Victoria and Spampinato, Daniele G. and P{\"u}schel, Markus},
+	month = mar,
+	year = {2014},
+	keywords = {cache storage, Computational modeling, software performance evaluation, memory bandwidth, Microarchitecture, Radiation detectors, Bandwidth, back-of-the-envelope calculations, bottleneck visualization, Bridges, cold cache scenarios, compute-bound, executed code performance, Intel platforms, manual code optimization, memory traffic, memory-bound, multi-threading, operation count, operational intensity, performance counters, platform-specific performance ceilings, processor peak performance, program compilers, Q measurement, roofline model, roofline plots, source code (software), threaded code, Time measurement, vectorized code, warm cache scenarios},
+	pages = {76--85},
+	file = {Ofenbeck et al. - 2014 - Applying the Roofline Model.pdf:/home/domke/Documents/Zotero/storage/JJM98V4T/Ofenbeck et al. - 2014 - Applying the Roofline Model.pdf:application/pdf}
+}
+
+@inproceedings{jouppi_-datacenter_2017,
+	address = {New York, NY, USA},
+	series = {{ISCA} '17},
+	title = {In-{Datacenter} {Performance} {Analysis} of a {Tensor} {Processing} {Unit}},
+	isbn = {978-1-4503-4892-8},
+	doi = {10.1145/3079856.3080246},
+	booktitle = {Proceedings of the 44th {Annual} {International} {Symposium} on {Computer} {Architecture}},
+	publisher = {ACM},
+	author = {Jouppi, Norman P. and Young, Cliff and Patil, Nishant and Patterson, David and Agrawal, Gaurav and Bajwa, Raminder and Bates, Sarah and Bhatia, Suresh and Boden, Nan and Borchers, Al and Boyle, Rick and Cantin, Pierre-luc and Chao, Clifford and Clark, Chris and Coriell, Jeremy and Daley, Mike and Dau, Matt and Dean, Jeffrey and Gelb, Ben and Ghaemmaghami, Tara Vazir and Gottipati, Rajendra and Gulland, William and Hagmann, Robert and Ho, C. Richard and Hogberg, Doug and Hu, John and Hundt, Robert and Hurt, Dan and Ibarz, Julian and Jaffey, Aaron and Jaworski, Alek and Kaplan, Alexander and Khaitan, Harshit and Killebrew, Daniel and Koch, Andy and Kumar, Naveen and Lacy, Steve and Laudon, James and Law, James and Le, Diemthu and Leary, Chris and Liu, Zhuyuan and Lucke, Kyle and Lundin, Alan and MacKean, Gordon and Maggiore, Adriana and Mahony, Maire and Miller, Kieran and Nagarajan, Rahul and Narayanaswami, Ravi and Ni, Ray and Nix, Kathy and Norrie, Thomas and Omernick, Mark and Penukonda, Narayana and Phelps, Andy and Ross, Jonathan and Ross, Matt and Salek, Amir and Samadiani, Emad and Severn, Chris and Sizikov, Gregory and Snelham, Matthew and Souter, Jed and Steinberg, Dan and Swing, Andy and Tan, Mercedes and Thorson, Gregory and Tian, Bo and Toma, Horia and Tuttle, Erick and Vasudevan, Vijay and Walter, Richard and Wang, Walter and Wilcox, Eric and Yoon, Doe Hyun},
+	year = {2017},
+	keywords = {accelerator, CNN, deep learning, DNN, domain-specific architecture, GPU, LSTM, MLP, neural network, RNN, TensorFlow, TPU},
+	pages = {1--12},
+	file = {Jouppi et al. - 2017 - In-Datacenter Performance Analysis of a Tensor Pro.pdf:/home/domke/Documents/Zotero/storage/YG5GSTHI/Jouppi et al. - 2017 - In-Datacenter Performance Analysis of a Tensor Pro.pdf:application/pdf}
 }
