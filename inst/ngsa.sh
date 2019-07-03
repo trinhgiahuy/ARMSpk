@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="NGSAnalyzer"
 VERSION="694b38eed8a4c09160045895a1bf86fcb35e85a3"
@@ -34,7 +35,7 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 		bash $ROOTDIR/$BM/bin/download_contig.sh
 		echo "  (downloading and processing pseudo-genome data)"
 		cd $ROOTDIR/$BM/ngsa_mini_input
-		wget http://mt.aics.riken.jp/hpci-miniapp/ngsa-data/ngsa-dummy.tar.gz
+		wget http://mt.r-ccs.riken.jp/hpci-miniapp/ngsa-data/ngsa-dummy.tar.gz
 		tar zxf ngsa-dummy.tar.gz
 		echo "... done"
 	fi
