@@ -8,11 +8,12 @@ source $ROOTDIR/conf/intel.cfg
 source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
+MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname`"
 
 # ============================ BabelStream ====================================
 source conf/babelstream.sh
 DEFLOG="$ROOTDIR/log/`hostname -s`/bestrun/babelstream"
-mkdir -p `dirname $LOG`
+mkdir -p `dirname $DEFLOG`
 cd $APPDIR
 DEFINPUT=$INPUT
 for BEST in $BESTCONF; do

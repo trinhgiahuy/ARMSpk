@@ -27,10 +27,10 @@ source $ROOTDIR/conf/intel.cfg
 source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-MPIEXECOPT="-host `hostname`"
+MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname`"
 
-export PATH=$ROOTDIR/dep/sde-external-8.16.0-2018-01-30-lin:$PATH
-if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.16.0-2018-01-30-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
+export PATH=$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:$PATH
+if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.35.0-2019-03-11-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 #SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
 SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then

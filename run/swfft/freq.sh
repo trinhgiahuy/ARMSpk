@@ -8,7 +8,7 @@ source $ROOTDIR/conf/intel.cfg
 source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-MPIEXECOPT="-host `hostname`"
+MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname`"
 export PATH=$ROOTDIR/dep/likwid/bin:$PATH
 export LD_LIBRARY_PATH=$ROOTDIR/dep/likwid/lib:$LD_LIBRARY_PATH
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then UNCORE="--umin 2.7 --umax 2.7"; fi
@@ -27,7 +27,7 @@ for FREQ in $FREQR; do
 		NumOMP="`echo $BEST | cut -d '|' -f2`"
 		# test if Decomposition is valid
 		INSIZE="`echo $INPUT | awk '{print $2}'`"
-		`dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
+		mpiexec $MPIEXECOPT -n 1 `dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
 		if [ "x$?" = "x0" ]; then
 			echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
 		else

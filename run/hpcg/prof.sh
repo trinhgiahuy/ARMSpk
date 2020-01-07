@@ -9,13 +9,13 @@ source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
-	MPIEXECOPT="-host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=granularity=fine,compact,1,0"
+	MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=granularity=fine,compact,1,0"
 else
-	MPIEXECOPT="-host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=compact"
+	MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname` -genv I_MPI_ADJUST_ALLREDUCE=5 -genv KMP_AFFINITY=compact"
 fi
 
-export PATH=$ROOTDIR/dep/sde-external-8.16.0-2018-01-30-lin:$PATH
-if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.16.0-2018-01-30-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
+export PATH=$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:$PATH
+if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.35.0-2019-03-11-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
         SDE="$SDE -bdw -- "
@@ -44,6 +44,7 @@ for BEST in $BESTCONF; do
 	# test to identify hpcg's internal dimensions
 	rm -f hpcg_log_* n*.yaml
 	mpiexec $MPIEXECOPT -n $NumMPI $BINARY -n 1 > /dev/null 2>&1
+	if [ ! "x$?" = "x0" ] || [ ! -f n*.yaml ]; then continue; fi
 	X="`grep 'npx:' n*.yaml | awk -F 'npx:' '{print $2}'`"
 	Y="`grep 'npy:' n*.yaml | awk -F 'npy:' '{print $2}'`"
 	Z="`grep 'npz:' n*.yaml | awk -F 'npz:' '{print $2}'`"
