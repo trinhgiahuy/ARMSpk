@@ -1,4 +1,4 @@
-From c2e819e9129c303babc7d411931078e5ff9f305a Mon Sep 17 00:00:00 2001
+From 988109d81d59d67e5ba34ce0437b53437d88cc5a Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 14:24:22 +0900
 Subject: [PATCH 1/1] NGSAnalyzer: prepare precision experiment
@@ -12,8 +12,10 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  samtools-0.1.8_kei/misc/Makefile |  6 ++--
  workflow/Makefile                |  4 +--
  workflow/workflow.c              | 42 ++++++++++++++++++++++++++-
- workflow/workflow_01.sh          |  2 +-
- 8 files changed, 117 insertions(+), 10 deletions(-)
+ workflow/workflow_01.sh          |  6 ++--
+ workflow/workflow_04.sh          |  2 +-
+ workflow/workflow_05.sh          |  4 +--
+ 10 files changed, 122 insertions(+), 15 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 makefile.x86_64_intel
 
@@ -270,18 +272,50 @@ index 37bcab4..6d8bbde 100644
      return 0;
  }
 diff --git a/workflow/workflow_01.sh b/workflow/workflow_01.sh
-index 9a7935e..a29863b 100755
+index 9a7935e..655940f 100755
 --- a/workflow/workflow_01.sh
 +++ b/workflow/workflow_01.sh
-@@ -5,7 +5,7 @@
+@@ -3,9 +3,9 @@
+ # Perform mapping and split the results
+ 
  BIN_DIR=`dirname $0`
- BWA_BIN=$BIN_DIR/bwa
- SSC_BIN=$BIN_DIR/splitSam2Contig2
+-BWA_BIN=$BIN_DIR/bwa
+-SSC_BIN=$BIN_DIR/splitSam2Contig2
 -N_THREADS=1
++BWA_BIN="numactl --preferred 1 $BIN_DIR/bwa"
++SSC_BIN="numactl --preferred 1 $BIN_DIR/splitSam2Contig2"
 +N_THREADS=$OMP_NUM_THREADS
  
  INPUT_DIR=$1
  MED_DIR=$2
+diff --git a/workflow/workflow_04.sh b/workflow/workflow_04.sh
+index a96b641..3cf01e1 100755
+--- a/workflow/workflow_04.sh
++++ b/workflow/workflow_04.sh
+@@ -3,7 +3,7 @@
+ # Perform remove duplicates
+ 
+ BIN_DIR=`dirname $0`
+-SAMT_BIN=$BIN_DIR/samtools
++SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
+ N_MEMORY=800000000
+ 
+ TARGET_DIR=$1
+diff --git a/workflow/workflow_05.sh b/workflow/workflow_05.sh
+index 8f1a2c3..d004a0f 100755
+--- a/workflow/workflow_05.sh
++++ b/workflow/workflow_05.sh
+@@ -3,8 +3,8 @@
+ # Perform analyze
+ 
+ BIN_DIR=`dirname $0`
+-SAMT_BIN=$BIN_DIR/samtools
+-SNP_BIN=$BIN_DIR/snp
++SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
++SNP_BIN="numactl --preferred 1 $BIN_DIR/snp"
+ 
+ INPUT_DIR=$1
+ OUT_DIR=$2
 -- 
 1.8.3.1
 

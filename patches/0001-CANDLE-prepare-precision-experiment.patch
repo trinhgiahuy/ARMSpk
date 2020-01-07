@@ -1,4 +1,4 @@
-From 313747e5700f284debab78cc7e8f5a37f41c82ea Mon Sep 17 00:00:00 2001
+From 5eb0034b4aa433d41c8fb4e8ce06db10792b9123 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 22:34:00 +0900
 Subject: [PATCH 1/1] CANDLE: prepare precision experiment
@@ -8,7 +8,7 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  .gitignore                          |  4 ++++
  Pilot1/P1B1/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B1/p1b1.py                 | 26 ++++++++++++++++++++++++--
- Pilot1/P1B1/p1b1_baseline_keras2.py | 27 ++++++++++++++++++++++-----
+ Pilot1/P1B1/p1b1_baseline_keras2.py | 31 ++++++++++++++++++++++++++-----
  Pilot1/P1B1/ssc.c                   | 14 ++++++++++++++
  Pilot1/P1B2/Makefile                | 20 ++++++++++++++++++++
  Pilot1/P1B2/p1b2_baseline_keras2.py | 19 +++++++++++++++++++
@@ -28,7 +28,7 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  Pilot3/P3B2/Makefile                | 20 ++++++++++++++++++++
  Pilot3/P3B2/p3b2_baseline_keras2.py | 19 +++++++++++++++++++
  Pilot3/P3B2/ssc.c                   | 14 ++++++++++++++
- 23 files changed, 404 insertions(+), 15 deletions(-)
+ 23 files changed, 408 insertions(+), 15 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 Pilot1/P1B1/Makefile
  create mode 100644 Pilot1/P1B1/ssc.c
@@ -140,10 +140,10 @@ index 83d0fd2..6ff3a8d 100644
 +if __name__ == '__main__':
 +    _, _ = load_data(check_dump_only=True)
 diff --git a/Pilot1/P1B1/p1b1_baseline_keras2.py b/Pilot1/P1B1/p1b1_baseline_keras2.py
-index 4f13f2f..ee773e8 100644
+index 4f13f2f..b9d52a7 100644
 --- a/Pilot1/P1B1/p1b1_baseline_keras2.py
 +++ b/Pilot1/P1B1/p1b1_baseline_keras2.py
-@@ -1,11 +1,23 @@
+@@ -1,14 +1,30 @@
  from __future__ import print_function
  
 +import numpy.ctypeslib as npct
@@ -170,7 +170,14 @@ index 4f13f2f..ee773e8 100644
  
  import p1b1
  
-@@ -27,12 +39,10 @@ output_dim = input_dim
++from keras import backend as K
++import os
++nomp = int(os.environ.get('OMP_NUM_THREADS'))
++K.set_session(K.tf.Session(config=K.tf.ConfigProto(intra_op_parallelism_threads=nomp, inter_op_parallelism_threads=2, allow_soft_placement=True, device_count = {'CPU': nomp})))
+ 
+ EPOCH = 2
+ BATCH = 50
+@@ -27,12 +43,10 @@ output_dim = input_dim
  
  input_vector = Input(shape=(input_dim,))
  x = Dense(N1, activation='sigmoid')(input_vector)
@@ -183,7 +190,7 @@ index 4f13f2f..ee773e8 100644
  x = Dense(output_dim, activation='sigmoid')(x)
  decoded = x
  
-@@ -52,10 +62,15 @@ decoder = Model(encoded_input, ae.layers[-1](ae.layers[-2](encoded_input)))
+@@ -52,10 +66,15 @@ decoder = Model(encoded_input, ae.layers[-1](ae.layers[-2](encoded_input)))
  
  ae.compile(optimizer='rmsprop', loss='mean_squared_error')
  
@@ -199,7 +206,7 @@ index 4f13f2f..ee773e8 100644
  
  encoded_image = encoder.predict(X_test)
  decoded_image = decoder.predict(encoded_image)
-@@ -72,3 +87,5 @@ import matplotlib.pyplot as plt
+@@ -72,3 +91,5 @@ import matplotlib.pyplot as plt
  plt.hist(diffs, bins='auto')
  plt.title("Histogram of Errors with 'auto' bins")
  plt.savefig('histogram.png')
