@@ -2,14 +2,15 @@
 
 export APPDIR="./HPCG/build"
 export BINARY="./bin/xhpcg"
-export MAXXYZ=$((2*2*2*3*3*5))
+#export MAXXYZ=$((2*2*2*3*3*5)) doesnt work in flat mode
+export MAXXYZ=$((2*2*2*3*5))
 export INPUT="--nx=NX --ny=NY --nz=NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="yes"
-export RUNVTUNE="yes"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
@@ -45,7 +46,7 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 192|1
 			 256|1
 			 288|1"
-	export BESTCONF="64|1"
+	export BESTCONF="72|1"
 else
 	echo "Unsupported host"
 	exit

@@ -9,7 +9,7 @@ export NumRunsBEST=10
 export MAXTIME="1m"
 export RUNSDE="yes"
 export RUNPCM="yes"
-export RUNVTUNE="yes"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
@@ -48,7 +48,7 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 144|1|6|6|4 144|2|6|6|4
 			 256|1|8|8|4 256|2|8|8|4
 			 288|1|8|6|6 288|2|8|6|6"
-	export BESTCONF="64|2|4|4|4"
+	export BESTCONF="64|1|4|4|4"
 else
 	echo "Unsupported host"
 	exit

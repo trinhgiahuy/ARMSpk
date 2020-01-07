@@ -10,7 +10,7 @@ export NumRunsBEST=10
 export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="yes"
-export RUNVTUNE="yes"
+export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
@@ -23,8 +23,8 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	export BESTCONF="32"
 elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 	# on one of the Phi (knm)
-	export TESTCONF="36 72 144 216 288"
-	export BESTCONF="144"
+	export TESTCONF="32 36 64 72 144"
+	export BESTCONF="64"
 else
 	echo "Unsupported host"
 	exit
