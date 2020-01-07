@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
 VERSION="d0ef31454577740fbb87618cc35789b7ef838238"
@@ -20,7 +21,7 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
-	if [ ! -f $ROOTDIR/fftw-3.3.4/bin/fftw-wisdom ]; then
+	if [ ! -f $ROOTDIR/$BM/fftw/bin/fftw-wisdom ]; then
 		wget http://fftw.org/fftw-3.3.4.tar.gz
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
@@ -33,10 +34,11 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 		make install
 		cd $ROOTDIR/$BM/
 	fi
-	oldPATH=$PATH
-	export PATH=$oldPATH:`pwd`/fftw/bin
+	export oldPATH=$PATH
+	export PATH=$ROOTDIR/$BM/fftw/bin:$oldPATH
 	make -f GNUmakefile.openmp
 	export PATH=$oldPATH
+	unset oldPATH
 	cd $ROOTDIR
 fi
 

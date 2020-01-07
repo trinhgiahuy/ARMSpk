@@ -12,15 +12,18 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="MiniAMR"
-VERSION="62f60f2a70407c40dc3a2ed2dd3d69191e4f38dd"
+VERSION="07297b3a2a46ebf08bc9be33d8d28ea21c0f4956"
 if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 	cd $ROOTDIR/$BM/
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/ref
+	make
+	cd $ROOTDIR/$BM/openmp
 	make
 	cd $ROOTDIR
 fi

@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="SW4lite"
 VERSION="5ab8063ecdc94bdb59a5e65396c85bd54f9e0916"

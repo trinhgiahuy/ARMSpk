@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="CANDLE"
 VERSION="ea14ed86d3e612f56383c56a6cff6f77210f7412"
@@ -25,15 +26,10 @@ if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
 	./Anaconda2-5.1.0-Linux-x86_64.sh -b -p $ROOTDIR/dep/anaconda2
 	export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 	conda config --set changeps1 False
-	conda install -y -c anaconda hdf5
-	conda install -y -c anaconda theano
-	conda install -y -c conda-forge keras
-	conda install -y -c conda-forge opencv
-	conda install -y -c conda-forge tqdm
-	conda install -y -c intel --override-channels python=2 pip numpy
-	conda install -y -c intel --override-channels intelpython2_core
-	conda remove -y blaze
-	conda install -y -c intel --override-channels tensorflow
+	conda config --add channels intel
+	conda create -y -n idp intelpython2_core python=2
+	source activate idp
+	conda install -y -c intel hdf5=1.10.2 theano=1.0.2 keras=2.2.4 opencv=3.4.1 tqdm=4.32.1 pip=9.0.3 numpy=1.16.2 tensorflow=1.13.1 pandas=0.24.1 scikit-learn=0.20.3
 	cd $ROOTDIR
 fi
 

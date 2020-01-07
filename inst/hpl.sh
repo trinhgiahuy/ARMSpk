@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 BM="HPL"
 if [ ! -f $ROOTDIR/$BM/bin/Linux_Intel64/xhpl ]; then

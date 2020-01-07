@@ -12,6 +12,7 @@ export I_MPI_F77=ifort
 export I_MPI_F90=ifort
 alias ar=`which xiar`
 alias ld=`which xild`
+export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
 if [ ! -f $ROOTDIR/dep/modylas-mini-1.0.0.tar.gz ]; then
 	echo "ERR: Cannot find modylas-mini-1.0.0.tar.gz"
