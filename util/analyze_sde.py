@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from os import walk, path, chdir, getcwd, linesep
 from sys import argv, exit
