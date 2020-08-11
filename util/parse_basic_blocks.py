@@ -10,26 +10,27 @@ from sys import exit
 from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
 from re import compile
+from collections import defaultdict
+import subprocess as subp
 
 
 def _get_OBJDUMP_ASSEMBLY(sde_files=None):
     assert(isinstance(sde_files, dict))
 
-    import subprocess as subp
-
     objdp_asm = {}
 
     # offset, fn name
-    fn_hdr = compile(r'^(\w+)\s+<(.+)>\s+\(File Offset:\s+(\w+)\):$')
+    fn_hdr = compile(r'^(\w+)\s+<(.+)>\s+\(File\s+Offset:\s+(\w+)\):$')
     # offset, instruction (+comment)
     fn_asm_part = compile(r'^\s+(\w+):\s+([\w\(\.].*)$')
+    fn_asm_igno = compile(r'^(.*)\s+\(File\s+Offset:\s+\w+\)$')
     __trash__ = compile(
         r'^$|^.*:\s+file format elf.*$|^Disassembly of section.*$')
 
     for fid in sde_files:
         FILE_NAME = sde_files[fid]
 
-        objdp_asm[fid] = {'File': FILE_NAME, 'FileID': fid, 'FNs': {}}
+        objdp_asm[fid] = {'File': FILE_NAME, 'FileID': fid, 'FNs': {}, 'LO': 0}
 
         # ignore kernel lib
         if FILE_NAME == '[vdso]' or not path.exists(FILE_NAME):
@@ -60,6 +61,10 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 #      base address offset of 0x400000, but SDE subtracts this
                 if load_os is None:
                     load_os = int(fn_os, 16) - int(fn_real_os, 16)
+                    if load_os == int('0x400000', 16):
+                        objdp_asm[fid]['LO'] = load_os
+                    elif load_os > 0:
+                        exit('ERR: never seen before base address offset')
 
                 curr_fn_os = int(fn_os, 16) - load_os
                 os_str = '0x' + format(curr_fn_os, 'x')
@@ -67,19 +72,18 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 objdp_asm[fid]['FNs'][curr_fn_os] = {'Offset': os_str,
                                                      'Func': fn_name,
                                                      'ASM': []}
-
             elif fn_asm_part.match(line):
                 assert(curr_fn_os is not None)
 
                 fn = fn_asm_part.match(line)
-                fn_asm_os, fn_asm_in = \
-                    fn.group(1).strip(), \
-                    fn.group(2).strip()  # FIXME: strip comments at end?
+                fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
+                # FIXME: strip comments at the end as well???
+                if fn_asm_igno.match(fn_asm_in):
+                    fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
 
                 objdp_asm[fid]['FNs'][curr_fn_os]['ASM'].append([fn_asm_os,
                                                                  fn_asm_in])
-
             elif __trash__.match(line):
                 continue
             else:
@@ -88,6 +92,64 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                     (line, FILE_NAME))
 
     return objdp_asm
+
+
+def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
+                                   num_byte=None, load_os=0):
+    assert(isinstance(sde_file, str) and isinstance(load_os, int)
+           and isinstance(from_addr, int) and isinstance(num_byte, int))
+    assert(sde_file is not '[vdso]')
+
+    asm = []
+    start_addr = load_os + from_addr
+
+    if not path.exists(sde_file):
+        print('WRN 07: %s missing on "this" node, or was deleted' % sde_file)
+        return [['0x' + format(x, 'x'), 'nop']
+                for x in range(start_addr, start_addr + num_byte)]
+
+    fn_asm_part = compile(r'^\s+(\w+):\s+([\w\(\.].*)$')
+    fn_asm_igno = compile(r'^(.*)\s+\(File\s+Offset:\s+\w+\)$')
+
+    p = subp.run(['objdump',
+                  '--disassemble',
+                  '--disassembler-options=att-mnemonic',
+                  '--no-show-raw-insn',
+                  '--wide',
+                  '--disassemble-zeroes',
+                  '--file-offsets',
+                  '--start-address=0x' + format(start_addr, 'x'),
+                  '--stop-address=0x' + format(start_addr + num_byte, 'x'),
+                  sde_file],
+                 stdout=subp.PIPE)
+
+    for line in p.stdout.decode().splitlines():
+        if fn_asm_part.match(line):
+            fn = fn_asm_part.match(line)
+            fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
+            # FIXME: strip comments at the end as well???
+            if fn_asm_igno.match(fn_asm_in):
+                fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
+            fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
+            asm.append([fn_asm_os, fn_asm_in])
+
+    return asm
+
+
+def _read_backup_OBJDUMP_ASSEMBLY(backup=None):
+    assert(isinstance(backup, str))
+
+    from pickle import load
+
+    return load(open(backup, 'rb'))
+
+
+def _store_backup_OBJDUMP_ASSEMBLY(objdp_asm=None, backup=None):
+    assert(isinstance(objdp_asm, dict) and isinstance(backup, str))
+
+    from pickle import dump
+
+    return dump(objdp_asm, open(backup, 'wb'))
 
 
 def _parse_FILE_NAMES(sde_bb_json=None):
@@ -153,7 +215,7 @@ def _parse_PROCESSES(sde_bb_json=None, sde_files=None, objdp_asm=None):
         for _, LOAD_ADDR, _, IMAGE_DATA in PROCESS_DATA['IMAGES'][1:]:
             fid = IMAGE_DATA['FILE_NAME_ID']
             if sde_files[fid] == '[vdso]':
-                continue
+                _add_fake_vdso_info_to_asm(IMAGE_DATA, objdp_asm[fid]['FNs'])
 
             _, symbols, _, bb, rout = _parse_IMAGE_DATA(IMAGE_DATA, sde_files,
                                                         objdp_asm[fid]['FNs'])
@@ -168,7 +230,7 @@ def _parse_PROCESSES(sde_bb_json=None, sde_files=None, objdp_asm=None):
         _parse_EDGES(PROCESS_DATA['EDGES'], sde_procs[PROCESS_ID]['Edges'])
 
     # XXX: shouldn't have more than 1 process in here
-    assert(1 == len(sde_procs.keys()))
+    assert(1 == len(sde_procs))
 
     return sde_procs
 
@@ -215,15 +277,30 @@ def _parse_SYMBOLS(sde_image_data=None, objdp_asm=None, symbols=None):
     for NAME, ADDR_OFFSET, SIZE in sde_image_data['SYMBOLS'][1:]:
         if NAME is not '.text':
             OFFSET, first = int(ADDR_OFFSET, 16), True
-            symbols[OFFSET] = {'Func': objdp_asm[OFFSET]['Func'],
-                               'Offset': '0x' + format(OFFSET, 'x'),
-                               'Size': SIZE}
+            if OFFSET in objdp_asm:
+                NAME = objdp_asm[OFFSET]['Func']
+            symbols[OFFSET] = {'Func': NAME, 'Size': SIZE,
+                               'Offset': '0x' + format(OFFSET, 'x')}
         else:
             # some bigger functions seem to be split in 200k chunks and
             # the initial size is incorrect, but a sum of the .text chunks
             if first:
                 symbols[OFFSET]['Size'] = 0
             symbols[OFFSET]['Size'] += SIZE
+
+
+def _add_fake_vdso_info_to_asm(sde_image_data=None, objdp_asm=None):
+    assert(isinstance(sde_image_data, dict) and isinstance(objdp_asm, dict))
+
+    # can't find assembly of [vdso], and hence assume all is 'nop' instruction
+    for NAME, ADDR_OFFSET, SIZE in sde_image_data['SYMBOLS'][1:]:
+        curr_fn_os = int(ADDR_OFFSET, 16)
+        os_str = '0x' + format(curr_fn_os, 'x')
+        objdp_asm[curr_fn_os] = {'Offset': os_str,
+                                 'Func': NAME,
+                                 'ASM': [['0x' + format(x, 'x'), 'nop']
+                                         for x in range(curr_fn_os,
+                                                        curr_fn_os + SIZE)]}
 
 
 def _parse_SOURCE_DATA(sde_image_data=None, src_data=None):
@@ -250,13 +327,14 @@ def _parse_BASIC_BLOCKS(sde_image_data=None, sde_files=None, objdp_asm=None,
     #   ]
     # NODE_ID : is unique across the entire process
     # COUNT : total nr of times this block was executed across all threads
-    for NODE_ID, ADDR_OFFSET, _, NUM_INSTRS, _, COUNT in sde_image_data[
+    for NODE_ID, ADDR_OFFSET, SIZE, NUM_INSTRS, _, COUNT in sde_image_data[
             'BASIC_BLOCKS'][1:]:
+        fn_offset = _get_fn_os_for_block(objdp_asm, int(ADDR_OFFSET, 16))
+        fn_name = objdp_asm[fn_offset]['Func']
         bb[NODE_ID] = {
-            'Func': _get_fn_from_block_offset(objdp_asm, int(ADDR_OFFSET, 16)),
-            'Offset': '0x' + format(int(ADDR_OFFSET, 16), 'x'),
-            'NumInst': NUM_INSTRS,
-            'ExecCnt': COUNT}
+            'Offset': '0x' + format(int(ADDR_OFFSET, 16), 'x'), 'Bytes': SIZE,
+            'Func': fn_name, 'FuncOffset': fn_offset,
+            'NumInst': NUM_INSTRS, 'ExecCnt': COUNT}
         if bb[NODE_ID]['Func'] is None:
             print('WRN 02: Cannot find block w/ offset %s in %s' %
                   (ADDR_OFFSET, sde_files[sde_image_data['FILE_NAME_ID']]))
@@ -264,13 +342,13 @@ def _parse_BASIC_BLOCKS(sde_image_data=None, sde_files=None, objdp_asm=None,
             # we should record the offset just in case we get ID/name later
 
 
-def _get_fn_from_block_offset(asm=None, bb_offset=None):
-    assert(isinstance(asm, dict) and isinstance(bb_offset, int))
+def _get_fn_os_for_block(objdp_asm=None, bb_offset=None):
+    assert(isinstance(objdp_asm, dict) and isinstance(bb_offset, int))
 
-    for fn_offset in sorted(asm.keys(), reverse=False):
+    for fn_offset in sorted(objdp_asm.keys(), reverse=False):
         if bb_offset >= fn_offset and \
-                bb_offset <= int(asm[fn_offset]['ASM'][-1][0], 16):
-            return asm[fn_offset]['Func']
+                bb_offset <= int(objdp_asm[fn_offset]['ASM'][-1][0], 16):
+            return fn_offset  # objdp_asm[fn_offset]['Func']
     else:
         exit('ERR: symbol (0x%s) not found basic block' %
              format(bb_offset, 'x'))
@@ -297,16 +375,14 @@ def _parse_ROUTINES(sde_image_data=None, routines=None):
             ENTRY_NODE_ID, EXIT_NODE_IDS, NODES, _ = fn
         else:
             ENTRY_NODE_ID, EXIT_NODE_IDS, NODES = fn
-        routines[ENTRY_NODE_ID] = []
-        for nid, dom in NODES[1:]:
-            routines[ENTRY_NODE_ID].append(nid)
-        routines[ENTRY_NODE_ID].sort()
+        routines[ENTRY_NODE_ID] = sorted([nid for nid, _ in NODES[1:]],
+                                         reverse=False)
 
 
 def _parse_EDGES(sde_edge_data=None, edges=None):
     assert(isinstance(sde_edge_data, list) and isinstance(edges, dict))
 
-    # "EDGES" :
+    # "EDGES" :     // XXX: self-edges are possible
     #   [ ["EDGE_ID", "SOURCE_NODE_ID", "TARGET_NODE_ID", "EDGE_TYPE_ID",
     #      "COUNT_PER_THREAD" ],
     #     [ 4810, 1683, 3002, 16, [ 0, 0, 1, 1, 1, 0 ] ],
@@ -338,8 +414,17 @@ def parse_SDE_JSON(args=None, sde_data=None):
     assert(sde_bb_json is not None)
 
     sde_data['Files'] = _parse_FILE_NAMES(sde_bb_json)
-    # first need to get the assembly
-    sde_data['ObjDumpAsm'] = _get_OBJDUMP_ASSEMBLY(sde_data['Files'])
+    # first need to get the assembly, from either real files or previous runs
+    if args.get('__load_objdump__') is None:
+        sde_data['ObjDumpAsm'] = _get_OBJDUMP_ASSEMBLY(sde_data['Files'])
+    else:
+        sde_data['ObjDumpAsm'] = _read_backup_OBJDUMP_ASSEMBLY(
+            path.realpath(args.get('__load_objdump__')))
+    if args.get('__store_objdump__') is not None:
+        _store_backup_OBJDUMP_ASSEMBLY(
+            sde_data['ObjDumpAsm'],
+            path.realpath(args.get('__store_objdump__')))
+        exit(0)
     # and then continue with the rest
     sde_data['SpecialBlockIDs'] = _parse_SPECIAL_NODES(sde_bb_json)
     sde_data['EdgeTypes'] = _parse_EDGE_TYPES(sde_bb_json)
@@ -401,10 +486,8 @@ def parse_SDE_BB(args=None, sde_bb=None):
                 exit('ERR: unknown line: %s' % line)
 
 
-def convert_sde_data_to_something_usable(sde_data=None):
+def _get_helping_mappers(sde_data=None):
     assert(isinstance(sde_data, dict))
-
-    data = {}
 
     # 'sde_data' :
     #   { 'Files': {},              // executable and libs belonging to it
@@ -417,19 +500,16 @@ def convert_sde_data_to_something_usable(sde_data=None):
     # create quick lookup tables:
     #       file ID -to- file name
     fid2fn, fn2fid = sde_data['Files'], {}
-    for file_id in fid2fn:
-        fn2fid[fid2fn[file_id]] = file_id
-    print('\n', fid2fn, '\n', fn2fid)
+    for file_id, file_name in fid2fn.items():
+        fn2fid[file_name] = file_id
     #       special block ID -to- special block name
     sbid2sbn, sbn2sbid = sde_data['SpecialBlockIDs'], {}
-    for spec_blk_id in sbid2sbn:
-        sbn2sbid[sbid2sbn[spec_blk_id]] = spec_blk_id
-    print('\n', sbid2sbn, '\n', sbn2sbid)
+    for spec_blk_id, spec_blk_name in sbid2sbn.items():
+        sbn2sbid[spec_blk_name] = spec_blk_id
     #       edge type ID -to- edge type name
     etid2etn, etn2etid = sde_data['EdgeTypes'], {}
-    for et_id in etid2etn:
-        etn2etid[etid2etn[et_id]] = et_id
-    print('\n', etid2etn, '\n', etn2etid)
+    for et_id, et_name in etid2etn.items():
+        etn2etid[et_name] = et_id
 
     # 'sde_data'/'Processes' :
     #   { 'FileIDs': {ID: { 'FileID': ID,
@@ -445,8 +525,7 @@ def convert_sde_data_to_something_usable(sde_data=None):
     #       basic block ID -to- file ID
     #       offset/file -to- basic block ID
     bbid2pid, bbid2fid, offs2bbid = {}, {}, {}
-    for pid in sde_data['Processes']:
-        pid_data = sde_data['Processes'][pid]
+    for pid, pid_data in sde_data['Processes'].items():
         for fid in pid_data['FileIDs']:
             offs2bbid[fid] = {}
             for bid in pid_data['FileIDs'][fid]['Blocks']:
@@ -457,11 +536,9 @@ def convert_sde_data_to_something_usable(sde_data=None):
                 offset = pid_data['FileIDs'][fid]['Blocks'][bid]['Offset']
                 assert(offset not in offs2bbid[fid])
                 offs2bbid[fid][offset] = bid
-    print('\n', bbid2pid, '\n', bbid2fid)
     #       basic block ID -to- "routine" primary basic block
     bbid2rpbb = {}
-    for pid in sde_data['Processes']:
-        pid_data = sde_data['Processes'][pid]
+    for pid, pid_data in sde_data['Processes'].items():
         for fid in pid_data['FileIDs']:
             for bid in pid_data['FileIDs'][fid]['Blocks']:
                 for rpbbid in pid_data['FileIDs'][fid]['Routines']:
@@ -471,12 +548,10 @@ def convert_sde_data_to_something_usable(sde_data=None):
                         break
                 else:
                     print('WRN 03: BB ID (%s) missing from "routines" of %s' %
-                          (bid, sde_data['Files'][fid]))
-    print('\n', bbid2rpbb)
+                          (bid, fid2fn[fid]))
     #       "routine" primary basic block -to- function primary basic block
-    rpbb2fpbb = {}
-    for pid in sde_data['Processes']:
-        pid_data = sde_data['Processes'][pid]
+    rpbb2fpbb, fpbb2rpbb = {}, defaultdict(list)
+    for pid, pid_data in sde_data['Processes'].items():
         for fid in pid_data['FileIDs']:
             for rpbbid in pid_data['FileIDs'][fid]['Routines']:
                 rpbbid_os = \
@@ -499,14 +574,14 @@ def convert_sde_data_to_something_usable(sde_data=None):
                         break
                 else:
                     print('WRN 05: BB ID (%s) missing from objdump of %s' %
-                          (rpbbid, sde_data['Files'][fid]))
-    print('\n', rpbb2fpbb)
+                          (rpbbid, fid2fn[fid]))
+    for rpbb, fpbb in rpbb2fpbb.items():
+        fpbb2rpbb[fpbb].append(rpbb)
     #       function/file -to- func primary block  // XXX: fn names not unique
     func2fpbb, fpbb2func = {}, {}
-    for pid in sde_data['Processes']:
-        pid_data = sde_data['Processes'][pid]
+    for pid, pid_data in sde_data['Processes'].items():
         for fid in pid_data['FileIDs']:
-            func2fpbb[fid] = {}
+            func2fpbb[fid] = defaultdict(list)
             for rpbbid in pid_data['FileIDs'][fid]['Routines']:
                 fpbb = rpbb2fpbb[rpbbid]
                 # diff. routine BB IDs can point to same function primary BB ID
@@ -514,42 +589,136 @@ def convert_sde_data_to_something_usable(sde_data=None):
                     fpbb2func[fpbb] = \
                         pid_data['FileIDs'][fid]['Blocks'][fpbb]['Func']
                 # stupid WRN 04 situation can lead to instance where two (or
-                # more rpbbIDs belong to same function but the function itself
+                # more) rpbbIDs belong to same function but the function itself
                 # has no primary block in our list (eg. __cpu_indicator_init)
-                if fpbb2func[fpbb] not in func2fpbb[fid]:
-                    func2fpbb[fid][fpbb2func[fpbb]] = [fpbb]
-                elif fpbb not in func2fpbb[fid][fpbb2func[fpbb]]:
-                    func2fpbb[fid][fpbb2func[fpbb]].append(fpbb)
-    print('\n', func2fpbb, '\n', fpbb2func)
+                func2fpbb[fid][fpbb2func[fpbb]].append(fpbb)
 
-#        for fid in sde_data['Processes'][pid]['FileIDs']:
-#            print('== %s' % sde_data['Files'][fid])
-#
-#            for sid in sde_data['Processes'][pid]['FileIDs'][fid]['FNs']:
-#                prt_hdr = True
-#
-#                for nid in sde_data['Processes'][pid]['FileIDs'][fid]['Blocks']:
-#                    if sde_data['Processes'][pid]['FileIDs'][fid]['Blocks'][nid]['SymbolID'] == sid:
-#                        if prt_hdr:
-#                            print(
-#                                '==== %s' %
-#                                sde_data['Processes'][pid]['FileIDs'][fid]['FNs'][sid]['Func'])
-#                            prt_hdr = False
-#                        print(
-#                            '====== %s (#exec: %s)' %
-#                            (nid, sde_data['Processes'][pid]['FileIDs'][fid]['Blocks'][nid]['ExecCnt']))
-#                        for src_nid in sde_data['Processes'][pid]['Edges']:
-#                            for edge_id in sde_data['Processes'][pid]['Edges'][src_nid]:
-#                                #print(src_nid, edge_id, sde_data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode'], nid)
-#                                if sde_data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode'] == nid:
-#                                    print('======== %s->%s (max per thread: %s)' %
-#                                          (src_nid, nid, ','.join([str(x) for x in sde_data['Processes'][pid]['Edges'][src_nid][edge_id]['ThreadExecCnts'] if x > 0])))
-#                        for edge_id in sde_data['Processes'][pid]['Edges'][nid]:
-#                            print('======== %s->%s (max per thread: %s)' %
-#                                  (nid, sde_data['Processes'][pid]['Edges'][nid][edge_id]['TgtNode'], ','.join([str(x) for x in sde_data['Processes'][pid]['Edges'][nid][edge_id]['ThreadExecCnts'] if x > 0])))
-#                        # exit()
-#
-    return data
+    return (fid2fn, fn2fid, sbid2sbn, sbn2sbid, etid2etn, etn2etid, bbid2pid,
+            bbid2fid, offs2bbid, bbid2rpbb, rpbb2fpbb, fpbb2rpbb, func2fpbb,
+            fpbb2func)
+
+
+def convert_sde_data_to_something_usable(sde_data=None):
+    assert(isinstance(sde_data, dict))
+
+    from copy import deepcopy
+
+    data = {}
+
+    fid2fn, fn2fid, sbid2sbn, sbn2sbid, etid2etn, etn2etid, bbid2pid, \
+        bbid2fid, offs2bbid, bbid2rpbb, rpbb2fpbb, fpbb2rpbb, func2fpbb, \
+        fpbb2func = _get_helping_mappers(sde_data)
+    mapper = {'fid2fn': fid2fn, 'fn2fid': fn2fid,
+              'sbid2sbn': sbid2sbn, 'sbn2sbid': sbn2sbid,
+              'etid2etn': etid2etn, 'etn2etid': etn2etid,
+              'bbid2pid': bbid2pid, 'bbid2fid': bbid2fid,
+              'offs2bbid': offs2bbid,
+              'bbid2rpbb': bbid2rpbb,
+              'rpbb2fpbb': rpbb2fpbb, 'fpbb2rpbb': fpbb2rpbb,
+              'func2fpbb': func2fpbb, 'fpbb2func': fpbb2func}
+
+    sinks = set()
+    for pid, pid_data in sde_data['Processes'].items():
+        for source_bb in pid_data['Edges']:
+
+            # if no edge in and no edge out, then ignore this block
+            in_edges, out_edges = {}, {}
+            for block, edges in pid_data['Edges'].items():
+                # XXX: self-edges (source_bb == block ID) are possible!!!!!!!
+                if source_bb == block and not source_bb not in edges:
+                    continue
+                elif source_bb in edges and \
+                        sum(edges[source_bb]['ThreadExecCnts']) > 0:
+                    in_edges[block] = deepcopy(edges[source_bb])
+            for target_bb, edge_data in pid_data['Edges'][source_bb].items():
+                if sum(edge_data['ThreadExecCnts']) > 0:
+                    out_edges[target_bb] = deepcopy(edge_data)
+
+            if len(in_edges) == 0 and len(out_edges) == 0:
+                continue
+
+            # get some metadata for block, but careful with special snowflakes
+            if source_bb in sbid2sbn:
+                func, file_name = sbid2sbn[source_bb], 'N/A'
+            else:
+                func = fpbb2func[rpbb2fpbb[bbid2rpbb[source_bb]]]
+                file_name = fid2fn[bbid2fid[source_bb]]
+
+            # get AT&T assembly for the block
+            if source_bb in sbid2sbn:
+                asm = [['0xffffffffffffffff', 'nop']]
+            else:
+                fid = bbid2fid[source_bb]
+                blk_data = pid_data['FileIDs'][fid]['Blocks'][source_bb]
+                objdp_asm = \
+                    sde_data['ObjDumpAsm'][fid]['FNs'][blk_data['FuncOffset']]
+                # sometimes blocks start in middle of other instructions, e.g.
+                #    XDIS 4835ff: BINARY    BASE       00C3    add %al, %bl
+                # and the PC jumps to 483600 and executes the C3 (meaning a
+                # "ret" instruction...) -> these blocks won't be found in
+                # native objdump data, so we have to get it manually ;-(
+                try:
+                    idx = [offset
+                           for offset, _
+                           in objdp_asm['ASM']].index(blk_data['Offset'])
+                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst'] + 1]
+                except BaseException:
+                    print('WRN 06: odd block; could not find %s in %s',
+                          blk_data['Offset'], file_name)
+                    asm = _get_single_block_from_OBJDUMP(
+                        file_name, int(blk_data['Offset'], 16),
+                        blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
+                    pass
+
+            data[source_bb] = {'ID': source_bb,
+                               'File': file_name,
+                               'Func': func,
+                               'ASM': asm,
+                               'in_edges': in_edges,
+                               'out_edges': out_edges}
+            sinks.update(out_edges.keys())
+
+    for sink_bb in sinks:
+        if sink_bb not in data:
+            in_edges = {}
+            for block, edges in pid_data['Edges'].items():
+                if sink_bb in edges and \
+                        sum(edges[sink_bb]['ThreadExecCnts']) > 0:
+                    in_edges[block] = deepcopy(edges[sink_bb])
+
+            # get some metadata for block, but careful with special snowflakes
+            if sink_bb in sbid2sbn:
+                func, file_name = sbid2sbn[sink_bb], 'N/A'
+            else:
+                func = fpbb2func[rpbb2fpbb[bbid2rpbb[sink_bb]]]
+                file_name = fid2fn[bbid2fid[sink_bb]]
+
+            # get AT&T assembly for the block
+            if sink_bb in sbid2sbn:
+                asm = [['0xffffffffffffffff', 'nop']]
+            else:
+                fid = bbid2fid[sink_bb]
+                blk_data = pid_data['FileIDs'][fid]['Blocks'][sink_bb]
+                objdp_asm = \
+                    sde_data['ObjDumpAsm'][fid]['FNs'][blk_data['FuncOffset']]
+                # sometimes blocks start in middle ... (see complaint above)
+                try:
+                    idx = [offset
+                           for offset, _
+                           in objdp_asm['ASM']].index(blk_data['Offset'])
+                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst'] + 1]
+                except BaseException:
+                    print('WRN 06: odd block; could not find %s in %s',
+                          blk_data['Offset'], file_name)
+                    asm = _get_single_block_from_OBJDUMP(
+                        file_name, int(blk_data['Offset'], 16),
+                        blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
+                    pass
+
+            data[sink_bb] = {'ID': sink_bb, 'File': file_name, 'Func': func,
+                             'ASM': asm, 'in_edges': in_edges, 'out_edges': {}}
+
+    return (data, mapper)
 
 
 def _id_in_range(interval, testid):
@@ -560,80 +729,33 @@ def _id_in_range(interval, testid):
     return True
 
 
-def bb_graph(data, block_id_range, fn_name):
-    assert(isinstance(data, dict)
-           and isinstance(block_id_range, list)
-           and isinstance(fn_name, str))
+def bb_graph(data=None, mapper=None, block_id_range=None, fn_name=None):
+    assert(isinstance(data, dict) and isinstance(mapper, dict)
+           and isinstance(block_id_range, list) and isinstance(fn_name, str))
 
     import networkx as nx
     import plotly.graph_objs as go
 
     G = nx.DiGraph()
 
-    # visualize basic blocks
-    # for pid in data['Processes']:
-    #    for src_nid in data['Processes'][pid]['Edges']:
-    #        for edge_id in data['Processes'][pid]['Edges'][src_nid]:
-    #            tgt_nid = data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode']
-    #            src_nid, tgt_nid = int(src_nid), int(tgt_nid)
-    #            if sum(data['Processes'][pid]['Edges'][src_nid]
-    #                   [edge_id]['ThreadExecCnts']) < 1:
-    #                continue
-    #            if _id_in_range(block_id_range, src_nid) or _id_in_range(
-    #                    block_id_range, tgt_nid):
-    #                G.add_edge(src_nid, tgt_nid)
-    # visualize functions
-    for pid in data['Processes']:
-        for src_nid in data['Processes'][pid]['Edges']:
-            if src_nid < 4:
-                continue
-            print('src_nid', src_nid)
-            src_fid = [fid for fid in data['Processes'][pid]['FileIDs']
-                       if src_nid in data['Processes'][pid]['FileIDs'][fid]['Blocks']]
-            if len(src_fid) > 0:
-                src_fid = src_fid[0]
-            else:
-                continue
-            print('src_fid', src_fid)
-            src_sid = data['Processes'][pid]['FileIDs'][src_fid]['Blocks'][src_nid]['SymbolID']
-            if src_sid is None:
-                continue
-            print(src_fid, src_sid)
-            for edge_id in data['Processes'][pid]['Edges'][src_nid]:
-                print(edge_id, data['Processes'][pid]
-                      ['Edges'][src_nid][edge_id])
-                tgt_nid = data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode']
-                if tgt_nid > 3:
-                    tgt_fid = [fid for fid in data['Processes'][pid]['FileIDs']
-                               if tgt_nid in data['Processes'][pid]['FileIDs'][fid]['Blocks']]
-                    if len(tgt_fid) > 0:
-                        tgt_fid = tgt_fid[0]
-                    else:
+    # show all functions and their call-dependency
+    for fid in mapper['func2fpbb']:
+        for func, fpbbs in mapper['func2fpbb'][fid].items():
+            for fpbb in fpbbs:
+                added = []
+                for block_id, block_data in data.items():
+                    if block_data['Func'] != func:
                         continue
-                    tgt_sid = data['Processes'][pid]['FileIDs'][tgt_fid]['Blocks'][tgt_nid]['SymbolID']
-                else:
-                    tgt_fid = -1
-                    tgt_sid = -1
-                print(tgt_nid, tgt_fid, tgt_sid)
-                if src_sid == tgt_sid:
-                    continue
-                if tgt_fid > 0 and tgt_sid is not None:
-                    G.add_edge(data['Processes'][pid]['FileIDs'][src_fid]['FNs'][src_sid]['Func'],
-                               data['Processes'][pid]['FileIDs'][tgt_fid]['FNs'][tgt_sid]['Func'])
-                else:
-                    G.add_edge(data['Processes'][pid]['FileIDs']
-                               [src_fid]['FNs'][src_sid]['Func'], 'UNKOWN')
-                #print(data['Processes'][pid]['FileIDs'][src_fid]['FNs'][src_sid]['Func'], data['Processes'][pid]['FileIDs'][tgt_fid]['FNs'][tgt_sid]['Func'])
-                #    print(data['Processes'][pid]['FileIDs'][fid]['Blocks'][src_nid]['SymbolID'])
-                #    if data['Processes'][pid]['FileIDs'][fid]['Blocks'][src_nid]['SymbolID'] != src_sid:
-                #        continue
-                #    for edge_id in data['Processes'][pid]['Edges'][src_nid]:
-                #        print(data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode'])
-                #        tgt_nid = data['Processes'][pid]['Edges'][src_nid][edge_id]['TgtNode']
-                #        print(data['Processes'][pid]['FileIDs'][fid]['Blocks'][tgt_nid]['SymbolID'])
-                #        if data['Processes'][pid]['FileIDs'][fid]['Blocks'][tgt_nid]['SymbolID'] == src_sid:
-                #            continue
-                #        G.add_edge(src_sid, data['Processes'][pid]['FileIDs'][fid]['Blocks'][tgt_nid]['SymbolID'])
+                    if mapper['rpbb2fpbb'][mapper['bbid2rpbb'][block_id]] \
+                            != fpbb:
+                        continue
+
+                    for adj_func in set([data[blk]['Func']
+                                         for blk in block_data['out_edges']]):
+                        if [func, adj_func] in added:
+                            continue
+                        added.append([func, adj_func])
+                        G.add_edge(func, adj_func)
 
     pos = nx.kamada_kawai_layout(G)
     # pos = nx.spectral_layout(G)
@@ -698,14 +820,14 @@ def bb_graph(data, block_id_range, fn_name):
     return figure
 
 
-def init_dash_for_vis(data=None):
-    assert(isinstance(data, dict))
+def init_dash_for_vis(data=None, mapper=None):
+    assert(isinstance(data, dict) and isinstance(mapper, dict))
 
     import dash
     import dash_core_components as dcc
     import dash_html_components as html
 
-    block_id_range = [-1, -1]
+    block_id_range = ['', '']
     search_fn_name = ''
 
     # import a css template, and pass it into dash
@@ -737,9 +859,8 @@ def init_dash_for_vis(data=None):
                             children=[
                                 dcc.Markdown('**RANGE: From Block ID**'),
                                 dcc.Input(
-                                    id='my-block-from',
-                                    type='text',
-                                    value='',
+                                    id='my-block-from', type='text',
+                                    value=block_id_range[0], debounce=True,
                                     placeholder='Block ID'),
                                 html.Br(),
                                 html.Div(id='output-text-block-id-from')
@@ -751,9 +872,8 @@ def init_dash_for_vis(data=None):
                             children=[
                                 dcc.Markdown('**RANGE: To Block ID**'),
                                 dcc.Input(
-                                    id='my-block-to',
-                                    type='text',
-                                    value='',
+                                    id='my-block-to', type='text',
+                                    value=block_id_range[1], debounce=True,
                                     placeholder='Block ID'),
                                 html.Br(),
                                 html.Div(id='output-text-block-id-to')
@@ -765,9 +885,8 @@ def init_dash_for_vis(data=None):
                             children=[
                                 dcc.Markdown('**Search for Function Name**'),
                                 dcc.Input(
-                                    id='my-fn-input',
-                                    type='text',
-                                    value='',
+                                    id='my-fn-input', type='text',
+                                    value=search_fn_name, debounce=True,
                                     placeholder='Function Name'),
                                 html.Br(),
                                 html.Div(id='output-text-func-name')
@@ -790,7 +909,8 @@ def init_dash_for_vis(data=None):
                 html.Div(
                     className='eight columns',
                     children=[dcc.Graph(id='my-graph',
-                                        figure=bb_graph(data, block_id_range,
+                                        figure=bb_graph(data, mapper,
+                                                        block_id_range,
                                                         search_fn_name))],
                 ),
                 html.Div(
@@ -821,10 +941,10 @@ def init_dash_for_vis(data=None):
          dash.dependencies.Input('my-block-to', 'value'),
          dash.dependencies.Input('my-fn-input', 'value')])
     def update_block_range(input1, input2, input3):
-        nonlocal data, block_id_range, search_fn_name
+        nonlocal data, mapper, block_id_range, search_fn_name
         block_id_range = [int(input1), int(input2)]
         search_fn_name = input2
-        return bb_graph(data, [int(input1), int(input2)], input3)
+        return bb_graph(data, mapper, [int(input1), int(input2)], input3)
 
     @app.callback(
         dash.dependencies.Output('hover-data', 'children'),
@@ -857,22 +977,32 @@ def main():
     arg_parser.add_argument('-v', '--vis', dest='__visualize__',
                             help='run dash server and show basic block graph',
                             action='store_true', default=False)
+    arg_parser.add_argument('-l', '--load_objd', dest='__load_objdump__',
+                            help='load previously stored objdump data from' +
+                            ' file instead of accessing all objects locally',
+                            type=str, metavar='<input file>', default=None)
+    arg_parser.add_argument('-s', '--store_objd', dest='__store_objdump__',
+                            help='backup objdump data to file to postprocess' +
+                            ' on a different computer or get speedup locally',
+                            type=str, metavar='<output file>', default=None,)
     args = vars(arg_parser.parse_args())
 
     assert(args.get('__sde_json_f__') is not None
            and args.get('__sde_block_f__') is not None)
     assert(path.isfile(path.realpath(args.get('__sde_json_f__')))
            and path.isfile(path.realpath(args.get('__sde_block_f__'))))
+    if args.get('__load_objdump__') is not None:
+        assert(path.isfile(path.realpath(args.get('__load_objdump__'))))
 
     sde_data = {'BasicBlocks': {}}
     parse_SDE_JSON(args, sde_data)
     parse_SDE_BB(args, sde_data['BasicBlocks'])
 
-    data = convert_sde_data_to_something_usable(sde_data)
+    data, mapper = convert_sde_data_to_something_usable(sde_data)
     del sde_data
 
     if args.get('__visualize__'):
-        dash_app = init_dash_for_vis(data)
+        dash_app = init_dash_for_vis(data, mapper)
         dash_app.run_server(debug=False)
 
 
