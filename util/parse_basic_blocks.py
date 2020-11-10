@@ -411,7 +411,14 @@ def parse_SDE_JSON(args=None, sde_data=None):
     # from software.intel.com/sites/default/files/managed/32/2d/DCFG-format.pdf
     sde_bb_json = jsonload(bz2open(path.realpath(args.get('__sde_json_f__')),
                                    'rt'))
-    assert(sde_bb_json is not None)
+    assert(sde_bb_json is not None and
+           6 == len(sde_bb_json.keys()) and
+           'MAJOR_VERSION' in sde_bb_json and
+           'MINOR_VERSION' in sde_bb_json and
+           'FILE_NAMES' in sde_bb_json and
+           'EDGE_TYPES' in sde_bb_json and
+           'SPECIAL_NODES' in sde_bb_json and
+           'PROCESSES' in sde_bb_json)
 
     sde_data['Files'] = _parse_FILE_NAMES(sde_bb_json)
     # first need to get the assembly, from either real files or previous runs
@@ -424,7 +431,10 @@ def parse_SDE_JSON(args=None, sde_data=None):
         _store_backup_OBJDUMP_ASSEMBLY(
             sde_data['ObjDumpAsm'],
             path.realpath(args.get('__store_objdump__')))
-        exit(0)
+        exit("INFO: intermediate store of objdump data complete;\n"
+             "      rerun with --load_objd %s to complete the workflow"
+             % args.get('__store_objdump__'))
+
     # and then continue with the rest
     sde_data['SpecialBlockIDs'] = _parse_SPECIAL_NODES(sde_bb_json)
     sde_data['EdgeTypes'] = _parse_EDGE_TYPES(sde_bb_json)

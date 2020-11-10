@@ -1,2 +1,3 @@
 *.swp
-precision.pdf
+dep/sde-external-8.35.0-2019-03-11-lin/
+util/sdetest*_out
