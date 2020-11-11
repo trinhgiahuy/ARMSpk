@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 //https://crypto.stanford.edu/pbc/notes/pi/code.html
-void compute(char *pi) {
+void __attribute__ ((noinline)) xxxx_compute(char *pi) {
     int r[2800 + 1];
     int i, j, k;
     int b, d;
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
     char* pi = malloc(801);
     pi[800] = '\0';
-    compute(pi);
+    xxxx_compute(pi);
 
     // Print off a hello world message
     printf("Hello world from processor %s, rank %d out of %d processors "

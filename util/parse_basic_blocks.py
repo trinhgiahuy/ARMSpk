@@ -615,6 +615,17 @@ def convert_sde_data_to_something_usable(sde_data=None):
 
     data = {}
 
+    # ___Naming Scheme___
+    # fid2fn/fn2fid        :  file names & file IDs
+    # sbid2sbn/sbn2sbid    :  special block ID & special block name
+    # etid2etn/etn2etid    :  edge type ID & edge type name
+    # bbid2pid             :  basic block ID & process ID
+    # bbid2fid             :  basic block ID & file ID
+    # offs2bbid            :  offsets & basic blocks
+    # bbid2rpbb            :  basic block ID & "routine" primary basic block
+    # rpbb2fpbb/fpbb2rpbb  :  "routine" p. basic block & func. p. basic block
+    # func2fpbb/fpbb2func  :  function name/file & func. p. basic block
+
     fid2fn, fn2fid, sbid2sbn, sbn2sbid, etid2etn, etn2etid, bbid2pid, \
         bbid2fid, offs2bbid, bbid2rpbb, rpbb2fpbb, fpbb2rpbb, func2fpbb, \
         fpbb2func = _get_helping_mappers(sde_data)
@@ -627,7 +638,7 @@ def convert_sde_data_to_something_usable(sde_data=None):
               'rpbb2fpbb': rpbb2fpbb, 'fpbb2rpbb': fpbb2rpbb,
               'func2fpbb': func2fpbb, 'fpbb2func': fpbb2func}
 
-    sinks = set()
+    maybe_sinks = set()
     for pid, pid_data in sde_data['Processes'].items():
         for source_bb in pid_data['Edges']:
 
@@ -686,9 +697,10 @@ def convert_sde_data_to_something_usable(sde_data=None):
                                'ASM': asm,
                                'in_edges': in_edges,
                                'out_edges': out_edges}
-            sinks.update(out_edges.keys())
+            maybe_sinks.update(out_edges.keys())
 
-    for sink_bb in sinks:
+    for sink_bb in maybe_sinks:
+        # only process remaining real sinks
         if sink_bb not in data:
             in_edges = {}
             for block, edges in pid_data['Edges'].items():
@@ -725,10 +737,21 @@ def convert_sde_data_to_something_usable(sde_data=None):
                         blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
                     pass
 
-            data[sink_bb] = {'ID': sink_bb, 'File': file_name, 'Func': func,
-                             'ASM': asm, 'in_edges': in_edges, 'out_edges': {}}
+            data[sink_bb] = {'ID': sink_bb,
+                             'File': file_name,
+                             'Func': func,
+                             'ASM': asm,
+                             'in_edges': in_edges,
+                             'out_edges': {}}
 
     return (data, mapper)
+
+
+def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
+    assert(isinstance(blockdata, dict) and isinstance(mapper, dict))
+
+    for bbid in blockdata:
+        print(bbid, blockdata[bbid]['ASM'])
 
 
 def _id_in_range(interval, testid):
@@ -1010,6 +1033,8 @@ def main():
 
     data, mapper = convert_sde_data_to_something_usable(sde_data)
     del sde_data
+
+    simulate_cycles_with_LLVM_MCA(data, mapper)
 
     if args.get('__visualize__'):
         dash_app = init_dash_for_vis(data, mapper)
