@@ -5,11 +5,11 @@
 #  ( create files: ./dcfg-out.dcfg.json.bz2 and ./dcfg-out.bb.txt.bz2 via
 #      `sde64 -dcfg 1 -dcfg:write_bb 1 ...` )
 
-from os import path
+from os import path, getpid
 from sys import exit
 from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
-from re import compile
+from re import compile, sub, IGNORECASE
 from collections import defaultdict
 import subprocess as subp
 
@@ -23,7 +23,8 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
     fn_hdr = compile(r'^(\w+)\s+<(.+)>\s+\(File\s+Offset:\s+(\w+)\):$')
     # offset, instruction (+comment)
     fn_asm_part = compile(r'^\s+(\w+):\s+([\w\(\.].*)$')
-    fn_asm_igno = compile(r'^(.*)\s+\(File\s+Offset:\s+\w+\)$')
+    fn_asm_igno = compile(
+        r'^(.*)\s+(<.*>)\s+\(\s*(File\s+Offset:\s+)(\w+)\s*\)$')
     __trash__ = compile(
         r'^$|^.*:\s+file format elf.*$|^Disassembly of section.*$')
 
@@ -77,9 +78,29 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
 
                 fn = fn_asm_part.match(line)
                 fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
-                # FIXME: strip comments at the end as well???
+                # FIXME: strip comments at end as well??? => yes, llvm confused
                 if fn_asm_igno.match(fn_asm_in):
-                    fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
+                    instr, func, file_os, addr = \
+                        fn_asm_igno.match(fn_asm_in).group(1), \
+                        fn_asm_igno.match(fn_asm_in).group(2), \
+                        fn_asm_igno.match(fn_asm_in).group(3), \
+                        fn_asm_igno.match(fn_asm_in).group(4)
+                    # mca doesn't like jump addresses without 0x, and jmpq is
+                    # worse requiring a *0x before the address ... snowflakes
+                    if instr.startswith('jmpq'):
+                        prefix = '*0x'
+                    else:
+                        prefix = '0x'
+                    instr = sub(r'(\s+)(%x)' % (load_os + int(addr, 16)),
+                                r'\g<1>%s\g<2>' % prefix, instr,
+                                count=0, flags=IGNORECASE)
+                    # and add '#' before meaning data
+                    fn_asm_in = '%s #%s (%s %s)' % (instr, func, file_os, addr)
+                # XXX handle exceptions:
+                # llvm hates: `bnd jmpq *%r11`, check llvm-objdump to replace
+                fn_asm_in = sub(r'bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
+                                count=0, flags=IGNORECASE)
+
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
 
                 objdp_asm[fid]['FNs'][curr_fn_os]['ASM'].append([fn_asm_os,
@@ -109,8 +130,10 @@ def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
                 for x in range(start_addr, start_addr + num_byte)]
 
     fn_asm_part = compile(r'^\s+(\w+):\s+([\w\(\.].*)$')
-    fn_asm_igno = compile(r'^(.*)\s+\(File\s+Offset:\s+\w+\)$')
+    fn_asm_igno = compile(
+        r'^(.*)\s+(<.*>)\s+\(\s*(File\s+Offset:\s+)(\w+)\s*\)$')
 
+    # open interval [.,.), so --stop-address=0x... is excluded from output
     p = subp.run(['objdump',
                   '--disassemble',
                   '--disassembler-options=att-mnemonic',
@@ -127,9 +150,29 @@ def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
         if fn_asm_part.match(line):
             fn = fn_asm_part.match(line)
             fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
-            # FIXME: strip comments at the end as well???
+            # FIXME: strip comments at end as well??? => yes, llvm confused
             if fn_asm_igno.match(fn_asm_in):
-                fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
+                instr, func, file_os, addr = \
+                    fn_asm_igno.match(fn_asm_in).group(1), \
+                    fn_asm_igno.match(fn_asm_in).group(2), \
+                    fn_asm_igno.match(fn_asm_in).group(3), \
+                    fn_asm_igno.match(fn_asm_in).group(4)
+                # mca doesn't like jump addresses without 0x, and jmpq is
+                # worse requiring a *0x before the address ... snowflakes
+                if instr.startswith('jmpq'):
+                    prefix = '*0x'
+                else:
+                    prefix = '0x'
+                instr = sub(r'(\s+)(%x)' % (load_os + int(addr, 16)),
+                            r'\g<1>%s\g<2>' % prefix, instr,
+                            count=0, flags=IGNORECASE)
+                # and add '#' before meaning data
+                fn_asm_in = '%s #%s (%s %s)' % (instr, func, file_os, addr)
+            # XXX handle exceptions:
+            # llvm hates: `bnd jmpq *%r11`, check llvm-objdump to replace
+            fn_asm_in = sub(r'bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
+                            count=0, flags=IGNORECASE)
+
             fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
             asm.append([fn_asm_os, fn_asm_in])
 
@@ -682,14 +725,17 @@ def convert_sde_data_to_something_usable(sde_data=None):
                     idx = [offset
                            for offset, _
                            in objdp_asm['ASM']].index(blk_data['Offset'])
-                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst'] + 1]
+                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst']]
                 except BaseException:
-                    print('WRN 06: odd block; could not find %s in %s',
-                          blk_data['Offset'], file_name)
+                    print('WRN 06: odd block; could not find [bb=%s] %s in %s'
+                          % (source_bb, blk_data['Offset'], file_name)
+                          + ' (perform fuzzy _get_single_block_from_OBJDUMP)')
                     asm = _get_single_block_from_OBJDUMP(
                         file_name, int(blk_data['Offset'], 16),
                         blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
                     pass
+                if len(asm) != blk_data['NumInst']: print(file_name, func, source_bb, asm, len(asm), blk_data['NumInst'])
+                assert(len(asm) == blk_data['NumInst'])
 
             data[source_bb] = {'ID': source_bb,
                                'File': file_name,
@@ -728,14 +774,17 @@ def convert_sde_data_to_something_usable(sde_data=None):
                     idx = [offset
                            for offset, _
                            in objdp_asm['ASM']].index(blk_data['Offset'])
-                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst'] + 1]
+                    asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst']]
                 except BaseException:
-                    print('WRN 06: odd block; could not find %s in %s',
-                          blk_data['Offset'], file_name)
+                    print('WRN 06: odd block; could not find [bb=%s] %s in %s'
+                          % (sink_bb, blk_data['Offset'], file_name)
+                          + ' (perform fuzzy _get_single_block_from_OBJDUMP)')
                     asm = _get_single_block_from_OBJDUMP(
                         file_name, int(blk_data['Offset'], 16),
                         blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
                     pass
+                if len(asm) != blk_data['NumInst']: print(file_name, func, sink_bb, asm, len(asm), blk_data['NumInst'])
+                assert(len(asm) == blk_data['NumInst'])
 
             data[sink_bb] = {'ID': sink_bb,
                              'File': file_name,
@@ -751,8 +800,78 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
     assert(isinstance(blockdata, dict) and isinstance(mapper, dict))
 
     for bbid in blockdata:
-        print(bbid, blockdata[bbid]['ASM'])
+        # llvm-mca read assembly from file, so dump a copy to ramdisk
+        mca_in_fn = '/dev/shm/asm_%s_%s.s' % (getpid(), bbid)
+        with open(mca_in_fn, 'w') as mca_in_file:
+            mca_in_file.write('\n'.join([instr
+                                         for offset,instr
+                                         in blockdata[bbid]['ASM']]))
 
+        # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
+        # get 'Total Cycles' from llvm-mca for each basic block
+        p = subp.run(['llvm-mca',
+                      '--mtriple=x86_64-unknown-linux-gnu',
+                      '--mcpu=native',
+                      '--iterations=1',#FIXME
+                      mca_in_fn],
+                     stdout=subp.PIPE, stderr=subp.PIPE)
+
+        stderr = p.stderr.decode()
+        #FIXME if 'found a return instr' in stderr: print(mca_in_fn, ' :\n', stderr)
+        stderr = sub(r'warning: found a return instruction in the input' +
+                      ' assembly sequence.\nnote: program counter updates' +
+                      ' are ignored.\n',
+                     r'', stderr, count=0, flags=IGNORECASE)
+        stderr = sub(r'warning: found a call in the input assembly sequence.' +
+                      '\nnote: call instructions are not correctly modeled.' +
+                      ' Assume a latency of 100cy.\n',
+                     r'', stderr, count=0, flags=IGNORECASE)
+        if len(stderr):
+            print(stderr)
+
+
+#        curr_fn_os, load_os = None, None
+#        for line in p.stdout.decode().splitlines():
+#            if fn_hdr.match(line):
+#
+#                fn = fn_hdr.match(line)
+#                fn_os, fn_name, fn_real_os = \
+#                    fn.group(1).strip(), fn.group(2).strip(), \
+#                    fn.group(3).strip()
+#
+#                # XXX: executable ELF64 binaries linked by ld have canonical
+#                #      base address offset of 0x400000, but SDE subtracts this
+#                if load_os is None:
+#                    load_os = int(fn_os, 16) - int(fn_real_os, 16)
+#                    if load_os == int('0x400000', 16):
+#                        objdp_asm[fid]['LO'] = load_os
+#                    elif load_os > 0:
+#                        exit('ERR: never seen before base address offset')
+#
+#                curr_fn_os = int(fn_os, 16) - load_os
+#                os_str = '0x' + format(curr_fn_os, 'x')
+#
+#                objdp_asm[fid]['FNs'][curr_fn_os] = {'Offset': os_str,
+#                                                    'Func': fn_name,
+#                                                    'ASM': []}
+#            elif fn_asm_part.match(line):
+#                assert(curr_fn_os is not None)
+#
+#                fn = fn_asm_part.match(line)
+#                fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
+#                # FIXME: strip comments at the end as well???
+#                if fn_asm_igno.match(fn_asm_in):
+#                    fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
+#                fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
+#
+#                objdp_asm[fid]['FNs'][curr_fn_os]['ASM'].append([fn_asm_os,
+#                                                                fn_asm_in])
+#            elif __trash__.match(line):
+#                continue
+#            else:
+#                exit(
+#                    'ERR: unknown line (%s) in objdump (%s)' %
+#                    (line, FILE_NAME))
 
 def _id_in_range(interval, testid):
     if interval[0] > 0 and testid < interval[0]:

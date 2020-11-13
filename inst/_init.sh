@@ -111,6 +111,25 @@ if [ ! -f $ROOTDIR/dep/$BM/msr-safe.ko ] || [ ! -r /dev/cpu/0/msr ]; then
 	cd $ROOTDIR
 fi
 
+echo -e '\nInit spack and new LLVM'
+BM="spack"
+VERSION="96fa6f0c1be4ab55ec6ba7cd5af059e1ed95351f"
+cd $ROOTDIR/dep/$BM/
+if [[ "`git branch`" = *"develop"* ]]; then
+        git checkout -b precision ${VERSION}
+        sed -i -e 's/# build_jobs: 16/build_jobs: 32/' etc/spack/defaults/config.yaml
+        source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+        spack compiler find
+        # check system compiler and install one we like
+        if [[ "`gcc --version | /usr/bin/grep 'gcc (GCC)' | cut -d ' ' -f3`" = "8.4.0" ]]; then
+                spack install gcc@8.4.0
+                spack load gcc@8.4.0
+                spack compiler find
+        fi
+	spack install llvm@10.0.0%gcc@8.4.0 gold=False
+fi
+cd $ROOTDIR
+
 echo -e "\nIn case of reboot, run again:
 sudo sh -c 'echo 0 > /proc/sys/kernel/perf_event_paranoid'
 sudo sh -c 'echo 0 > /proc/sys/kernel/nmi_watchdog'
