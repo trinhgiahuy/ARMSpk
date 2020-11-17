@@ -5,7 +5,7 @@
 #  ( create files: ./dcfg-out.dcfg.json.bz2 and ./dcfg-out.bb.txt.bz2 via
 #      `sde64 -dcfg 1 -dcfg:write_bb 1 ...` )
 
-from os import path, getpid
+from os import path, getpid, remove
 from sys import exit
 from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
@@ -22,7 +22,7 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
     # offset, fn name
     fn_hdr = compile(r'^(\w+)\s+<(.+)>\s+\(File\s+Offset:\s+(\w+)\):$')
     # offset, instruction (+comment)
-    fn_asm_part = compile(r'^\s+(\w+):\s+([\w\(\.].*)$')
+    fn_asm_part = compile(r'^\s+(\w+):\s+([\.\(]?\w{2,}.*)$')
     fn_asm_igno = compile(
         r'^(.*)\s+(<.*>)\s+\(\s*(File\s+Offset:\s+)(\w+)\s*\)$')
     __trash__ = compile(
@@ -100,6 +100,9 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 # llvm hates: `bnd jmpq *%r11`, check llvm-objdump to replace
                 fn_asm_in = sub(r'bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
                                 count=0, flags=IGNORECASE)
+                # llvm hates: `fs addr32 nop`, check llvm-objdump to replace
+                fn_asm_in = sub(r'fs\s+addr32\s+nop', r'nop', fn_asm_in,
+                                count=0, flags=IGNORECASE)
 
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
 
@@ -108,9 +111,8 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
             elif __trash__.match(line):
                 continue
             else:
-                exit(
-                    'ERR: unknown line (%s) in objdump (%s)' %
-                    (line, FILE_NAME))
+                exit('ERR: unknown line (%s) in objdump (%s)' %
+                     (line, FILE_NAME))
 
     return objdp_asm
 
@@ -125,7 +127,7 @@ def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
     start_addr = load_os + from_addr
 
     if not path.exists(sde_file):
-        print('WRN 07: %s missing on "this" node, or was deleted' % sde_file)
+        print('WRN 10: %s missing on "this" node, or was deleted' % sde_file)
         return [['0x' + format(x, 'x'), 'nop']
                 for x in range(start_addr, start_addr + num_byte)]
 
@@ -734,16 +736,31 @@ def convert_sde_data_to_something_usable(sde_data=None):
                         file_name, int(blk_data['Offset'], 16),
                         blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
                     pass
-                if len(asm) != blk_data['NumInst']: print(file_name, func, source_bb, asm, len(asm), blk_data['NumInst'])
-                assert(len(asm) == blk_data['NumInst'])
+                if len(asm) != blk_data['NumInst']:
+                    print('WRN 07: strange block ID %s in fn %s (%s) with a'
+                          % (source_bb, func, file_name)
+                          + ' mismatch in len(asm) and instructions (%s vs %s)'
+                          % (len(asm), blk_data['NumInst']) + '; please check')
 
             data[source_bb] = {'ID': source_bb,
                                'File': file_name,
                                'Func': func,
                                'ASM': asm,
+                               'NumASM': len(asm),
                                'in_edges': in_edges,
                                'out_edges': out_edges}
             maybe_sinks.update(out_edges.keys())
+
+            #if len(in_edges)>0 and len(out_edges)>0:
+            #    print('jens:', source_bb)
+            #    print('IN:', in_edges)
+            #    for b in in_edges:
+            #        if b in data: print(data[b])
+            #    print('SELF:', data[source_bb])
+            #    print('out:', out_edges)
+            #    for b in out_edges:
+            #        if b in data: print(data[b])
+
 
     for sink_bb in maybe_sinks:
         # only process remaining real sinks
@@ -776,20 +793,24 @@ def convert_sde_data_to_something_usable(sde_data=None):
                            in objdp_asm['ASM']].index(blk_data['Offset'])
                     asm = objdp_asm['ASM'][idx:idx + blk_data['NumInst']]
                 except BaseException:
-                    print('WRN 06: odd block; could not find [bb=%s] %s in %s'
+                    print('WRN 08: odd block; could not find [bb=%s] %s in %s'
                           % (sink_bb, blk_data['Offset'], file_name)
                           + ' (perform fuzzy _get_single_block_from_OBJDUMP)')
                     asm = _get_single_block_from_OBJDUMP(
                         file_name, int(blk_data['Offset'], 16),
                         blk_data['Bytes'], sde_data['ObjDumpAsm'][fid]['LO'])
                     pass
-                if len(asm) != blk_data['NumInst']: print(file_name, func, sink_bb, asm, len(asm), blk_data['NumInst'])
-                assert(len(asm) == blk_data['NumInst'])
+                if len(asm) != blk_data['NumInst']:
+                    print('WRN 09: strange block ID %s in fn %s (%s) with a'
+                          % (sink_bb, func, file_name)
+                          + ' mismatch in len(asm) and instructions (%s vs %s)'
+                          % (len(asm), blk_data['NumInst']) + '; please check')
 
             data[sink_bb] = {'ID': sink_bb,
                              'File': file_name,
                              'Func': func,
                              'ASM': asm,
+                             'NumASM': len(asm),
                              'in_edges': in_edges,
                              'out_edges': {}}
 
@@ -799,79 +820,134 @@ def convert_sde_data_to_something_usable(sde_data=None):
 def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
     assert(isinstance(blockdata, dict) and isinstance(mapper, dict))
 
-    for bbid in blockdata:
-        # llvm-mca read assembly from file, so dump a copy to ramdisk
-        mca_in_fn = '/dev/shm/asm_%s_%s.s' % (getpid(), bbid)
-        with open(mca_in_fn, 'w') as mca_in_file:
-            mca_in_file.write('\n'.join([instr
-                                         for offset,instr
-                                         in blockdata[bbid]['ASM']]))
+    # make the llvm-mca simulation more realistic / first step from gut feeling
+    # assuming we have 3 basic blocks (random index fn of ld-linux-x86-64.so.2)
+    # 1.
+    #   mov    %rdi,%rdx
+    #   and    $0x7,%edx
+    #   mov    %rdi,%rax
+    #   je     0x19c2a
+    # 2.
+    #   neg    %edx
+    #   add    $0x8,%edx
+    # 3.
+    #   mov    (%rax),%cl
+    #   cmp    %cl,%sil
+    #   je     0x19da0
+    # getting the timeline for each of them individually looks like this:
+    #   [0,0]     DeER .  movq  %rdi, %rdx
+    #   [0,1]     D=eER.  andl  $7, %edx
+    #   [0,2]     DeE-R.  movq  %rdi, %rax
+    #   [0,3]     D==eER  je   105514
+    #  and
+    #   [0,0]     DeER.   negl  %edx
+    #   [0,1]     D=eER   addl  $8, %edx
+    #  and
+    #   [0,0]     DeeeeeER .   movb     (%rax), %cl
+    #   [0,1]     D=====eER.   cmpb     %cl, %sil
+    #   [0,2]     D======eER   je       105888
+    # so 1. needs 6 cycles; second needs 5 cycles; last needs 10 cycles
+    # but this is awfully pessimistic, so what if we add the previous block as
+    # "preheating" phase and check the instruction retirement instead of the
+    # pure cycles we can get more reasonable results maybe
+    # assuming we combine 2. and 3. block for example:
+    #   [0,0]     DeER .   .   negl     %edx
+    #   [0,1]     D=eER.   .   addl     $8, %edx
+    #   [0,2]     DeeeeeER .   movb     (%rax), %cl
+    #   [0,3]     D=====eER.   cmpb     %cl, %sil
+    #   [0,4]     .D=====eER   je       105888
+    # and check the difference from last R of 2. block to last R of 3. block,
+    # which is 5, or 10 respectively... meaning the "runtime for the 3. block
+    # is 10-5=5 cycles and not 10 as predicted for standalone kernel
 
-        # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
-        # get 'Total Cycles' from llvm-mca for each basic block
-        p = subp.run(['llvm-mca',
-                      '--mtriple=x86_64-unknown-linux-gnu',
-                      '--mcpu=native',
-                      '--iterations=1',#FIXME
-                      mca_in_fn],
-                     stdout=subp.PIPE, stderr=subp.PIPE)
+    asm_cnt = compile(r'^Instructions:\s+(\d+)$')
+    cyc_cnt = compile(r'^Total Cycles:\s+(\d+)$')
+    tl_pipe = compile(r'^(\[[\d,]+)\]\s+([\.D]+[DReE=\-\.\s]+)\s+([\.\(]?\w{2,}.*)$')
 
-        stderr = p.stderr.decode()
-        #FIXME if 'found a return instr' in stderr: print(mca_in_fn, ' :\n', stderr)
-        stderr = sub(r'warning: found a return instruction in the input' +
-                      ' assembly sequence.\nnote: program counter updates' +
-                      ' are ignored.\n',
-                     r'', stderr, count=0, flags=IGNORECASE)
-        stderr = sub(r'warning: found a call in the input assembly sequence.' +
-                      '\nnote: call instructions are not correctly modeled.' +
-                      ' Assume a latency of 100cy.\n',
-                     r'', stderr, count=0, flags=IGNORECASE)
-        if len(stderr):
-            print(stderr)
+    for bbid, bdata in blockdata.items():
+        for sink_bbid, sink_data in bdata['out_edges'].items():
+            # llvm-mca read assembly from file, so dump a copy to ramdisk
+            mca_in_fn = '/dev/shm/asm_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
+            selfedge, icnt = False, 1
+            num_asm_bbid, num_asm_sink_bbid = \
+                blockdata[bbid]['NumASM'], blockdata[sink_bbid]['NumASM']
 
-#        curr_fn_os, load_os = None, None
-#        for line in p.stdout.decode().splitlines():
-#            if fn_hdr.match(line):
-#
-#                fn = fn_hdr.match(line)
-#                fn_os, fn_name, fn_real_os = \
-#                    fn.group(1).strip(), fn.group(2).strip(), \
-#                    fn.group(3).strip()
-#
-#                # XXX: executable ELF64 binaries linked by ld have canonical
-#                #      base address offset of 0x400000, but SDE subtracts this
-#                if load_os is None:
-#                    load_os = int(fn_os, 16) - int(fn_real_os, 16)
-#                    if load_os == int('0x400000', 16):
-#                        objdp_asm[fid]['LO'] = load_os
-#                    elif load_os > 0:
-#                        exit('ERR: never seen before base address offset')
-#
-#                curr_fn_os = int(fn_os, 16) - load_os
-#                os_str = '0x' + format(curr_fn_os, 'x')
-#
-#                objdp_asm[fid]['FNs'][curr_fn_os] = {'Offset': os_str,
-#                                                    'Func': fn_name,
-#                                                    'ASM': []}
-#            elif fn_asm_part.match(line):
-#                assert(curr_fn_os is not None)
-#
-#                fn = fn_asm_part.match(line)
-#                fn_asm_os, fn_asm_in = fn.group(1).strip(), fn.group(2).strip()
-#                # FIXME: strip comments at the end as well???
-#                if fn_asm_igno.match(fn_asm_in):
-#                    fn_asm_in = fn_asm_igno.match(fn_asm_in).group(1)
-#                fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
-#
-#                objdp_asm[fid]['FNs'][curr_fn_os]['ASM'].append([fn_asm_os,
-#                                                                fn_asm_in])
-#            elif __trash__.match(line):
-#                continue
-#            else:
-#                exit(
-#                    'ERR: unknown line (%s) in objdump (%s)' %
-#                    (line, FILE_NAME))
+            with open(mca_in_fn, 'w') as mca_in_file:
+                mca_in_file.write('\n'.join([instr
+                                             for offset, instr
+                                             in blockdata[bbid]['ASM']]))
+                # self-edges indicate long running loops and compute phases
+                # hence we skip adding sink_block and increase iteration count
+                if bbid == sink_bbid:
+                    selfedge = True
+                    icnt = 100
+                    #FIXME: have to change to account for ThreadExecCnts array
+                else:
+                    mca_in_file.write('\n')
+                    mca_in_file.write('\n'.join([instr
+                                                 for offset, instr
+                                                 in blockdata[sink_bbid]['ASM']]))
+
+            # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
+            # get 'Total Cycles' from llvm-mca for each basic block
+            p = subp.run(['llvm-mca',
+                          '--mtriple=x86_64-unknown-linux-gnu',
+                          '--mcpu=native',
+                          '--iterations=%s' % icnt,
+                          '-timeline',
+                          '-timeline-max-iterations=1',
+                          '-timeline-max-cycles=2147483648', # call instr long
+                          '-all-stats',
+                          '-print-imm-hex',
+                          mca_in_fn],
+                         stdout=subp.PIPE, stderr=subp.PIPE)
+
+            stderr = p.stderr.decode()
+            stderr = sub(r'warning: found a return instruction in the input' +
+                         ' assembly sequence.\nnote: program counter updates' +
+                         ' are ignored.\n',
+                         r'', stderr, count=0, flags=IGNORECASE)
+            stderr = sub(r'warning: found a call in the input assembly' +
+                         ' sequence.\nnote: call instructions are not' +
+                         ' correctly modeled. Assume a latency of 100cy.\n',
+                         r'', stderr, count=0, flags=IGNORECASE)
+            if len(stderr):
+                print(stderr)
+
+            num_instr, num_cycles, timeline_data = 0, 0, []
+            for line in p.stdout.decode().splitlines():
+                if asm_cnt.match(line):
+                    num_instr = int(asm_cnt.match(line).group(1).strip())
+
+                elif cyc_cnt.match(line):
+                    num_cycles = int(cyc_cnt.match(line).group(1).strip())
+
+                elif tl_pipe.match(line):
+                    tl = tl_pipe.match(line)
+                    index, timeline, asm = \
+                        tl.group(1).strip(), tl.group(2).strip(), \
+                        tl.group(3).strip()
+                    timeline_data.append([index, timeline, asm])
+
+            assert(num_instr == len(timeline_data)              # merge 2 blk
+                   or num_instr == icnt * len(timeline_data))   # self-edge
+
+            # getting avg. estimated cycles per block is easy for self-edges
+            if selfedge:
+                cycles_per_iter = num_cycles / icnt
+            # but for others we have to compare retirement (R) time difference
+            # between the last instruction of the two blocks
+            else:
+                cycles_per_iter = \
+                    timeline_data[num_instr - 1][1].find('R') \
+                    - timeline_data[num_asm_bbid - 1][1].find('R')
+
+            blockdata[bbid]['out_edges'][sink_bbid]['CyclesPerIteration'] = \
+                cycles_per_iter
+
+            remove(mca_in_fn)
+
 
 def _id_in_range(interval, testid):
     if interval[0] > 0 and testid < interval[0]:
