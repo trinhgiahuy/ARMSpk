@@ -12,7 +12,7 @@ MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HB
 
 export PATH=$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:$PATH
 if [ ! -x "`which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.35.0-2019-03-11-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
-SDE="`which sde64` -sse-sde -global_region -mix_omit_per_thread_stats -mix_omit_per_function_stats -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -iform 1 -omix oSDE/\"\$MPI_LOCALRANKID\".txt"
+SDE="`which sde64` -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name dcfg-out.rank-\"\$MPI_LOCALRANKID\" -align_checker_prefetch 0 -align_correct 0 -emu_fast 1"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	SDE="$SDE -bdw -- "
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
@@ -37,17 +37,10 @@ for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	if [ "x$RUNSDE" = "xyes" ]; then
-		mkdir -p ./oSDE
 		echo "=== sde run ===" >> $LOG 2>&1
 		echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $APPDIR/$BINARY $INPUT\"" >> $LOG 2>&1
 		mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE $APPDIR/$BINARY $INPUT" >> $LOG 2>&1
-		for P in `seq 0 $((NumMPI - 1))`; do
-			echo "SDE output of MPI process $P" >> $LOG 2>&1
-			cat ./oSDE/${P}.txt >> $LOG 2>&1
-		done
-		echo "=== SDE summary ===" >> $LOG 2>&1
-		$ROOTDIR/util/analyze_sde.py ./oSDE `echo $LOG | sed 's#profrun#bestrun#g'` >> $LOG 2>&1
-		rm -rf ./oSDE
+		mkdir -p ${LOG}_sde; mv dcfg-out.* ${LOG}_sde
 	fi
 	if [ "x$RUNPCM" = "xyes" ]; then
 		# reset PMU counters

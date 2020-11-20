@@ -8,7 +8,7 @@ export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
 export RUNSDE="yes"
-export RUNPCM="yes"
+export RUNPCM="no"
 export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
