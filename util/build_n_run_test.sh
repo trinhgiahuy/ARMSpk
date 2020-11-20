@@ -19,7 +19,45 @@ set -x
 TEST=sdetestC
 OUT=${TEST}_out
 mkdir -p ${OUT}
-gcc ./${TEST}.c -o ${OUT}/${TEST}
+icc ./${TEST}.c -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST}
+mv dcfg-out.* ${OUT}
+
+TEST=sdetest2C
+OUT=${TEST}_out_L1
+mkdir -p ${OUT}
+icpc -xHOST -O3 -DMIN_SIZE=$((8*1024)) -DMAX_SIZE=$((16*1024)) ./${TEST}.cpp -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST}
+mv dcfg-out.* ${OUT}
+OUT=${TEST}_out_L2
+mkdir -p ${OUT}
+icpc -xHOST -O3 -DMIN_SIZE=$((128*1024)) -DMAX_SIZE=$((256*1024)) ./${TEST}.cpp -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST}
+mv dcfg-out.* ${OUT}
+OUT=${TEST}_out_L3
+mkdir -p ${OUT}
+icpc -xHOST -O3 -DMIN_SIZE=$((2048*1024)) -DMAX_SIZE=$((4096*1024)) ./${TEST}.cpp -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST}
+mv dcfg-out.* ${OUT}
+OUT=${TEST}_out_DRAM
+mkdir -p ${OUT}
+icpc -xHOST -O3 -DMIN_SIZE=$((64*1024*1024)) -DMAX_SIZE=$((128*1024*1024)) ./${TEST}.cpp -o ${OUT}/${TEST}
 ../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
 	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
 	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
@@ -30,7 +68,7 @@ mv dcfg-out.* ${OUT}
 TEST=sdetestF
 OUT=${TEST}_out
 mkdir -p ${OUT}
-gfortran ./${TEST}.f -o ${OUT}/${TEST}
+ifort ./${TEST}.f -o ${OUT}/${TEST}
 ../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
 	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
 	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \

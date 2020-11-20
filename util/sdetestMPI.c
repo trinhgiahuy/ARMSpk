@@ -2,17 +2,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void __attribute__ ((noinline)) xxxx_add(int *i) {*i+=7;}
+
 //https://crypto.stanford.edu/pbc/notes/pi/code.html
-void __attribute__ ((noinline)) xxxx_compute(char *pi) {
+int __attribute__ ((noinline)) xxxx_compute(char *pi) {
     int r[2800 + 1];
     int i, j, k;
     int b, d;
-    int c = 0;
+    int c = 0, c0=(int)pi;
 
     for (i = 0; i < 2800; i++)
         r[i] = 2000;
 
     for (k = 2800, j = 0; k > 0; k -= 14, j+=4) {
+        xxxx_add(&c0);
         d = 0;
 
         i = k;
@@ -29,6 +32,16 @@ void __attribute__ ((noinline)) xxxx_compute(char *pi) {
         sprintf(pi+j, "%04d", c + d / 10000);
         c = d % 10000;
     }
+    return c0;
+}
+
+int __attribute__ ((noinline)) xxxx_sub(int c0) {
+    int i, j, k;
+    int d0 = -1 * c0;
+    for (k = 2800, j = 0; k > 0; k -= 14, j+=4) {
+        xxxx_add(&d0);
+    }
+    return -1 * d0;
 }
 
 int main(int argc, char** argv) {
@@ -50,12 +63,13 @@ int main(int argc, char** argv) {
 
     char* pi = malloc(801);
     pi[800] = '\0';
-    xxxx_compute(pi);
+    int bs=xxxx_compute(pi);
+    int bs2=xxxx_sub(bs);
 
     // Print off a hello world message
     printf("Hello world from processor %s, rank %d out of %d processors "
-           "with 800 digits of PI: %s\n", processor_name, world_rank,
-           world_size, pi);
+           "with 800 digits of PI: %s (bs:%d,%d)\n", processor_name, world_rank,
+           world_size, pi, bs, bs2);
 
     free(pi);
 

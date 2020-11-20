@@ -103,6 +103,9 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 # llvm hates: `fs addr32 nop`, check llvm-objdump to replace
                 fn_asm_in = sub(r'fs\s+addr32\s+nop', r'nop', fn_asm_in,
                                 count=0, flags=IGNORECASE)
+                # llvm hates: `ds jmpq ...`, check llvm-objdump to replace
+                fn_asm_in = sub(r'ds\s+jmpq\s+\*', r'jmpq *', fn_asm_in,
+                                count=0, flags=IGNORECASE)
 
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
 
@@ -964,45 +967,16 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
     #    if bbid==1:
     #        print(bdata)
 
-    curr_bbid, branches = start_bbid, []
-    out_edge_set = set(blockdata[curr_bbid]['out_edges'].keys())
+    branches = [[start_bbid, out_edge]
+                for out_edge in blockdata[start_bbid]['out_edges'].keys()]
     # build spanning tree
-    while True:
-        print('curr:', curr_bbid)
-        # if only 1 out-edge from this block, then traverse further down
-        if len(out_edge_set) == 1:
-            next_bbid = out_edge_set.pop()
-        # if more than one, then traverse, but store block+edges for later
-        elif len(out_edge_set) > 1:
-            next_bbid = out_edge_set.pop()
-            branches.append([curr_bbid, deepcopy(out_edge_set)])
-            print('add to branch:', curr_bbid, out_edge_set)
-        # if none, go to last branch and continue from there
-        elif len(branches) > 0:
-            # test if last branch has more than single non-traversed edge left
-            if len(branches[-1][1]) > 1:
-                curr_bbid, next_bbid = branches[-1][0], branches[-1][1].pop()
-            else:
-                curr_bbid, next_bbid = branches.pop()
-                next_bbid = next_bbid.pop()
-            print('pick frmo branch:', curr_bbid, next_bbid )
-        # and if no branches left, then we are done
-        else:
-            break
-
-        if curr_bbid ==59 or curr_bbid==60:
-            print('1', curr_bbid, next_bbid, blockdata[curr_bbid]['out_edges'], out_edge_set)
-
-        if next_bbid ==59 or next_bbid==60:
-            print('2', next_bbid, curr_bbid)
-
+    while len(branches) > 0:
+        curr_bbid, next_bbid = branches.pop()
         curr2next_bbid_edge = blockdata[curr_bbid]['out_edges'][next_bbid]
 
         # if the edge (curr_bbid->next_bbid) isn't used by the thread?
         iter_cnt = curr2next_bbid_edge['ThreadExecCnts'][thread_id]
         if iter_cnt < 1:
-            out_edge_set = set()
-            print('jens1')
             continue
         else:
             edge_weight = iter_cnt * curr2next_bbid_edge['CyclesPerIteration']
@@ -1011,30 +985,13 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
         if curr_bbid == next_bbid or G.has_node(next_bbid):
             G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
                        cpu_cycles=edge_weight)
-            print('jens2')
             continue
-        elif G.has_node(next_bbid):
-            if has_path(G, next_bbid, curr_bbid):
-                G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
-                           cpu_cycles=edge_weight)
-                out_edge_set = set()
-                print('jens3')
-                continue
-            #try:
-            #    _ = find_cycle(G, next_bbid)
-            #    G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
-            #               cpu_cycles=edge_weight)
-            #    out_edge_set = set()
-            #    print('jens3')
-            #    continue
-            #except NetworkXNoCycle:
-            #    pass
+
         # or simply add the edge and continue
         G.add_edge(curr_bbid, next_bbid, cpu_cycles=edge_weight)
 
-        curr_bbid = next_bbid
-        out_edge_set = set(blockdata[curr_bbid]['out_edges'].keys())
-        print('jens4')
+        branches += [[next_bbid, out_edge]
+                     for out_edge in blockdata[next_bbid]['out_edges'].keys()]
 
     return G
 
@@ -1328,16 +1285,15 @@ def main():
             break
         thread_id += 1
 
-        bbids= set(data.keys())
-        nodes= set(list(G))
-        print('jens G:', G)
-        print('jens bbids:', bbids)
-        print('jens nodes:', nodes)
-        print('jens diff1:', nodes.difference(bbids))
-        print('jens diff2:', bbids.difference(nodes))
-
-        print("Edges of graph: ")
-        print(G.edges.data())
+        #bbids= set(data.keys())
+        #nodes= set(list(G))
+        #print('jens G:', G)
+        #print('jens bbids:', bbids)
+        #print('jens nodes:', nodes)
+        #print('jens diff1:', nodes.difference(bbids))
+        #print('jens diff2:', bbids.difference(nodes))
+        #print("Edges of graph: ")
+        #print(G.edges.data())
 
         total_cycles = G.size(weight='cpu_cycles')
         print('Total CPU cycles on rank %s and thread ID %s : %s\n'
