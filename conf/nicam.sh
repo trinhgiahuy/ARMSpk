@@ -14,7 +14,7 @@ export RUNVTUNE="no"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="10|1 10|2 10|3 10|4 10|5 10|6"
-	export BESTCONF="10|6"
+	export BESTCONF="10|4"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="10|5 10|6 10|7 10|10 10|15 10|20 10|25"
