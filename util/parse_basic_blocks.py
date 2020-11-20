@@ -11,7 +11,9 @@ from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
 from re import compile, sub, IGNORECASE
 from collections import defaultdict
-import subprocess as subp
+from subprocess import run, PIPE
+from networkx import DiGraph, has_path, find_cycle, NetworkXNoCycle, kamada_kawai_layout
+from copy import deepcopy
 
 
 def _get_OBJDUMP_ASSEMBLY(sde_files=None):
@@ -39,15 +41,13 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
             continue
 
         # get objdump for each file (main binary and all shared libs)
-        p = subp.run(['objdump',
-                      '--disassemble',
-                      '--disassembler-options=att-mnemonic',
-                      '--no-show-raw-insn',
-                      '--wide',
-                      '--disassemble-zeroes',
-                      '--file-offsets',
-                      FILE_NAME],
-                     stdout=subp.PIPE)
+        p = run(['objdump',
+                 '--disassemble',
+                 '--disassembler-options=att-mnemonic',
+                 '--no-show-raw-insn',
+                 '--wide',
+                 '--disassemble-zeroes',
+                 '--file-offsets', FILE_NAME], stdout=PIPE)
 
         curr_fn_os, load_os = None, None
         for line in p.stdout.decode().splitlines():
@@ -136,17 +136,15 @@ def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
         r'^(.*)\s+(<.*>)\s+\(\s*(File\s+Offset:\s+)(\w+)\s*\)$')
 
     # open interval [.,.), so --stop-address=0x... is excluded from output
-    p = subp.run(['objdump',
-                  '--disassemble',
-                  '--disassembler-options=att-mnemonic',
-                  '--no-show-raw-insn',
-                  '--wide',
-                  '--disassemble-zeroes',
-                  '--file-offsets',
-                  '--start-address=0x' + format(start_addr, 'x'),
-                  '--stop-address=0x' + format(start_addr + num_byte, 'x'),
-                  sde_file],
-                 stdout=subp.PIPE)
+    p = run(['objdump',
+             '--disassemble',
+             '--disassembler-options=att-mnemonic',
+             '--no-show-raw-insn',
+             '--wide',
+             '--disassemble-zeroes',
+             '--start-address=0x' + format(start_addr, 'x'),
+             '--stop-address=0x' + format(start_addr + num_byte, 'x'),
+             '--file-offsets', sde_file], stdout=PIPE)
 
     for line in p.stdout.decode().splitlines():
         if fn_asm_part.match(line):
@@ -656,8 +654,6 @@ def _get_helping_mappers(sde_data=None):
 def convert_sde_data_to_something_usable(sde_data=None):
     assert(isinstance(sde_data, dict))
 
-    from copy import deepcopy
-
     data = {}
 
     # ___Naming Scheme___
@@ -891,17 +887,15 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
 
             # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
             # get 'Total Cycles' from llvm-mca for each basic block
-            p = subp.run(['llvm-mca',
-                          '--mtriple=x86_64-unknown-linux-gnu',
-                          '--mcpu=native',
-                          '--iterations=%s' % icnt,
-                          '-timeline',
-                          '-timeline-max-iterations=1',
-                          '-timeline-max-cycles=2147483648', # call instr long
-                          '-all-stats',
-                          '-print-imm-hex',
-                          mca_in_fn],
-                         stdout=subp.PIPE, stderr=subp.PIPE)
+            p = run(['llvm-mca',
+                     '--mtriple=x86_64-unknown-linux-gnu',
+                     '--mcpu=native',
+                     '--iterations=%s' % icnt,
+                     '-timeline',
+                     '-timeline-max-iterations=1',
+                     '-timeline-max-cycles=2147483648', # call instr long
+                     '-all-stats',
+                     '-print-imm-hex', mca_in_fn], stdout=PIPE, stderr=PIPE)
 
             stderr = p.stderr.decode()
             stderr = sub(r'warning: found a return instruction in the input' +
@@ -942,11 +936,107 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                 cycles_per_iter = \
                     timeline_data[num_instr - 1][1].find('R') \
                     - timeline_data[num_asm_bbid - 1][1].find('R')
+            assert(cycles_per_iter >= 0)
 
             blockdata[bbid]['out_edges'][sink_bbid]['CyclesPerIteration'] = \
                 cycles_per_iter
 
             remove(mca_in_fn)
+
+
+def bb_graph(blockdata=None, mapper=None, thread_id=0):
+    assert(isinstance(blockdata, dict) and isinstance(mapper, dict)
+           and isinstance(thread_id, int) and thread_id > -1)
+
+    # do depth-first traversal from START to build graph while avoiding cycles
+    start_bbid = mapper['sbn2sbid']['START']
+    if thread_id >= len(next(iter(blockdata[start_bbid]['out_edges'].values()))['ThreadExecCnts']):
+        return None
+
+    G = DiGraph()
+
+    #for bbid, bdata in blockdata.items():
+    #    for sink_bbid, sink_data in bdata['out_edges'].items():
+    #        for thread in range(len(sink_data['ThreadExecCnts'])):
+    #            w = sink_data['ThreadExecCnts'][thread] \
+    #                * sink_data['CyclesPerIteration']
+    #            G.add_edge(bbid, sink_bbid, cpu_cycles=w)
+    #    if bbid==1:
+    #        print(bdata)
+
+    curr_bbid, branches = start_bbid, []
+    out_edge_set = set(blockdata[curr_bbid]['out_edges'].keys())
+    # build spanning tree
+    while True:
+        print('curr:', curr_bbid)
+        # if only 1 out-edge from this block, then traverse further down
+        if len(out_edge_set) == 1:
+            next_bbid = out_edge_set.pop()
+        # if more than one, then traverse, but store block+edges for later
+        elif len(out_edge_set) > 1:
+            next_bbid = out_edge_set.pop()
+            branches.append([curr_bbid, deepcopy(out_edge_set)])
+            print('add to branch:', curr_bbid, out_edge_set)
+        # if none, go to last branch and continue from there
+        elif len(branches) > 0:
+            # test if last branch has more than single non-traversed edge left
+            if len(branches[-1][1]) > 1:
+                curr_bbid, next_bbid = branches[-1][0], branches[-1][1].pop()
+            else:
+                curr_bbid, next_bbid = branches.pop()
+                next_bbid = next_bbid.pop()
+            print('pick frmo branch:', curr_bbid, next_bbid )
+        # and if no branches left, then we are done
+        else:
+            break
+
+        if curr_bbid ==59 or curr_bbid==60:
+            print('1', curr_bbid, next_bbid, blockdata[curr_bbid]['out_edges'], out_edge_set)
+
+        if next_bbid ==59 or next_bbid==60:
+            print('2', next_bbid, curr_bbid)
+
+        curr2next_bbid_edge = blockdata[curr_bbid]['out_edges'][next_bbid]
+
+        # if the edge (curr_bbid->next_bbid) isn't used by the thread?
+        iter_cnt = curr2next_bbid_edge['ThreadExecCnts'][thread_id]
+        if iter_cnt < 1:
+            out_edge_set = set()
+            print('jens1')
+            continue
+        else:
+            edge_weight = iter_cnt * curr2next_bbid_edge['CyclesPerIteration']
+
+        # check if we would close a (self-)loop -> convert to leaf
+        if curr_bbid == next_bbid or G.has_node(next_bbid):
+            G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
+                       cpu_cycles=edge_weight)
+            print('jens2')
+            continue
+        elif G.has_node(next_bbid):
+            if has_path(G, next_bbid, curr_bbid):
+                G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
+                           cpu_cycles=edge_weight)
+                out_edge_set = set()
+                print('jens3')
+                continue
+            #try:
+            #    _ = find_cycle(G, next_bbid)
+            #    G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
+            #               cpu_cycles=edge_weight)
+            #    out_edge_set = set()
+            #    print('jens3')
+            #    continue
+            #except NetworkXNoCycle:
+            #    pass
+        # or simply add the edge and continue
+        G.add_edge(curr_bbid, next_bbid, cpu_cycles=edge_weight)
+
+        curr_bbid = next_bbid
+        out_edge_set = set(blockdata[curr_bbid]['out_edges'].keys())
+        print('jens4')
+
+    return G
 
 
 def _id_in_range(interval, testid):
@@ -957,14 +1047,13 @@ def _id_in_range(interval, testid):
     return True
 
 
-def bb_graph(data=None, mapper=None, block_id_range=None, fn_name=None):
+def fn_graph(data=None, mapper=None, block_id_range=None, fn_name=None):
     assert(isinstance(data, dict) and isinstance(mapper, dict)
            and isinstance(block_id_range, list) and isinstance(fn_name, str))
 
-    import networkx as nx
     import plotly.graph_objs as go
 
-    G = nx.DiGraph()
+    G = DiGraph()
 
     # show all functions and their call-dependency
     for fid in mapper['func2fpbb']:
@@ -985,8 +1074,8 @@ def bb_graph(data=None, mapper=None, block_id_range=None, fn_name=None):
                         added.append([func, adj_func])
                         G.add_edge(func, adj_func)
 
-    pos = nx.kamada_kawai_layout(G)
-    # pos = nx.spectral_layout(G)
+    pos = kamada_kawai_layout(G)
+    # pos = spectral_layout(G)
     for node in G.nodes:
         G.nodes[node]['pos'] = list(pos[node])
 
@@ -1137,7 +1226,7 @@ def init_dash_for_vis(data=None, mapper=None):
                 html.Div(
                     className='eight columns',
                     children=[dcc.Graph(id='my-graph',
-                                        figure=bb_graph(data, mapper,
+                                        figure=fn_graph(data, mapper,
                                                         block_id_range,
                                                         search_fn_name))],
                 ),
@@ -1172,7 +1261,7 @@ def init_dash_for_vis(data=None, mapper=None):
         nonlocal data, mapper, block_id_range, search_fn_name
         block_id_range = [int(input1), int(input2)]
         search_fn_name = input2
-        return bb_graph(data, mapper, [int(input1), int(input2)], input3)
+        return fn_graph(data, mapper, [int(input1), int(input2)], input3)
 
     @app.callback(
         dash.dependencies.Output('hover-data', 'children'),
@@ -1191,6 +1280,7 @@ def init_dash_for_vis(data=None, mapper=None):
 
 
 def main():
+    from psutil import cpu_freq
     from argparse import ArgumentParser
 
     arg_parser = ArgumentParser()
@@ -1229,7 +1319,40 @@ def main():
     data, mapper = convert_sde_data_to_something_usable(sde_data)
     del sde_data
 
+    cpufreq = cpu_freq()
     simulate_cycles_with_LLVM_MCA(data, mapper)
+    total_cycles_per_thread, thread_id = [], 0
+    while True:
+        G = bb_graph(data, mapper, thread_id)
+        if G == None:
+            break
+        thread_id += 1
+
+        bbids= set(data.keys())
+        nodes= set(list(G))
+        print('jens G:', G)
+        print('jens bbids:', bbids)
+        print('jens nodes:', nodes)
+        print('jens diff1:', nodes.difference(bbids))
+        print('jens diff2:', bbids.difference(nodes))
+
+        print("Edges of graph: ")
+        print(G.edges.data())
+
+        total_cycles = G.size(weight='cpu_cycles')
+        print('Total CPU cycles on rank %s and thread ID %s : %s\n'
+              % (0, thread_id, total_cycles) +
+              '(Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
+              % (total_cycles / (cpufreq.min * pow(10, 6)),
+                 total_cycles / (cpufreq.current * pow(10, 6)),
+                 total_cycles / (cpufreq.max * pow(10, 6))))
+
+    #for x in nx.simple_cycles(G):
+    #    if 3 not in x:
+    #        print(x)
+
+#    total_cycles = nx.dag_longest_path_length(G, weight='cycles')
+#    print('Extrapolated runtime: %s', total_cycles)
 
     if args.get('__visualize__'):
         dash_app = init_dash_for_vis(data, mapper)
