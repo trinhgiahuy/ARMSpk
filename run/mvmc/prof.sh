@@ -39,7 +39,7 @@ for BEST in $BESTCONF; do
 	# prepare input for strong scaling (scale down a bit from the default 64 node run)
 	if [ -d ./job_mpi${NumMPI} ]; then rm -rf job_mpi${NumMPI}; fi
 	sed -i -e 's/^Lx = Ly = 12/Lx = Ly = 4 #12/' -e 's/^NTotalSample = 4096/NTotalSample = 512 #4096/' -e 's/^NOuterMPI = 64/NOuterMPI = 2 #64/' ./makeDef/makeDef_large.py
-	./makeDef/makeDef_large.py ${NumMPI}
+	python2 ./makeDef/makeDef_large.py ${NumMPI}
 	cd ./job_mpi${NumMPI}
 	if [ "x$RUNSDE" = "xyes" ]; then
 		echo "=== sde run ===" >> $LOG 2>&1
