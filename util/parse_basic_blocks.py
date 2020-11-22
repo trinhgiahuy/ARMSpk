@@ -98,13 +98,16 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                     fn_asm_in = '%s #%s (%s %s)' % (instr, func, file_os, addr)
                 # XXX handle exceptions:
                 # llvm hates: `bnd jmpq *%r11`, check llvm-objdump to replace
-                fn_asm_in = sub(r'bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
+                fn_asm_in = sub(r'^bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
                                 count=0, flags=IGNORECASE)
                 # llvm hates: `fs addr32 nop`, check llvm-objdump to replace
-                fn_asm_in = sub(r'fs\s+addr32\s+nop', r'nop', fn_asm_in,
+                fn_asm_in = sub(r'^fs\s+addr32\s+nop', r'nop', fn_asm_in,
                                 count=0, flags=IGNORECASE)
                 # llvm hates: `ds jmpq ...`, check llvm-objdump to replace
-                fn_asm_in = sub(r'ds\s+jmpq\s+\*', r'jmpq *', fn_asm_in,
+                fn_asm_in = sub(r'^ds\s+jmpq\s+\*', r'jmpq *', fn_asm_in,
+                                count=0, flags=IGNORECASE)
+                # llvm hates: `jg,pt ...`, check llvm-objdump to replace
+                fn_asm_in = sub(r'^jg,pt\s+', r'jg ', fn_asm_in,
                                 count=0, flags=IGNORECASE)
 
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
