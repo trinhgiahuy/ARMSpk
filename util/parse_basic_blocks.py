@@ -871,7 +871,7 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
             # llvm-mca read assembly from file, so dump a copy to ramdisk
             mca_in_fn = '/dev/shm/asm_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
-            selfedge, icnt = False, 1
+            selfloop, twoblockloop, icnt = False, False, 1
             num_asm_bbid, num_asm_sink_bbid = \
                 blockdata[bbid]['NumASM'], blockdata[sink_bbid]['NumASM']
 
@@ -882,9 +882,18 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                 # self-edges indicate long running loops and compute phases
                 # hence we skip adding sink_block and increase iteration count
                 if bbid == sink_bbid:
-                    selfedge = True
+                    selfloop = True
                     icnt = 100
                     #FIXME: have to change to account for ThreadExecCnts array
+                # in case of a two-block loop we do that too but merge assembly
+                # but need to /2 the cycles, because the loop is counted twice
+                elif bbid in blockdata[sink_bbid]['out_edges']:
+                    twoblockloop = True
+                    icnt = 100
+                    mca_in_file.write('\n')
+                    mca_in_file.write('\n'.join([instr
+                                                 for offset, instr
+                                                 in blockdata[sink_bbid]['ASM']]))
                 else:
                     mca_in_file.write('\n')
                     mca_in_file.write('\n'.join([instr
@@ -899,7 +908,7 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                      '--iterations=%s' % icnt,
                      '-timeline',
                      '-timeline-max-iterations=1',
-                     '-timeline-max-cycles=2147483648', # call instr long
+                     '-timeline-max-cycles=%s' % pow(2, 31), # call asm is long
                      '-all-stats',
                      '-print-imm-hex', mca_in_fn], stdout=PIPE, stderr=PIPE)
 
@@ -934,8 +943,11 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                    or num_instr == icnt * len(timeline_data))   # self-edge
 
             # getting avg. estimated cycles per block is easy for self-edges
-            if selfedge:
-                cycles_per_iter = num_cycles / icnt
+            if selfloop:
+                cycles_per_iter = float(num_cycles) / icnt
+            # div2 cycles for two-block loops to adjust for later counting algo
+            elif twoblockloop:
+                cycles_per_iter = float(num_cycles) / icnt / 2
             # but for others we have to compare retirement (R) time difference
             # between the last instruction of the two blocks
             else:
@@ -1288,15 +1300,18 @@ def main():
             break
         thread_id += 1
 
-        #bbids= set(data.keys())
-        #nodes= set(list(G))
-        #print('jens G:', G)
-        #print('jens bbids:', bbids)
-        #print('jens nodes:', nodes)
-        #print('jens diff1:', nodes.difference(bbids))
-        #print('jens diff2:', bbids.difference(nodes))
-        #print("Edges of graph: ")
-        #print(G.edges.data())
+        if 0:
+            print('jens G:', G)
+            bbids= set(data.keys())
+            nodes= set(list(G))
+            print('jens bbids:', bbids)
+            print('jens nodes:', nodes)
+            print('jens diff1:', nodes.difference(bbids))
+            print('jens diff2:', bbids.difference(nodes))
+            print("Edges of graph: ")
+            #print(G.edges.data())
+            for d in G.edges.data():
+                print(d)
 
         total_cycles = G.size(weight='cpu_cycles')
         print('Total CPU cycles on rank %s and thread ID %s : %s\n'
