@@ -82,3 +82,6 @@
 [submodule "dep/spack"]
 	path = dep/spack
 	url = https://github.com/spack/spack
+[submodule "dep/mpi-wrap-gen"]
+	path = dep/mpi-wrap-gen
+	url = https://github.com/LLNL/wrap.git
