@@ -9,10 +9,11 @@ from os import path, getpid, remove
 from sys import exit
 from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
-from re import compile, sub, IGNORECASE
+from re import compile, search, sub, IGNORECASE
 from collections import defaultdict
 from subprocess import run, PIPE
-from networkx import DiGraph, has_path, find_cycle, NetworkXNoCycle, kamada_kawai_layout
+from networkx import DiGraph, has_path, find_cycle, dfs_edges, \
+    NetworkXNoCycle, kamada_kawai_layout
 from copy import deepcopy
 
 
@@ -866,19 +867,41 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
     cyc_cnt = compile(r'^Total Cycles:\s+(\d+)$')
     tl_pipe = compile(r'^(\[[\d,]+)\]\s+([\.D]+[DReE=\-\.\s]+)\s+([\.\(]?\w{2,}.*)$')
 
+    #fid2fn_m, bbid2fid_m, sbid2sbn_m = \
+    #    mapper['fid2fn'], mapper['bbid2fid'], mapper['sbid2sbn']
+    #filter_list = [] #['/libmpi.so', '/libmpifort.so',
+    #                 # '/librdmacm.so', '/libibverbs.so',
+    #                 # '/libibverbs/', '/libfabric/']
+
     for bbid, bdata in blockdata.items():
-        for sink_bbid, sink_data in bdata['out_edges'].items():
+        for sink_bbid, edge_data in bdata['out_edges'].items():
+
+            sink_bdata = blockdata[sink_bbid]
+
+            # if either of the blocks (or both) is a part of a filtered file
+            # (like libmpi) then simply set the block's CPU cycles to 0
+            #blocks_on_filter_list = False
+            #for filter_n in filter_list:
+            #    if bbid in sbid2sbn_m or sink_bbid in sbid2sbn_m:
+            #        break
+            #    if fid2fn_m[bbid2fid_m[sink_bbid]].find(filter_n) > -1 or \
+            #            fid2fn_m[bbid2fid_m[bbid]].find(filter_n) > -1:
+            #        edge_data['CyclesPerIter'] = 0
+            #        blocks_on_filter_list = True
+            #if blocks_on_filter_list:
+            #    continue
+
             # llvm-mca read assembly from file, so dump a copy to ramdisk
             mca_in_fn = '/dev/shm/asm_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
             selfloop, twoblockloop, icnt = False, False, 1
             num_asm_bbid, num_asm_sink_bbid = \
-                blockdata[bbid]['NumASM'], blockdata[sink_bbid]['NumASM']
+                bdata['NumASM'], sink_bdata['NumASM']
 
             with open(mca_in_fn, 'w') as mca_in_file:
                 mca_in_file.write('\n'.join([instr
                                              for offset, instr
-                                             in blockdata[bbid]['ASM']]))
+                                             in bdata['ASM']]))
                 # self-edges indicate long running loops and compute phases
                 # hence we skip adding sink_block and increase iteration count
                 if bbid == sink_bbid:
@@ -887,18 +910,18 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                     #FIXME: have to change to account for ThreadExecCnts array
                 # in case of a two-block loop we do that too but merge assembly
                 # but need to /2 the cycles, because the loop is counted twice
-                elif bbid in blockdata[sink_bbid]['out_edges']:
+                elif bbid in sink_bdata['out_edges']:
                     twoblockloop = True
                     icnt = 100
                     mca_in_file.write('\n')
                     mca_in_file.write('\n'.join([instr
                                                  for offset, instr
-                                                 in blockdata[sink_bbid]['ASM']]))
+                                                 in sink_bdata['ASM']]))
                 else:
                     mca_in_file.write('\n')
                     mca_in_file.write('\n'.join([instr
                                                  for offset, instr
-                                                 in blockdata[sink_bbid]['ASM']]))
+                                                 in sink_bdata['ASM']]))
 
             # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
             # get 'Total Cycles' from llvm-mca for each basic block
@@ -945,6 +968,16 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
             # getting avg. estimated cycles per block is easy for self-edges
             if selfloop:
                 cycles_per_iter = float(num_cycles) / icnt
+                #NOTE: llvm-mca completely messes up movs[b/w/q] estimates
+                #      so we get estimated cycles from sdetest3C.c
+                if num_instr == 100 \
+                        and search(r'^rep\s+movs[bwq]\s+', bdata['ASM'][0][1]):
+                    if search(r'\s+movsb\s+', bdata['ASM'][0][1]):
+                        cycles_per_iter = 0.52
+                    elif search(r'\s+movsw\s+', bdata['ASM'][0][1]):
+                        cycles_per_iter = 2 * 0.52
+                    else:
+                        cycles_per_iter = 4 * 0.52
             # div2 cycles for two-block loops to adjust for later counting algo
             elif twoblockloop:
                 cycles_per_iter = float(num_cycles) / icnt / 2
@@ -956,9 +989,27 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
                     - timeline_data[num_asm_bbid - 1][1].find('R')
             assert(cycles_per_iter >= 0)
 
-            blockdata[bbid]['out_edges'][sink_bbid]['CyclesPerIteration'] = \
-                cycles_per_iter
+            #NOTE: llvm-mca assumption of 100 cycles for a 'call[q]' is far too
+            #      much as measurements with sdetest4C.c show, more like ~30
+            #      minus the 12 cycles overhead for assembly around the test
+            #      => so, lets assume ~20 cycles if its a ton of calls (>1000)
+            #      (https://www.agner.org/optimize/instruction_tables.pdf also
+            #      lists on 74 cycles for old Nehalem => maybe set somewhere
+            #      in between 70 and 20 as compromise...?)
+            assumed_cycle_per_call = 40
+            if cycles_per_iter > assumed_cycle_per_call \
+                    and search(r'call[q]?\s+', sink_bdata['ASM'][-1][1]) \
+                    and max(edge_data['ThreadExecCnts']) > 1000:
+                cycles_per_iter -= assumed_cycle_per_call
 
+            if cycles_per_iter == 0:
+                # leave a tiny weight, otherwise we get into trouble if we
+                # filter by {ThreadExecCnts|CyclesPerIter}=0 in bb_graph fn
+                edge_data['CyclesPerIter'] = pow(10, -10)
+            else:
+                edge_data['CyclesPerIter'] = cycles_per_iter
+
+            # clean up the temp file under /dev/shm
             remove(mca_in_fn)
 
 
@@ -968,7 +1019,9 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
 
     # do depth-first traversal from START to build graph while avoiding cycles
     start_bbid = mapper['sbn2sbid']['START']
-    if thread_id >= len(next(iter(blockdata[start_bbid]['out_edges'].values()))['ThreadExecCnts']):
+    # but sanity check if we are not out-of-bounds with the thread number
+    first_out_edge =  next(iter(blockdata[start_bbid]['out_edges'].values()))
+    if thread_id >= len(first_out_edge['ThreadExecCnts']):
         return None
 
     G = DiGraph()
@@ -977,7 +1030,7 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
     #    for sink_bbid, sink_data in bdata['out_edges'].items():
     #        for thread in range(len(sink_data['ThreadExecCnts'])):
     #            w = sink_data['ThreadExecCnts'][thread] \
-    #                * sink_data['CyclesPerIteration']
+    #                * sink_data['CyclesPerIter']
     #            G.add_edge(bbid, sink_bbid, cpu_cycles=w)
     #    if bbid==1:
     #        print(bdata)
@@ -989,12 +1042,14 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
         curr_bbid, next_bbid = branches.pop()
         curr2next_bbid_edge = blockdata[curr_bbid]['out_edges'][next_bbid]
 
-        # if the edge (curr_bbid->next_bbid) isn't used by the thread?
-        iter_cnt = curr2next_bbid_edge['ThreadExecCnts'][thread_id]
-        if iter_cnt < 1:
+        iter_cnt, cycle_cnt = \
+            curr2next_bbid_edge['ThreadExecCnts'][thread_id], \
+            curr2next_bbid_edge['CyclesPerIter']
+        # if edge (curr_bbid->next_bbid) isn't used or filtered for the thread?
+        if iter_cnt == 0 or cycle_cnt == 0:
             continue
         else:
-            edge_weight = iter_cnt * curr2next_bbid_edge['CyclesPerIteration']
+            edge_weight = iter_cnt * cycle_cnt
 
         # check if we would close a (self-)loop -> convert to leaf
         if curr_bbid == next_bbid or G.has_node(next_bbid):
@@ -1002,13 +1057,84 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
                        cpu_cycles=edge_weight)
             continue
 
-        # or simply add the edge and continue
+        # or simply add the edge and continue the DFS
         G.add_edge(curr_bbid, next_bbid, cpu_cycles=edge_weight)
 
         branches += [[next_bbid, out_edge]
                      for out_edge in blockdata[next_bbid]['out_edges'].keys()]
 
     return G
+
+
+def postprocess_bb_graph(bb_graph=None, blockdata=None, mapper=None):
+    assert(isinstance(bb_graph, DiGraph) and isinstance(blockdata, dict) and
+           isinstance(mapper, dict))
+
+    start_bbid = mapper['sbn2sbid']['START']
+
+    fid2fn_m, bbid2fid_m, sbid2sbn_m = \
+        mapper['fid2fn'], mapper['bbid2fid'], mapper['sbid2sbn']
+    filter_libs = ['/libmpi.so', '/libmpifort.so']
+    fid_blacklist = [fid for fid, fn in mapper['fid2fn'].items()
+                     if len([f for f in filter_libs if fn.find(f) > -1]) > 0]
+
+    print('blacklist:', [[x, fid2fn_m[x]] for x in fid_blacklist])
+
+    # add 'processed' label to all edges
+    for edge in bb_graph.edges():
+        bb_graph.edges[edge]['processed'] = False
+
+    # iterate over all edges in the graph
+    for curr_bbid, next_bbid in dfs_edges(bb_graph, source=start_bbid):
+        print('g1:', curr_bbid, next_bbid)
+        try:
+            print(next_bbid in bbid2fid_m, bbid2fid_m[next_bbid] in fid_blacklist, bbid2fid_m[curr_bbid] not in fid_blacklist, bb_graph.edges[curr_bbid, next_bbid]['processed'])
+        except:
+            print(next_bbid in bbid2fid_m, curr_bbid in bbid2fid_m)
+            pass
+        if bb_graph.edges[curr_bbid, next_bbid]['processed']:
+            continue
+        else:
+            bb_graph.edges[curr_bbid, next_bbid]['processed'] = True
+
+        # start second manual DFS if jump from non-filtered file (e.g. the app)
+        # into a filtered file (e.g. the MPI lib) and set cycles to 0 for
+        # all successors until jump back to where we initially jumped in from
+        if not (next_bbid in bbid2fid_m \
+                and bbid2fid_m[next_bbid] in fid_blacklist \
+                and bbid2fid_m[curr_bbid] not in fid_blacklist):
+            continue
+
+        print('g2:', curr_bbid, next_bbid)
+
+        # set all incoming to 'processed' so that we don't do it multiple times
+        for bbid in bb_graph.predecessors(next_bbid):
+            bb_graph.edges[bbid, next_bbid]['processed'] = True
+
+        # also get all fid which enter the filtered region
+        fid_whitelist = [bbid2fid_m[bbid]
+                         for bbid in bb_graph.predecessors(next_bbid)]
+        assert(set(fid_blacklist).isdisjoint(set(fid_whitelist)))
+        print('whitelist:', [[x, fid2fn_m[x]] for x in fid_whitelist])
+
+        ignore_subtree = None
+        # traverse down the DFS and set cycles to 0 until we jump back out
+        for curr2_bbid, next2_bbid in dfs_edges(bb_graph, source=next_bbid):
+
+            # ignore subtrees below the break point
+            if ignore_subtree and (curr2_bbid, next2_bbid) in ignore_subtree:
+                continue
+            elif ignore_subtree:
+                ignore_subtree = None
+
+            if not (next2_bbid in bbid2fid_m \
+                    and bbid2fid_m[next2_bbid] in fid_whitelist):
+                bb_graph.edges[curr2_bbid, next2_bbid]['cpu_cycles'] = 0
+                bb_graph.edges[curr2_bbid, next2_bbid]['processed'] = True
+                print('g3:', curr2_bbid, next2_bbid)
+            else:
+                # if jump out we have to stop the DFS traversal below here
+                ignore_subtree = dfs_edges(bb_graph, source=next2_bbid)
 
 
 def _id_in_range(interval, testid):
@@ -1293,14 +1419,17 @@ def main():
 
     cpufreq = cpu_freq()
     simulate_cycles_with_LLVM_MCA(data, mapper)
-    total_cycles_per_thread, thread_id = [], 0
+    total_cycles_per_thread, thread_id = [], -1
     while True:
+        thread_id += 1
         G = bb_graph(data, mapper, thread_id)
         if G == None:
             break
-        thread_id += 1
 
-        if 0:
+        ## apply some lib filtering or other stuff
+        #postprocess_bb_graph(G, data, mapper)
+
+        if 1:
             print('jens G:', G)
             bbids= set(data.keys())
             nodes= set(list(G))
@@ -1320,6 +1449,9 @@ def main():
               % (total_cycles / (cpufreq.min * pow(10, 6)),
                  total_cycles / (cpufreq.current * pow(10, 6)),
                  total_cycles / (cpufreq.max * pow(10, 6))))
+
+        G.clear()
+        del G
 
     #for x in nx.simple_cycles(G):
     #    if 3 not in x:
