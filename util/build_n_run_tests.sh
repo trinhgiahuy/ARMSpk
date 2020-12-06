@@ -65,6 +65,29 @@ icpc -xHOST -O3 -DMIN_SIZE=$((64*1024*1024)) -DMAX_SIZE=$((128*1024*1024)) ./${T
 	./${OUT}/${TEST}
 mv dcfg-out.* ${OUT}
 
+TEST=sdetest3C
+OUT=${TEST}_out
+mkdir -p ${OUT}
+icc ./${TEST}.c -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST} 64 "A big black dog."
+mv dcfg-out.* ${OUT}
+
+TEST=sdetest4C
+OUT=${TEST}_out
+mkdir -p ${OUT}
+#doesnt work with icc (or gcc & > -O1)
+gcc -O1 ./${TEST}.c -o ${OUT}/${TEST}
+../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -- \
+	./${OUT}/${TEST} 1000000
+mv dcfg-out.* ${OUT}
+
 TEST=sdetestF
 OUT=${TEST}_out
 mkdir -p ${OUT}
@@ -94,13 +117,12 @@ mv dcfg-out.* ${OUT}
 TEST=sdetest2MPI
 OUT=${TEST}_out
 mkdir -p ${OUT}
-mpiicc -I${ADVISOR_2018_DIR}/include ./${TEST}.c -o ${OUT}/${TEST} -L${ADVISOR_2018_DIR}/lib64 -littnotify
+mpiicc -I${ADVISOR_2018_DIR}/include ./${TEST}.c -o ${OUT}/${TEST}
 mpiexec ${MPIEXECOPT} -np 4 bash -c "
 ../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
 	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
 	-dcfg:out_base_name dcfg-out.rank-\"\$MPI_LOCALRANKID\" \
 	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
-	-start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat \
 	-bdw -- \
 	./${OUT}/${TEST}"
 mv dcfg-out.* ${OUT}
@@ -113,13 +135,13 @@ mkdir -p ${OUT}
 	./disable-mpi-in-sde.w
 mpiicc -O2 -Wall -fPIC ${OUT}/disable-mpi-in-sde.c -shared \
 	-o ${OUT}/disable-mpi-in-sde.so
-mpiicc -I${ADVISOR_2018_DIR}/include ./${TEST}.c -o ${OUT}/${TEST} -L${ADVISOR_2018_DIR}/lib64 -littnotify
-mpiexec ${MPIEXECOPT} -np 4 bash -c "LD_PRELOAD=${OUT}/disable-mpi-in-sde.so
+mpiicc -I${ADVISOR_2018_DIR}/include ./${TEST}.c -o ${OUT}/${TEST} #-L${ADVISOR_2018_DIR}/lib64 -littnotify
+mpiexec ${MPIEXECOPT} -genv LD_PRELOAD=${OUT}/disable-mpi-in-sde.so -np 4 bash -c "
 ../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
 	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
 	-dcfg:out_base_name dcfg-out.rank-\"\$MPI_LOCALRANKID\" \
 	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
-	-start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat \
+	-start_ssc_mark 11dead11 -stop_ssc_mark 22dead22 \
 	-bdw -- \
 	./${OUT}/${TEST}"
 mv dcfg-out.* ${OUT}
