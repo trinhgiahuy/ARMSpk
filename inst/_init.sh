@@ -62,7 +62,7 @@ if [ ! -f $ROOTDIR/dep/$BM/likwid-setFrequencies ]; then
 	cat /proc/cmdline | grep 'intel_pstate=disable'  > /dev/null
 	# vim /etc/default/grub
 	# grub2-mkconfig -o /boot/grub2/grub.cfg
-	# grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+	# grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
 	# reboot
 	if [ ! "x$?" = "x0" ]; then echo -e 'Note: for likwid to work, please add 'intel_pstate=disable' to kernel parameter and reboot; Afterwards, run this script again'; fi
 	echo -e "Please execute:\n  export PATH=$ROOTDIR/dep/$BM/bin:\$PATH\n  export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM/lib:\$LD_LIBRARY_PATH"
@@ -127,6 +127,34 @@ if [[ "`git branch`" = *"develop"* ]]; then
                 spack compiler find
         fi
 	spack install llvm@10.0.0%gcc@8.4.0 gold=False
+
+	#spack install openjdk@1.8.0_222-b10%gcc@8.4.0
+	#spack install maven@3.6.3%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	#spack install scala@2.11.11%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	#spack install hadoop@3.2.1%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	#sed -i "/a7e29e78bd43aa6d137f0bb0afd54a3017865d471456c6d436ae79475bbeb161/i \    version('2.4.0', sha256='b1d6d6cb49d8253b36df8372a722292bb323bd16315d83f0b0bafb66a4154ef2')" $ROOTDIR/dep/spack/var/spack/repos/builtin/packages/spark/package.py
+	#spack install spark@2.4.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	#spack load maven; spack load scala; spack load hadoop; spack load spark
+	#mvn -Dhadoop=3.2 -Dspark=2.4 -Dscala=2.12 clean package
+	#cd `spack find -p | /bin/grep hadoop | cut -d' ' -f2-`; sed -i '/<\/configuration>/i \  <property>\n    <name>fs.default.name</name>\n    <value>hdfs://localhost:8020</value>\n  </property>' etc/hadoop/core-site.xml
+	#./sbin/stop-all.sh
+	#rm -rf /tmp/*
+	#echo 'Y' | ./bin/hdfs namenode -format
+	#./sbin/start-all.sh
+	#cd `spack find -p | /bin/grep spark | cut -d' ' -f2-`
+	#export SPARK_DIST_CLASSPATH=`hadoop classpath`
+	#./sbin/start-master.sh ; sbin/start-slave.sh spark://`hostname`:7077 ; ###./sbin/start-all.sh not working
+	#cd HiBench
+	#cp conf/hadoop.conf.template conf/hadoop.conf
+	#cp conf/spark.conf.template conf/spark.conf
+	#sed -i -e "s#/PATH/TO/YOUR/HADOOP/ROOT#`spack find -p | /bin/grep hadoop | cut -d' ' -f2-`#" conf/hadoop.conf
+	#sed -i -e "s#/PATH/TO/YOUR/SPARK/HOME#`spack find -p | /bin/grep spark | cut -d' ' -f2-`#" conf/spark.conf
+	#sed -i -e "s#^hibench.spark.master.*#hibench.spark.master spark://`hostname`:7077#" conf/spark.conf
+	#sed -i -e "s#^hibench.masters.hostnames.*#hibench.masters.hostnames localhost#" conf/hibench.conf
+	#sed -i -e "s#^hibench.slaves.hostnames.*#hibench.slaves.hostnames localhost#" conf/hibench.conf
+	#./bin/workloads/micro/wordcount/prepare/prepare.sh
+	#./bin/workloads/micro/wordcount/hadoop/run.sh
+	#./bin/workloads/micro/wordcount/spark/run.sh
 fi
 cd $ROOTDIR
 
