@@ -996,11 +996,11 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
             #      (https://www.agner.org/optimize/instruction_tables.pdf also
             #      lists on 74 cycles for old Nehalem => maybe set somewhere
             #      in between 70 and 20 as compromise...?)
-            assumed_cycle_per_call = 40
+            assumed_cycle_per_call = 20
             if cycles_per_iter > assumed_cycle_per_call \
                     and search(r'call[q]?\s+', sink_bdata['ASM'][-1][1]) \
                     and max(edge_data['ThreadExecCnts']) > 1000:
-                cycles_per_iter -= assumed_cycle_per_call
+                cycles_per_iter -= (100 - assumed_cycle_per_call)
 
             if cycles_per_iter == 0:
                 # leave a tiny weight, otherwise we get into trouble if we
