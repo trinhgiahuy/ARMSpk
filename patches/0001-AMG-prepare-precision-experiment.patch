@@ -1,14 +1,14 @@
-From d8afc01db966ad105f67ec389c9ce47ee4390560 Mon Sep 17 00:00:00 2001
+From 5dd929cd73c1964fae12c664657db8190eff81e4 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Thu, 22 Feb 2018 21:41:17 +0900
-Subject: [PATCH 1/1] AMG: prepare precision experiment
+Subject: [PATCH] AMG: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore       |  3 +++
  Makefile.include |  4 ++--
- test/amg.c       | 28 ++++++++++++++++++++++++----
- 3 files changed, 29 insertions(+), 6 deletions(-)
+ test/amg.c       | 26 ++++++++++++++++++++++----
+ 3 files changed, 27 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -39,7 +39,7 @@ index b73ccce..15d0545 100644
  #INCLUDE_LFLAGS = -lm 
  
 diff --git a/test/amg.c b/test/amg.c
-index 68b67c5..922a343 100644
+index 68b67c5..a60b69a 100644
 --- a/test/amg.c
 +++ b/test/amg.c
 @@ -37,6 +37,12 @@
@@ -64,15 +64,7 @@ index 68b67c5..922a343 100644
     HYPRE_Int           arg_index;
     HYPRE_Int           print_usage;
     HYPRE_Int           build_rhs_type;
-@@ -144,6 +152,7 @@ main( hypre_int argc,
-    hypre_MPI_Init(&argc, &argv);
- 
-    hypre_MPI_Comm_rank(hypre_MPI_COMM_WORLD, &myid );
-+STOPSDE(0,myid);
- 
-    /*-----------------------------------------------------------
-     * Set defaults
-@@ -412,10 +421,15 @@ main( hypre_int argc,
+@@ -412,10 +420,15 @@ main( hypre_int argc,
        time_index = hypre_InitializeTiming("PCG Solve");
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_BeginTiming(time_index);
@@ -90,7 +82,7 @@ index 68b67c5..922a343 100644
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_EndTiming(time_index);
        hypre_PrintTiming("Problem 1: AMG-PCG Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
-@@ -450,7 +464,6 @@ main( hypre_int argc,
+@@ -450,7 +463,6 @@ main( hypre_int argc,
     /*-----------------------------------------------------------
      * Problem 2: simulate time-dependent problem AMG-GMRES
      *-----------------------------------------------------------*/
@@ -98,7 +90,7 @@ index 68b67c5..922a343 100644
     if (problem_id == 2)
     {
        HYPRE_Real eps;
-@@ -459,6 +472,9 @@ main( hypre_int argc,
+@@ -459,6 +471,9 @@ main( hypre_int argc,
        time_index = hypre_InitializeTiming("GMRES Solve");
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
        hypre_BeginTiming(time_index);
@@ -108,7 +100,7 @@ index 68b67c5..922a343 100644
        for (j=0; j < time_steps; j++)
        {
   
-@@ -552,6 +568,10 @@ main( hypre_int argc,
+@@ -552,6 +567,10 @@ main( hypre_int argc,
           }
        }
        hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
@@ -119,7 +111,7 @@ index 68b67c5..922a343 100644
        hypre_EndTiming(time_index);
        hypre_PrintTiming("Problem 2: Cumulative AMG-GMRES Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
        hypre_FinalizeTiming(time_index);
-@@ -569,7 +589,6 @@ main( hypre_int argc,
+@@ -569,7 +588,6 @@ main( hypre_int argc,
           hypre_printf("\n");
        }
     }
@@ -127,14 +119,6 @@ index 68b67c5..922a343 100644
  
     /*-----------------------------------------------------------
      * Print the solution
-@@ -595,6 +614,7 @@ main( hypre_int argc,
- */
-    hypre_MPI_Finalize();
- 
-+STARTSDE(0,myid);
-    return (0);
- }
- 
 -- 
 1.8.3.1
 

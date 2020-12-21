@@ -1,13 +1,13 @@
-From 44e8e846886f98539ab58feeee00e37db9bd0763 Mon Sep 17 00:00:00 2001
+From 1cc6382c94fe5598be2a97d291a18eedac46a2e3 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Tue, 15 May 2018 10:07:01 +0900
-Subject: [PATCH 1/1] BabelStream: prepare precision experiment
+Subject: [PATCH] BabelStream: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  OpenMP.make |  4 ++--
- main.cpp    | 15 ++++++++++++++-
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ main.cpp    | 13 ++++++++++++-
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/OpenMP.make b/OpenMP.make
 index 18a71bf..6275f5d 100644
@@ -32,7 +32,7 @@ index 18a71bf..6275f5d 100644
  OMP_CLANG_CPU = -fopenmp=libomp
  OMP_XL_CPU = -qsmp=omp -qthreaded
 diff --git a/main.cpp b/main.cpp
-index 4fd5125..8d17dd5 100644
+index 4fd5125..3606ed1 100644
 --- a/main.cpp
 +++ b/main.cpp
 @@ -39,6 +39,12 @@
@@ -48,23 +48,7 @@ index 4fd5125..8d17dd5 100644
  // Default size of 2^25
  unsigned int ARRAY_SIZE = 33554432;
  unsigned int num_times = 100;
-@@ -61,6 +67,7 @@ void parseArguments(int argc, char *argv[]);
- 
- int main(int argc, char *argv[])
- {
-+STOPSDE(0,0);
- 
-   parseArguments(argc, argv);
- 
-@@ -88,6 +95,7 @@ int main(int argc, char *argv[])
-       run<double>();
-   }
- 
-+STARTSDE(0,0);
- }
- 
- template <typename T>
-@@ -168,8 +176,10 @@ void run()
+@@ -168,8 +174,10 @@ void run()
    std::vector<std::vector<double>> timings(5);
  
    // Declare timers
@@ -76,7 +60,7 @@ index 4fd5125..8d17dd5 100644
    // Main loop
    for (unsigned int k = 0; k < num_times; k++)
    {
-@@ -204,6 +214,9 @@ void run()
+@@ -204,6 +212,9 @@ void run()
      timings[4].push_back(std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count());
  
    }

@@ -1,15 +1,14 @@
-From 619063a4ee9a08b55b0f815058de71af788a67fd Mon Sep 17 00:00:00 2001
+From 6413a699dcc243f05c3024f63b4f90b90a0dc6b1 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:54:32 +0900
-Subject: [PATCH 1/1] SW4lite: prepare precision experiment
+Subject: [PATCH] SW4lite: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  Makefile    | 14 +++++++-------
  src/EW-dg.C | 12 ++++++++++++
  src/EW.C    |  9 +++++++++
- src/main.C  |  8 ++++++++
- 4 files changed, 36 insertions(+), 7 deletions(-)
+ 3 files changed, 28 insertions(+), 7 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index 506c443..811f00b 100644
@@ -109,38 +108,6 @@ index b66c849..3ef1fe1 100644
     print_execution_time( time_start_solve, time_end_solve, "solver phase" );
     if( m_output_detailed_timing )
        print_execution_times( time_sum );
-diff --git a/src/main.C b/src/main.C
-index 9df8036..5364ea9 100644
---- a/src/main.C
-+++ b/src/main.C
-@@ -35,6 +35,12 @@
- using namespace std;
- #include "EW.h"
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- int main( int argc, char** argv )
- {
-    //MPI_Init(&argc, &argv);
-@@ -42,6 +48,7 @@ int main( int argc, char** argv )
-    double  time_start, time_end;
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-+STOPSDE(0,myRank);
- 
-    MPI_Barrier(MPI_COMM_WORLD);
-    time_start = MPI_Wtime();
-@@ -72,5 +79,6 @@ int main( int argc, char** argv )
- 
-    MPI_Finalize();
- 
-+STARTSDE(0,myRank);
-    return 0;
- }
 -- 
 1.8.3.1
 

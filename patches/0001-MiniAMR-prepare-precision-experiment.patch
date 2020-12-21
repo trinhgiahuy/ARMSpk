@@ -1,7 +1,7 @@
-From 06f4499ee2a0636f3a8b2d0125fd6a1f00a736b2 Mon Sep 17 00:00:00 2001
+From b276129b239a801d0f178a08ca8eb756e5925a13 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Wed, 3 Jul 2019 12:32:23 +0900
-Subject: [PATCH 1/1] MiniAMR: prepare precision experiment
+Subject: [PATCH] MiniAMR: prepare precision experiment
 
 update for nedo exp on mill
 
@@ -9,11 +9,9 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  openmp/Makefile |  8 ++++----
  openmp/driver.c | 12 ++++++++++++
- openmp/main.c   |  8 ++++++++
  ref/Makefile    |  8 ++++----
  ref/driver.c    | 12 ++++++++++++
- ref/main.c      |  8 ++++++++
- 6 files changed, 48 insertions(+), 8 deletions(-)
+ 4 files changed, 32 insertions(+), 8 deletions(-)
 
 diff --git a/openmp/Makefile b/openmp/Makefile
 index 136f146..8c17246 100644
@@ -73,39 +71,6 @@ index 207122d..75b251e 100644
  
     end_time = sim_time;
     num_tsteps = ts - 1;
-diff --git a/openmp/main.c b/openmp/main.c
-index 42a47fe..0cbd12e 100644
---- a/openmp/main.c
-+++ b/openmp/main.c
-@@ -34,6 +34,12 @@
- #include "timer.h"
- #include "proto.h"
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- int main(int argc, char** argv)
- {
-    int i, ierr, object_num;
-@@ -45,6 +51,7 @@ int main(int argc, char** argv)
-    ierr = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
-    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
-    ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
-+STOPSDE(0,my_pe);
- 
-    counter_malloc = 0;
-    size_malloc = 0.0;
-@@ -289,6 +296,7 @@ int main(int argc, char** argv)
- 
-    MPI_Finalize();
- 
-+STARTSDE(0,my_pe);
-    exit(0);
- }
- 
 diff --git a/ref/Makefile b/ref/Makefile
 index 457fa58..fbd1090 100644
 --- a/ref/Makefile
@@ -164,39 +129,6 @@ index 95b15ed..a0f528c 100644
  
     end_time = sim_time;
     num_tsteps = ts - 1;
-diff --git a/ref/main.c b/ref/main.c
-index d0aa7a4..8b31d15 100644
---- a/ref/main.c
-+++ b/ref/main.c
-@@ -34,6 +34,12 @@
- #include "timer.h"
- #include "proto.h"
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- int main(int argc, char** argv)
- {
-    int i, ierr, object_num;
-@@ -45,6 +51,7 @@ int main(int argc, char** argv)
-    ierr = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
-    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
-    ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
-+STOPSDE(0,my_pe);
- 
-    counter_malloc = 0;
-    size_malloc = 0.0;
-@@ -305,6 +312,7 @@ int main(int argc, char** argv)
- 
-    MPI_Finalize();
- 
-+STARTSDE(0,my_pe);
-    exit(0);
- }
- 
 -- 
 1.8.3.1
 

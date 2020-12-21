@@ -1,16 +1,16 @@
-From 35bc2c3f87e03d81210ea5e796aa2088b9150341 Mon Sep 17 00:00:00 2001
+From be87e7d75d345e78dfd158815dbef065daf9deaa Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 16:03:54 +0900
-Subject: [PATCH 1/1] SWFFT: prepare precision experiment
+Subject: [PATCH] SWFFT: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore         |  4 ++++
  GNUmakefile        | 14 +++++++-------
  GNUmakefile.openmp |  6 +++---
- TestFDfft.f90      | 23 ++++++++++++++++++++++-
+ TestFDfft.f90      | 20 +++++++++++++++++++-
  ssc.c              | 14 ++++++++++++++
- 5 files changed, 50 insertions(+), 11 deletions(-)
+ 5 files changed, 47 insertions(+), 11 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 ssc.c
 
@@ -93,10 +93,10 @@ index cbb94e5..ce9262a 100644
  # FFTW3
  DFFT_FFTW_HOME ?= $(shell dirname $(shell dirname $(shell which fftw-wisdom)))
 diff --git a/TestFDfft.f90 b/TestFDfft.f90
-index e589d90..b477bcc 100644
+index e589d90..6ce2a69 100644
 --- a/TestFDfft.f90
 +++ b/TestFDfft.f90
-@@ -62,19 +62,34 @@ program main
+@@ -62,13 +62,27 @@ program main
  
    implicit none
  
@@ -125,14 +125,7 @@ index e589d90..b477bcc 100644
  
    !
    ! Initialize MPI communicators
-   !
- 
-   call mpi_initialize
-+  sscfake = SSC_MARK_STOP(0,rank)
- 
-   !
-   ! Assign user arguments
-@@ -102,9 +117,13 @@ program main
+@@ -102,9 +116,13 @@ program main
    !
  
    t1 = MPI_Wtime()
@@ -141,20 +134,11 @@ index e589d90..b477bcc 100644
 +  sscfake = SSC_MARK_STOP(1,rank)
    t2 = MPI_Wtime()
    if (rank == 0) write(*,*) " TEST TIME: ", t2-t1
-+  if (rank == 0) write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", &
-+ &               t2 - t1, " sec"
++  if (rank == 0) write(*,"(A,F10.6,A,I4)") "Walltime of the main kernel: ", &
++ &               t2 - t1, " sec", sscfake
  
    !
    ! Finalize MPI communicators and exit 
-@@ -112,6 +131,8 @@ program main
- 
-   call MPI_Finalize(ierr)
- 
-+  sscfake = SSC_MARK_START(0,rank)
-+  if (rank == 0) write(*,*) sscfake
- contains
- 
- !! -------------------------------------------------------------------------- !!
 diff --git a/ssc.c b/ssc.c
 new file mode 100644
 index 0000000..e91ddbc

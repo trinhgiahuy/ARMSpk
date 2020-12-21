@@ -1,17 +1,17 @@
-From 6cc679e15417e5f83b2a6b89adff47c83745525f Mon Sep 17 00:00:00 2001
+From 84072d604b33943ddf24c7c80c4e052b85817d67 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 02:38:26 +0900
-Subject: [PATCH 1/1] FFB: prepare precision experiment
+Subject: [PATCH] FFB: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore            |  2 ++
  src/Makefile          |  2 +-
- src/ffb_mini_main.F90 | 25 ++++++++++++++++++++++++-
- src/les3x.F           | 35 +++++++++++++++++++++++++++++++----
+ src/ffb_mini_main.F90 |  4 ++--
+ src/les3x.F           | 34 ++++++++++++++++++++++++++++++----
  src/make_setting      |  5 +++--
  src/ssc.c             | 14 ++++++++++++++
- 6 files changed, 75 insertions(+), 8 deletions(-)
+ 6 files changed, 52 insertions(+), 9 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/.gitignore b/.gitignore
@@ -41,61 +41,29 @@ index 0f46f89..a5166c1 100644
  ifeq (, $(findstring -DNO_METIS, $(FFLAGS)))
  OBJS += metis_wrapper.o
 diff --git a/src/ffb_mini_main.F90 b/src/ffb_mini_main.F90
-index 060f4d4..9c7e941 100644
+index 060f4d4..92812e4 100644
 --- a/src/ffb_mini_main.F90
 +++ b/src/ffb_mini_main.F90
-@@ -1,7 +1,22 @@
+@@ -1,7 +1,7 @@
  program ffb_mini
    use mpi
    use makemesh
-+
-+  use, intrinsic :: iso_c_binding
-   implicit none
-+  interface
-+  integer(C_INT) function SSC_MARK_START ( i,j ) bind ( c )
-+  use, intrinsic :: iso_c_binding
-+  integer(C_INT), value :: i,j
-+  !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
-+  end function
-+  integer(C_INT) function SSC_MARK_STOP ( i,j ) bind ( c )
-+  use, intrinsic :: iso_c_binding
-+  integer(C_INT),value :: i,j
-+  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
-+  end function
-+  end interface
+-  implicit none
 +
  
    integer :: ierr
    include 'param.h'
-@@ -30,9 +45,12 @@ program ffb_mini
-   character(60) :: color_partsize = ""
-   character(60) :: unroll = ""
- 
-+  integer(C_INT) :: sscfake = 1
-+
-   call MPI_Init(ierr)
-   call MPI_Comm_rank(MPI_COMM_WORLD, myrank, ierr)
-   call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierr)
-+  sscfake = SSC_MARK_STOP(0,myrank)
- 
-   narg = command_argument_count()
-   if (narg < 4) call print_usage_and_exit
-@@ -110,7 +128,12 @@ program ffb_mini
+@@ -110,7 +110,7 @@ program ffb_mini
        write(*, '(/,a,/)') '... done'
    end if
  
 -  call LES3X(file_parm)
 +  call LES3X(file_parm, myrank)
-+
-+  sscfake = SSC_MARK_START(0,myrank)
-+  if (myrank == 0) then
-+      write(*,*) sscfake
-+  end if
  
  contains
  
 diff --git a/src/les3x.F b/src/les3x.F
-index bf9d6fa..8fda4c8 100644
+index bf9d6fa..80dd470 100644
 --- a/src/les3x.F
 +++ b/src/les3x.F
 @@ -15,10 +15,27 @@ C THERMO-FLUID ANALYSIS SOLVERS FOR LARGE-SCALE-ASSEMBLY               C
@@ -152,12 +120,11 @@ index bf9d6fa..8fda4c8 100644
        TIME_STOP(TM_MAIN_LOOP)
  C
        WRITE(IUT6,*) BLANK
-@@ -2137,7 +2163,8 @@ C
+@@ -2137,7 +2163,7 @@ C
  C
        IF(IPART.GE.2) CLOSE(IUT6)
        CALL DDEXIT
 -C
-+      sscfake = SSC_MARK_START(0,myrank)
 +C 
  C
        STOP

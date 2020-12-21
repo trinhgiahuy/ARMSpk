@@ -26,7 +26,7 @@ diff -Nur --no-dereference MODYLAS.old/src/main_f90.f MODYLAS.new/src/main_f90.f
 +      integer(C_INT) :: sscfake = 1
 +
        call mpistart()
-+      sscfake = SSC_MARK_STOP(0,myrank)
++      !sscfake = SSC_MARK_STOP(0,myrank)
        call init_openmp
  
        call parse_args()
@@ -45,8 +45,8 @@ diff -Nur --no-dereference MODYLAS.old/src/main_f90.f MODYLAS.new/src/main_f90.f
        enddo
 +      sscfake = SSC_MARK_STOP(1,myrank)
 +      mkrte = MPI_WTIME()
-+      if (myrank == 0) write(*,"(A,F10.6,A)")
-+     & "Walltime of the main kernel: ", mkrte - mkrts, " sec"
++      if (myrank == 0) write(*,"(A,F10.6,A,I4)")
++     & "Walltime of the main kernel: ", mkrte - mkrts, " sec", sscfake
        TIME_STOP(TM_MAIN_LOOP)
  
        if (myrank == 0) call cleanup()
@@ -55,8 +55,8 @@ diff -Nur --no-dereference MODYLAS.old/src/main_f90.f MODYLAS.new/src/main_f90.f
  
        call mpiend()
 +
-+      sscfake = SSC_MARK_START(0,myrank)
-+      if (myrank == 0) write(*,*) sscfake
++      !sscfake = SSC_MARK_START(0,myrank)
++      !if (myrank == 0) write(*,*) sscfake
 +
        stop
        end

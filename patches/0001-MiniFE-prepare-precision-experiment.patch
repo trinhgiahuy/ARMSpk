@@ -1,20 +1,17 @@
-From 5315b6472d43f79215cb4b6734228c6cf97ba724 Mon Sep 17 00:00:00 2001
+From a6897c35cb6ebd808ac4fff4b5c65c673ddb0cc1 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 13:57:15 +0900
-Subject: [PATCH 1/1] MiniFE: prepare precision experiment
+Subject: [PATCH] MiniFE: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  mkl/src/Makefile              |  4 ++--
  mkl/src/driver.hpp            | 13 +++++++++++++
- mkl/src/main.cpp              |  8 ++++++++
  openmp-opt-knl/src/Makefile   |  6 +++---
  openmp-opt-knl/src/driver.hpp | 13 +++++++++++++
- openmp-opt-knl/src/main.cpp   |  8 ++++++++
  openmp-opt/src/Makefile       |  8 ++++----
  openmp-opt/src/driver.hpp     | 13 +++++++++++++
- openmp-opt/src/main.cpp       |  8 ++++++++
- 9 files changed, 72 insertions(+), 9 deletions(-)
+ 6 files changed, 48 insertions(+), 9 deletions(-)
 
 diff --git a/mkl/src/Makefile b/mkl/src/Makefile
 index d81bbcf..20a79fd 100644
@@ -83,39 +80,6 @@ index 6c0f0f0..6e80f34 100644
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
-diff --git a/mkl/src/main.cpp b/mkl/src/main.cpp
-index 16e27e1..fb45f47 100644
---- a/mkl/src/main.cpp
-+++ b/mkl/src/main.cpp
-@@ -65,6 +65,12 @@
- #define MINIFE_GLOBAL_ORDINAL int
- #endif
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- // ************************************************************************
- 
- void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
-@@ -97,6 +103,7 @@ int main(int argc, char** argv) {
- 
-   int numprocs = 1, myproc = 0;
-   miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE(0,myproc);
- 
-   miniFE::timer_type start_time = miniFE::mytimer();
- 
-@@ -150,6 +157,7 @@ int main(int argc, char** argv) {
- 
-   miniFE::finalize_mpi();
- 
-+STARTSDE(0,myproc);
-   return return_code;
- }
- 
 diff --git a/openmp-opt-knl/src/Makefile b/openmp-opt-knl/src/Makefile
 index 629af96..a406c58 100644
 --- a/openmp-opt-knl/src/Makefile
@@ -186,39 +150,6 @@ index b24bdac..e6a7c2a 100644
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
-diff --git a/openmp-opt-knl/src/main.cpp b/openmp-opt-knl/src/main.cpp
-index 290e661..81a5d12 100644
---- a/openmp-opt-knl/src/main.cpp
-+++ b/openmp-opt-knl/src/main.cpp
-@@ -69,6 +69,12 @@
- #define MINIFE_GLOBAL_ORDINAL int
- #endif
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- // ************************************************************************
- 
- void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
-@@ -88,6 +94,7 @@ int main(int argc, char** argv) {
- 
-   int numprocs = 1, myproc = 0;
-   miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE(0,myproc);
- 
-   miniFE::timer_type start_time = miniFE::mytimer();
- 
-@@ -184,6 +191,7 @@ int main(int argc, char** argv) {
- 
-   miniFE::finalize_mpi();
- 
-+STARTSDE(0,myproc);
-   return return_code;
- }
- 
 diff --git a/openmp-opt/src/Makefile b/openmp-opt/src/Makefile
 index bd271ec..c118822 100644
 --- a/openmp-opt/src/Makefile
@@ -290,39 +221,6 @@ index b38887f..8282522 100644
  
  #ifdef MINIFE_DEBUG
    write_vector("x.vec", x);
-diff --git a/openmp-opt/src/main.cpp b/openmp-opt/src/main.cpp
-index 7983fc1..35bdd76 100644
---- a/openmp-opt/src/main.cpp
-+++ b/openmp-opt/src/main.cpp
-@@ -69,6 +69,12 @@
- #define MINIFE_GLOBAL_ORDINAL int
- #endif
- 
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
-+
- // ************************************************************************
- 
- void add_params_to_yaml(YAML_Doc& doc, miniFE::Parameters& params);
-@@ -88,6 +94,7 @@ int main(int argc, char** argv) {
- 
-   int numprocs = 1, myproc = 0;
-   miniFE::initialize_mpi(argc, argv, numprocs, myproc);
-+STOPSDE(0,myproc);
- 
-   miniFE::timer_type start_time = miniFE::mytimer();
- 
-@@ -185,6 +192,7 @@ int main(int argc, char** argv) {
- 
-   miniFE::finalize_mpi();
- 
-+STARTSDE(0,myproc);
-   return return_code;
- }
- 
 -- 
 1.8.3.1
 

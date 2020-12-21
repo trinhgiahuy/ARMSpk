@@ -1,7 +1,7 @@
-From 988109d81d59d67e5ba34ce0437b53437d88cc5a Mon Sep 17 00:00:00 2001
+From 33c06fa43a6ef6d510057223e87effdb1ec54ee4 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 14:24:22 +0900
-Subject: [PATCH 1/1] NGSAnalyzer: prepare precision experiment
+Subject: [PATCH] NGSAnalyzer: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
@@ -11,11 +11,13 @@ Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
  makefile.x86_64_intel            | 63 ++++++++++++++++++++++++++++++++++++++++
  samtools-0.1.8_kei/misc/Makefile |  6 ++--
  workflow/Makefile                |  4 +--
- workflow/workflow.c              | 42 ++++++++++++++++++++++++++-
- workflow/workflow_01.sh          |  6 ++--
- workflow/workflow_04.sh          |  2 +-
- workflow/workflow_05.sh          |  4 +--
- 10 files changed, 122 insertions(+), 15 deletions(-)
+ workflow/workflow.c              | 45 +++++++++++++++++++++++++++-
+ workflow/workflow_01.sh          | 33 ++++++++++++++++-----
+ workflow/workflow_02.sh          |  5 +++-
+ workflow/workflow_03.sh          |  3 ++
+ workflow/workflow_04.sh          | 18 +++++++++---
+ workflow/workflow_05.sh          | 16 +++++++---
+ 12 files changed, 177 insertions(+), 26 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 makefile.x86_64_intel
 
@@ -160,23 +162,23 @@ index 8c294ea..4601d48 100644
  clean:
  	rm -f $(PROG) *.o *~
 diff --git a/workflow/workflow.c b/workflow/workflow.c
-index 37bcab4..6d8bbde 100644
+index 37bcab4..507096c 100644
 --- a/workflow/workflow.c
 +++ b/workflow/workflow.c
 @@ -7,6 +7,12 @@
  #include <sys/stat.h>
  #include <mpi.h>
  
-+#include <ittnotify.h>
-+#include <signal.h>
-+#include <stdlib.h>
-+#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
-+#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
++//#include <ittnotify.h>
++//#include <signal.h>
++//#include <stdlib.h>
++//#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++//#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
 +
  /* #define MEASURE_TIME */
  
  /* assume a shared directory */
-@@ -138,13 +144,14 @@ static void run_task(char *const *cmdline, const char *task_name, int rank)
+@@ -138,13 +144,13 @@ static void run_task(char *const *cmdline, const char *task_name, int rank)
  #endif
  }
  
@@ -188,134 +190,262 @@ index 37bcab4..6d8bbde 100644
      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
      MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 +double mkrts=0.0, mkrte=0.0; // my kernel run-time
-+STOPSDE(0,rank);
  
      if (argc != 6) {
  	if (rank == 0) {
-@@ -175,7 +182,13 @@ int main(int argc, char **argv)
+@@ -175,7 +181,14 @@ int main(int argc, char **argv)
      cmd1[3] = bwa_db_file;
      cmd1[4] = contig_file;
      cmd1[5] = NULL;
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrts = MPI_Wtime();
-+STARTSDE(1,rank);
++//STARTSDE(1,rank);
      run_task((char *const *)cmd1, "mapping", rank);
-+STOPSDE(0,rank);
++//STOPSDE(0,rank);
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrte += (MPI_Wtime() - mkrts);
++if (rank == 0) printf("Wall0time of the main kernel: %.6lf sec\n", MPI_Wtime() - mkrts);
      free(cmd1[0]);
      free(cmd1);
  
-@@ -188,7 +201,13 @@ int main(int argc, char **argv)
+@@ -188,7 +201,14 @@ int main(int argc, char **argv)
      cmd2[2] = meddir;
      cmd2[3] = GLOBAL_MED_DIR;
      cmd2[4] = NULL;
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrts = MPI_Wtime();
-+STARTSDE(0,rank);
++//STARTSDE(0,rank);
      run_task((char *const *)cmd2, "merge1", rank);
-+STOPSDE(0,rank);
++//STOPSDE(0,rank);
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrte += (MPI_Wtime() - mkrts);
++if (rank == 0) printf("Wall1time of the main kernel: %.6lf sec\n", MPI_Wtime() - mkrts);
      free(cmd2[0]);
      free(cmd2[1]);
      free(cmd2);
-@@ -203,7 +222,13 @@ int main(int argc, char **argv)
+@@ -203,7 +223,14 @@ int main(int argc, char **argv)
      cmd3[3] = meddir;
      cmd3[4] = GLOBAL_MED_DIR;
      cmd3[5] = NULL;
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrts = MPI_Wtime();
-+STARTSDE(0,rank);
++//STARTSDE(0,rank);
      run_task((char *const *)cmd3, "merge2", rank);
-+STOPSDE(0,rank);
++//STOPSDE(0,rank);
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrte += (MPI_Wtime() - mkrts);
++if (rank == 0) printf("Wall2time of the main kernel: %.6lf sec\n", MPI_Wtime() - mkrts);
      free(cmd3[0]);
      free(cmd3[1]);
      free(cmd3[2]);
-@@ -216,7 +241,13 @@ int main(int argc, char **argv)
+@@ -216,7 +243,14 @@ int main(int argc, char **argv)
      cmd4[1] = meddir;
      cmd4[2] = ref_idx_file;
      cmd4[3] = NULL;
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrts = MPI_Wtime();
-+STARTSDE(0,rank);
++//STARTSDE(0,rank);
      run_task((char *const *)cmd4, "rmdup", rank);
-+STOPSDE(0,rank);
++//STOPSDE(0,rank);
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrte += (MPI_Wtime() - mkrts);
++if (rank == 0) printf("Wall3time of the main kernel: %.6lf sec\n", MPI_Wtime() - mkrts);
      free(cmd4[0]);
      free(cmd4);
  
-@@ -228,7 +259,14 @@ int main(int argc, char **argv)
+@@ -228,7 +262,15 @@ int main(int argc, char **argv)
      cmd5[2] = outdir;
      cmd5[3] = ref_file;
      cmd5[4] = NULL;
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrts = MPI_Wtime();
-+STARTSDE(0,rank);
++//STARTSDE(0,rank);
      run_task((char *const *)cmd5, "analyze", rank);
-+STOPSDE(1,rank);
++//STOPSDE(1,rank);
 +MPI_Barrier(MPI_COMM_WORLD);
 +mkrte += (MPI_Wtime() - mkrts);
++if (rank == 0) printf("Wall4time of the main kernel: %.6lf sec\n", MPI_Wtime() - mkrts);
 +if (rank == 0) printf("Walltime of the main kernel: %.6lf sec\n", mkrte);
      free(cmd5[0]);
      free(cmd5);
  
-@@ -239,5 +277,7 @@ int main(int argc, char **argv)
+@@ -239,5 +281,6 @@ int main(int argc, char **argv)
  
      cleanup_directories(rank);
      MPI_Finalize();
 +
-+STARTSDE(0,rank);
      return 0;
  }
 diff --git a/workflow/workflow_01.sh b/workflow/workflow_01.sh
-index 9a7935e..655940f 100755
+index 9a7935e..5a9cde5 100755
 --- a/workflow/workflow_01.sh
 +++ b/workflow/workflow_01.sh
-@@ -3,9 +3,9 @@
+@@ -3,9 +3,11 @@
  # Perform mapping and split the results
  
  BIN_DIR=`dirname $0`
 -BWA_BIN=$BIN_DIR/bwa
 -SSC_BIN=$BIN_DIR/splitSam2Contig2
 -N_THREADS=1
-+BWA_BIN="numactl --preferred 1 $BIN_DIR/bwa"
-+SSC_BIN="numactl --preferred 1 $BIN_DIR/splitSam2Contig2"
++#BWA_BIN="numactl --preferred 1 $BIN_DIR/bwa"
++#SSC_BIN="numactl --preferred 1 $BIN_DIR/splitSam2Contig2"
++BWA_BIN="$BIN_DIR/bwa"
++SSC_BIN="$BIN_DIR/splitSam2Contig2"
 +N_THREADS=$OMP_NUM_THREADS
  
  INPUT_DIR=$1
  MED_DIR=$2
+@@ -31,18 +33,30 @@ for ext in "${EXTS[@]}"; do
+ 
+   SEQ1_SAI=$ALN_DIR/`basename ${SEQ1_FILE}`.sai
+   CMD="${ALN_PREF} ${SEQ1_FILE} > ${SEQ1_SAI}"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf01.1.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf01.1.t$TIME
++  else eval $CMD; fi
+ 
+   SEQ2_SAI=$ALN_DIR/`basename ${SEQ2_FILE}`.sai
+   CMD="${ALN_PREF} ${SEQ2_FILE} > ${SEQ2_SAI}"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf01.2.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf01.2.t$TIME
++  else eval $CMD; fi
+ 
+   SAM_FILE=$ALN_DIR/0.sam
+   CMD="${BWA_BIN} sampe ${BWA_FILE} ${SEQ1_SAI} ${SEQ2_SAI} ${SEQ1_FILE} ${SEQ2_FILE} > ${SAM_FILE}"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf01.3.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf01.3.t$TIME
++  else eval $CMD; fi
+ 
+   CMD="${SSC_BIN} ${CONTIG_FILE} ${SAM_FILE} ${ALN_DIR} 1>&2"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf01.4.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf01.4.t$TIME
++  else eval $CMD; fi
+ 
+   for path in ${ALN_DIR}/*.sam ; do
+     if [ $path = $ALN_DIR/0.sam ]      || \
+@@ -51,6 +65,9 @@ for ext in "${EXTS[@]}"; do
+       continue
+     fi
+     target=`basename $path`
+-    cat $path >> $MED_DIR/$target
++    #cat $path >> $MED_DIR/$target
++    if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++         $SDE cat $path >> $MED_DIR/$target; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf01.5.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf01.5.t$TIME
++    else cat $path >> $MED_DIR/$target; fi
+   done
+ done
+diff --git a/workflow/workflow_02.sh b/workflow/workflow_02.sh
+index d8d5dbf..9c094fc 100755
+--- a/workflow/workflow_02.sh
++++ b/workflow/workflow_02.sh
+@@ -11,5 +11,8 @@ SHRD_TMP_DIR=$3  # rank shared directory
+ for sam_file in ${TARGET_DIR}/*.sam ; do
+   target_dir=$SHRD_TMP_DIR/`basename ${sam_file}`
+   mkdir -p $target_dir
+-  mv $sam_file $target_dir/$ID.sam
++  #mv $sam_file $target_dir/$ID.sam
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       $SDE mv $sam_file $target_dir/$ID.sam; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf02.1.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf02.1.t$TIME
++  else mv $sam_file $target_dir/$ID.sam; fi
+ done
+diff --git a/workflow/workflow_03.sh b/workflow/workflow_03.sh
+index 5842234..bd8e434 100755
+--- a/workflow/workflow_03.sh
++++ b/workflow/workflow_03.sh
+@@ -25,6 +25,9 @@ if [ $ID -lt $COUNT ]; then
+     mv $file $target_dir 2>/dev/null
+     if [ $? == 0 ]; then
+       cat $target_dir/*.sam >> $target_file
++      if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++           $SDE cat $target_dir/*.sam >> $target_file; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf03.1.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf03.1.t$TIME
++      else cat $target_dir/*.sam >> $target_file; fi
+       rm -fr $target_dir
+     fi
+     ((I=$I+$NPROCS))
 diff --git a/workflow/workflow_04.sh b/workflow/workflow_04.sh
-index a96b641..3cf01e1 100755
+index a96b641..4db2510 100755
 --- a/workflow/workflow_04.sh
 +++ b/workflow/workflow_04.sh
-@@ -3,7 +3,7 @@
+@@ -3,7 +3,8 @@
  # Perform remove duplicates
  
  BIN_DIR=`dirname $0`
 -SAMT_BIN=$BIN_DIR/samtools
-+SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
++#SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
++SAMT_BIN="$BIN_DIR/samtools"
  N_MEMORY=800000000
  
  TARGET_DIR=$1
+@@ -17,13 +18,22 @@ for sam_file in ${TARGET_DIR}/*.sam ; do
+   BASENAME=`basename $sam_file .sam`
+   BAM_FILE=$TARGET_DIR/$BASENAME.bam
+   CMD="$SAMT_BIN import $REF_IDX_FILE $sam_file $BAM_FILE 1>&2"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf04.1.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf04.1.t$TIME
++  else eval $CMD; fi
+ 
+   S_BAM_FILE=$TARGET_DIR/$BASENAME.sort
+   CMD="$SAMT_BIN sort -m $N_MEMORY $BAM_FILE $S_BAM_FILE 1>&2"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf04.2.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf04.2.t$TIME
++  else eval $CMD; fi
+ 
+   RMD_FILE=$S_BAM_FILE.rmdup.bam
+   CMD="$SAMT_BIN rmdup $S_BAM_FILE.bam $RMD_FILE 1>&2"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf04.3.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf04.3.t$TIME
++  else eval $CMD; fi
+ done
 diff --git a/workflow/workflow_05.sh b/workflow/workflow_05.sh
-index 8f1a2c3..d004a0f 100755
+index 8f1a2c3..bc88822 100755
 --- a/workflow/workflow_05.sh
 +++ b/workflow/workflow_05.sh
-@@ -3,8 +3,8 @@
+@@ -3,8 +3,10 @@
  # Perform analyze
  
  BIN_DIR=`dirname $0`
 -SAMT_BIN=$BIN_DIR/samtools
 -SNP_BIN=$BIN_DIR/snp
-+SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
-+SNP_BIN="numactl --preferred 1 $BIN_DIR/snp"
++#SAMT_BIN="numactl --preferred 1 $BIN_DIR/samtools"
++#SNP_BIN="numactl --preferred 1 $BIN_DIR/snp"
++SAMT_BIN="$BIN_DIR/samtools"
++SNP_BIN="$BIN_DIR/snp"
  
  INPUT_DIR=$1
  OUT_DIR=$2
+@@ -19,11 +21,17 @@ for sam_file in ${INPUT_DIR}/*.sam ; do
+   RMD_FILE=$INPUT_DIR/$BASENAME.sort.rmdup.bam
+   PILEUP_FILE=$INPUT_DIR/$BASENAME.pile
+   CMD="$SAMT_BIN pileup -s -cf $REF_FILE $RMD_FILE > $PILEUP_FILE"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf05.1.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf05.1.t$TIME
++  else eval $CMD; fi
+ 
+   OUT_FILE1=$OUT_DIR/$BASENAME.indel
+   OUT_FILE2=$OUT_DIR/$BASENAME.snp
+   OUT_FILE3=$OUT_DIR/$BASENAME.sum
+   CMD="$SNP_BIN -INF $PILEUP_FILE -INDEL $OUT_FILE1 -SNP $OUT_FILE2 -SUM $OUT_FILE3 1>&2"
+-  eval $CMD
++  #eval $CMD
++  if [[ $MPI_LOCALRANKID = $SDE_TEST_RANK ]]; then TIME="`date +%s.%N`"
++       eval $SDE $CMD; mkdir -p dcfg-out.rank-$MPI_LOCALRANKID/wf05.2.t$TIME; mv dcfg-out.*bz2 dcfg-out.rank-$MPI_LOCALRANKID/wf05.2.t$TIME
++  else eval $CMD; fi
+ done
 -- 
 1.8.3.1
 

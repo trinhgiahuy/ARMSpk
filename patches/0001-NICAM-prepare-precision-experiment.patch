@@ -1,16 +1,16 @@
-From 0c9a2bd28605c8c7b63bb0e6505b9cb8ac332f0f Mon Sep 17 00:00:00 2001
+From 858b1e7b2939c339f7067b347c3d49b955e484dc Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:11:24 +0900
-Subject: [PATCH 1/1] NICAM: prepare precision experiment
+Subject: [PATCH] NICAM: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore                        |  5 +++++
  src/Makefile                      |  3 ++-
- src/nhm/prg_driver-dc.f90         | 26 ++++++++++++++++++++++++++
+ src/nhm/prg_driver-dc.f90         | 23 +++++++++++++++++++++++
  src/ssc.c                         | 14 ++++++++++++++
  sysdep/Makedef.Linux64-intel-impi |  6 +++---
- 5 files changed, 50 insertions(+), 4 deletions(-)
+ 5 files changed, 47 insertions(+), 4 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 src/ssc.c
 
@@ -47,7 +47,7 @@ index f70d8e5..44e92bf 100755
  prg_$(PRJ1).o : prg_$(PRJ1).f90 $(LIBNAME)
  
 diff --git a/src/nhm/prg_driver-dc.f90 b/src/nhm/prg_driver-dc.f90
-index b38148b..1acbdda 100755
+index b38148b..2a250b6 100755
 --- a/src/nhm/prg_driver-dc.f90
 +++ b/src/nhm/prg_driver-dc.f90
 @@ -127,11 +127,28 @@ program prg_driver
@@ -79,15 +79,7 @@ index b38148b..1acbdda 100755
    !-----------------------------------------------------------------------------
  
    call ADM_proc_init(ADM_MULTI_PRC)
-@@ -140,6 +157,7 @@ program prg_driver
-   call ADM_setup('nhm_driver.cnf')
- 
-   !#############################################################################
-+  sscfake = SSC_MARK_STOP(0,ADM_prc_me-1)
- 
-   write(ADM_LOG_FID,*) '##### start  setup     #####'
-   if ( ADM_prc_me == ADM_prc_run_master ) then
-@@ -244,6 +262,8 @@ program prg_driver
+@@ -244,6 +261,8 @@ program prg_driver
       call history_out
    endif
  
@@ -96,26 +88,17 @@ index b38148b..1acbdda 100755
    do n = 1, TIME_LSTEP_MAX
  
       call DEBUG_rapstart('+Atmos')
-@@ -267,6 +287,10 @@ program prg_driver
+@@ -267,6 +286,10 @@ program prg_driver
       call DEBUG_rapend  ('+History')
  
    enddo
 +  sscfake = SSC_MARK_STOP(1,ADM_prc_me-1)
 +  mkrte = MPI_WTIME()
-+  if (ADM_prc_me == ADM_prc_run_master) write(*,"(A,F10.6,A)") &
-+ & "Walltime of the main kernel: ", mkrte - mkrts, " sec"
++  if (ADM_prc_me == ADM_prc_run_master) write(*,"(A,F10.6,A,I4)") &
++ & "Walltime of the main kernel: ", mkrte - mkrts, " sec", sscfake
  
    write(ADM_LOG_FID,*) '##### finish main loop #####'
    if ( ADM_prc_me == ADM_prc_run_master ) then
-@@ -285,6 +309,8 @@ program prg_driver
-   !--- all processes stop
-   call ADM_proc_stop
- 
-+  sscfake = SSC_MARK_START(0,ADM_prc_me-1)
-+  if (ADM_prc_me == ADM_prc_run_master) write(*,*) sscfake
-   stop
- end program prg_driver
- !-------------------------------------------------------------------------------
 diff --git a/src/ssc.c b/src/ssc.c
 new file mode 100644
 index 0000000..e91ddbc

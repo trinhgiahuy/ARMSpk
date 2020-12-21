@@ -1,18 +1,18 @@
-From 6d63929a6a8fa026a570541b81df6a5bfb1b0662 Mon Sep 17 00:00:00 2001
+From b458730de6fff5c19687335b8d09dfa99b085c7a Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:25:14 +0900
-Subject: [PATCH 1/1] NTChem: prepare precision experiment
+Subject: [PATCH] NTChem: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore                                         |  3 +++
- .../linux64_mpif90_omp_intel_proto.makeconfig.in   | 12 +++++-----
- config_mine                                        | 14 +++--------
+ .../linux64_mpif90_omp_intel_proto.makeconfig.in   | 12 ++++++------
+ config_mine                                        | 14 +++-----------
  src/mp2/GNUmakefile                                |  2 +-
- src/mp2/mp2_main_mpiomp.f90                        | 27 ++++++++++++++++++++++
- src/util_lib/GNUmakefile                           |  5 ++++
- src/util_lib/ssc.c                                 | 14 +++++++++++
- 7 files changed, 59 insertions(+), 18 deletions(-)
+ src/mp2/mp2_main_mpiomp.f90                        | 22 ++++++++++++++++++++++
+ src/util_lib/GNUmakefile                           |  5 +++++
+ src/util_lib/ssc.c                                 | 14 ++++++++++++++
+ 7 files changed, 54 insertions(+), 18 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 src/util_lib/ssc.c
 
@@ -101,10 +101,10 @@ index 0e51c5e..d633806 100644
  mvbin :
  	$(MV) $(program) $(BIN)/.
 diff --git a/src/mp2/mp2_main_mpiomp.f90 b/src/mp2/mp2_main_mpiomp.f90
-index ea4f637..ab43510 100644
+index ea4f637..c969091 100644
 --- a/src/mp2/mp2_main_mpiomp.f90
 +++ b/src/mp2/mp2_main_mpiomp.f90
-@@ -6,15 +6,31 @@
+@@ -6,11 +6,26 @@
  !
  !     o Main MP2 routine
  !
@@ -131,12 +131,7 @@ index ea4f637..ab43510 100644
  !
  !     o Initialize MPI
  !
-       CALL Util_InitMPI(.TRUE.)
-+      sscfake = SSC_MARK_STOP(0,MyRank)
- !
- !     o Read MP2 input
- !
-@@ -67,6 +83,8 @@
+@@ -67,6 +82,8 @@
        END IF
        WTimeBgn = MPI_WTIME()
        CALL CPU_TIME(TimeBgn)
@@ -145,28 +140,18 @@ index ea4f637..ab43510 100644
        IF (InCore) THEN
  !
  !        o In-Core RI-MP2 algorithm
-@@ -80,6 +98,11 @@
+@@ -80,6 +97,11 @@
           CALL RIMP2_Driver_SemiDirect_MPIOMP
  !
        END IF
 +      sscfake = SSC_MARK_STOP(1,MyRank)
 +      mkrte = MPI_WTIME()
 +      IF (MyRank == 0) THEN
-+         write(*,"(A,F10.6,A)") "Walltime of the main kernel: ", mkrte - mkrts, " sec"
++         write(*,"(A,F10.6,A,I4)") "Walltime of the main kernel: ", mkrte - mkrts, " sec", sscfake
 +      END IF
        CALL CPU_TIME(TimeEnd)
        WTimeEnd = MPI_WTIME()
        IF (MyRank == 0) THEN
-@@ -96,5 +119,9 @@
- !     o Finalize MPI
- !
-       CALL Util_FinMPI
-+      sscfake = SSC_MARK_START(0,MyRank)
-+      IF (MyRank == 0) THEN
-+         write(*,*) sscfake
-+      END IF
- !
-       END PROGRAM
 diff --git a/src/util_lib/GNUmakefile b/src/util_lib/GNUmakefile
 index 95353ee..4b09434 100644
 --- a/src/util_lib/GNUmakefile

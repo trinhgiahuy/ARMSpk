@@ -1,14 +1,14 @@
-From 67d074eeee4af8fd0c06fcda0926cdcfcad060fc Mon Sep 17 00:00:00 2001
+From 27ec29731664ea895fb6b67c3d5bd904cdc126df Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 16:08:51 +0900
-Subject: [PATCH 1/1] XSBench: prepare precision experiment
+Subject: [PATCH] XSBench: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
  .gitignore   |  2 ++
- src/Main.c   | 19 ++++++++++++++++++-
+ src/Main.c   | 16 +++++++++++++++-
  src/Makefile | 10 +++++-----
- 3 files changed, 25 insertions(+), 6 deletions(-)
+ 3 files changed, 22 insertions(+), 6 deletions(-)
  create mode 100644 .gitignore
 
 diff --git a/.gitignore b/.gitignore
@@ -20,7 +20,7 @@ index 0000000..4e66ee9
 +*.o
 +src/XSBench
 diff --git a/src/Main.c b/src/Main.c
-index acd2e71..6465899 100644
+index acd2e71..0a08121 100644
 --- a/src/Main.c
 +++ b/src/Main.c
 @@ -4,6 +4,12 @@
@@ -36,26 +36,17 @@ index acd2e71..6465899 100644
  int main( int argc, char* argv[] )
  {
  	// =====================================================================
-@@ -24,7 +30,9 @@ int main( int argc, char* argv[] )
+@@ -24,7 +30,8 @@ int main( int argc, char* argv[] )
  	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
  	MPI_Comm_rank(MPI_COMM_WORLD, &mype);
  	#endif
 -	
 +double mkrts, mkrte; // my kernel run-time
-+STOPSDE(0,mype);
 +
  	// rand() is only used in the serial initialization stages.
  	// A custom RNG is used in parallel portions.
  	#ifdef VERIFICATION
-@@ -114,6 +122,7 @@ int main( int argc, char* argv[] )
- 	if( mype == 0 ) printf("Dumping data to binary file...\n");
- 	binary_dump(in.n_isotopes, in.n_gridpoints, nuclide_grids, energy_grid, in.grid_type);
- 	if( mype == 0 ) printf("Binary file \"XS_data.dat\" written! Exiting...\n");
-+STARTSDE;
- 	return 0;
- 	#endif
- 
-@@ -147,6 +156,9 @@ int main( int argc, char* argv[] )
+@@ -147,6 +154,9 @@ int main( int argc, char* argv[] )
  	}
  	#endif	
  
@@ -65,7 +56,7 @@ index acd2e71..6465899 100644
  	// OpenMP compiler directives - declaring variables as shared or private
  	#pragma omp parallel default(none) \
  	private(i, thread, p_energy, mat, seed) \
-@@ -244,6 +256,10 @@ int main( int argc, char* argv[] )
+@@ -244,6 +254,10 @@ int main( int argc, char* argv[] )
  
  	}
  
@@ -76,13 +67,6 @@ index acd2e71..6465899 100644
  	#ifndef PAPI
  	if( mype == 0)	
  	{	
-@@ -265,5 +281,6 @@ int main( int argc, char* argv[] )
- 	MPI_Finalize();
- 	#endif
- 
-+STARTSDE(0,mype);
- 	return 0;
- }
 diff --git a/src/Makefile b/src/Makefile
 index 0eb9b1c..4233fa1 100644
 --- a/src/Makefile

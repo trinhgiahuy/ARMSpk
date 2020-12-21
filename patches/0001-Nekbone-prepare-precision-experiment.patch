@@ -1,20 +1,20 @@
-From ff85b88348bc22ebb0bf349d99fcdca0e62a89fb Mon Sep 17 00:00:00 2001
+From ed8afc9723d819a81ca291257619a78caf7d478f Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:35:10 +0900
-Subject: [PATCH 1/1] Nekbone: prepare precision experiment
+Subject: [PATCH] Nekbone: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- src/driver.f           | 26 ++++++++++++++++++++++++++
+ src/driver.f           | 22 ++++++++++++++++++++++
  src/makefile.template  | 17 +++++++++--------
  src/makenek.inc        |  2 +-
  src/ssc.c              | 14 ++++++++++++++
  test/nek_mgrid/makenek |  2 +-
- 5 files changed, 51 insertions(+), 10 deletions(-)
+ 5 files changed, 47 insertions(+), 10 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/src/driver.f b/src/driver.f
-index 75c2dca..bcad296 100755
+index 75c2dca..78a200c 100755
 --- a/src/driver.f
 +++ b/src/driver.f
 @@ -1,6 +1,20 @@
@@ -38,7 +38,7 @@ index 75c2dca..bcad296 100755
        include 'SIZE'
        include 'TOTAL'
        include 'SEMHAT'
-@@ -21,8 +35,11 @@ c-----------------------------------------------------------------------
+@@ -21,6 +35,8 @@ c-----------------------------------------------------------------------
        integer npx,npy,npz      ! processor decomp
        integer mx ,my ,mz       ! element decomp
  
@@ -46,11 +46,8 @@ index 75c2dca..bcad296 100755
 +      integer(C_INT) :: sscfake = 1
  
        call iniproc(mpi_comm_world)    ! has nekmpi common block
-+      sscfake = SSC_MARK_STOP(0,nid)
        call init_delay
- 
-       call read_param(ifbrick,iel0,ielN,ielD,nx0,nxN,nxD,
-@@ -56,7 +73,11 @@ c     SET UP and RUN NEKBONE
+@@ -56,7 +72,11 @@ c     SET UP and RUN NEKBONE
             call nekgsync()
  
             call set_timer_flop_cnt(0)
@@ -62,25 +59,15 @@ index 75c2dca..bcad296 100755
             call set_timer_flop_cnt(1)
  
             call gs_free(gsh)
-@@ -65,6 +86,8 @@ c     SET UP and RUN NEKBONE
+@@ -65,6 +85,8 @@ c     SET UP and RUN NEKBONE
             mfloplist(icount) = mflops*np
           enddo
        enddo
-+      if(nid.eq.0) write(*,"(A,F10.6,A)")
-+     &     "Walltime of the main kernel: ", mkrte, " sec"
++      if(nid.eq.0) write(*,"(A,F10.6,A,I4)")
++     &     "Walltime of the main kernel: ", mkrte, " sec", sscfake
  
        avmflop = 0.0
        do i = 1,icount
-@@ -81,6 +104,9 @@ c     SET UP and RUN NEKBONE
- c     TEST BANDWIDTH BISECTION CAPACITY
- c     call xfer(np,cr_h)
- 
-+      sscfake = SSC_MARK_START(0,nid)
-+      if (nid .eq. 0) write(*,*) sscfake
-+
-       call exitt0
- 
-       end
 diff --git a/src/makefile.template b/src/makefile.template
 index c686e46..1f35706 100755
 --- a/src/makefile.template
