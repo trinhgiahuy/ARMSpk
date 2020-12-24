@@ -1,0 +1,75 @@
+From 21fe85c425ec558a5fcf2db49c2c1b6b9267e962 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Wed, 23 Dec 2020 17:27:40 +0900
+Subject: [PATCH] spack: prepare cache experiment
+
+---
+ etc/spack/defaults/config.yaml                    |  2 +-
+ var/spack/repos/builtin/packages/llvm/package.py  | 11 +++++++++++
+ var/spack/repos/builtin/packages/spark/package.py |  1 +
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/etc/spack/defaults/config.yaml b/etc/spack/defaults/config.yaml
+index a572787..dfeed1a 100644
+--- a/etc/spack/defaults/config.yaml
++++ b/etc/spack/defaults/config.yaml
+@@ -132,7 +132,7 @@ config:
+   # - If set to 16 on a 4 cores machine `spack install` will run `make -j4`
+   # - If set to 16 on a 18 cores machine `spack install` will run `make -j16`
+   # If not set, Spack will use all available cores up to 16.
+-  # build_jobs: 16
++  build_jobs: 32
+ 
+ 
+   # If set to true, Spack will use ccache to cache C compiles.
+diff --git a/var/spack/repos/builtin/packages/llvm/package.py b/var/spack/repos/builtin/packages/llvm/package.py
+index 53ce3e1..3fbf971 100644
+--- a/var/spack/repos/builtin/packages/llvm/package.py
++++ b/var/spack/repos/builtin/packages/llvm/package.py
+@@ -97,6 +97,11 @@ class Llvm(CMakePackage, CudaPackage):
+         description="Build with split dwarf information",
+     )
+     variant(
++        "libpfm",
++        default=False,
++        description="Build with libpfm4 dependency",
++    )
++    variant(
+         "shared_libs",
+         default=False,
+         description="Build all components as shared libraries, faster, "
+@@ -152,6 +157,9 @@ class Llvm(CMakePackage, CudaPackage):
+     depends_on("libedit", when="+lldb")
+     depends_on("py-six", when="@5.0.0: +lldb +python")
+ 
++    # libpfm dependencies
++    depends_on("libpfm4", when="+libpfm")
++
+     # gold support, required for some features
+     depends_on("binutils+gold", when="+gold")
+ 
+@@ -330,6 +338,9 @@ def cmake_args(self):
+         if "+split_dwarf" in spec:
+             cmake_args.append("-DLLVM_USE_SPLIT_DWARF:Bool=ON")
+ 
++        if "+libpfm" in spec:
++            cmake_args.append("-DLLVM_ENABLE_LIBPFM:Bool=ON")
++
+         if "+all_targets" not in spec:  # all is default on cmake
+ 
+             targets = ["NVPTX", "AMDGPU"]
+diff --git a/var/spack/repos/builtin/packages/spark/package.py b/var/spack/repos/builtin/packages/spark/package.py
+index 7458a82..c8b0a56 100644
+--- a/var/spack/repos/builtin/packages/spark/package.py
++++ b/var/spack/repos/builtin/packages/spark/package.py
+@@ -22,6 +22,7 @@ class Spark(Package):
+     depends_on('java', type=('build', 'run'))
+     depends_on('hadoop', when='+hadoop', type=('build', 'run'))
+ 
++    version('2.4.0', sha256='b1d6d6cb49d8253b36df8372a722292bb323bd16315d83f0b0bafb66a4154ef2')
+     version('2.3.0', sha256='a7e29e78bd43aa6d137f0bb0afd54a3017865d471456c6d436ae79475bbeb161')
+     version('2.1.0', sha256='3ca4ecb0eb9a00de5099cc2564ed957433a2d15d9d645a60470324621853c5ae')
+     version('2.0.2', sha256='122ec1af0fcb23c0345f20f77d33cf378422ffe966efe4b9ef90e55cf7a46a3c')
+-- 
+1.8.3.1
+
