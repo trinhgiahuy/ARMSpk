@@ -5,11 +5,11 @@
 #  ( create files: ./dcfg-out.dcfg.json.bz2 and ./dcfg-out.bb.txt.bz2 via
 #      `sde64 -dcfg 1 -dcfg:write_bb 1 ...` )
 
-from os import path, getpid, remove
+from os import path, getpid, remove, environ
 from sys import exit
 from bz2 import open as bz2open
 from json import dumps as jsondumps     # TODO: take this out
-from re import compile, search, sub, IGNORECASE
+from re import compile, findall, search, sub, DOTALL, IGNORECASE
 from collections import defaultdict
 from subprocess import run, PIPE
 from networkx import DiGraph, has_path, find_cycle, dfs_edges, \
@@ -820,8 +820,87 @@ def convert_sde_data_to_something_usable(sde_data=None):
     return (data, mapper)
 
 
-def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
-    assert(isinstance(blockdata, dict) and isinstance(mapper, dict))
+def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
+                                   bdata=None, sink_bdata=None,
+                                   selfloop=False, twoblockloop=False):
+    assert(isinstance(arch, str)
+           and isinstance(bbid, int) and isinstance(sink_bbid, int)
+           and isinstance(bdata, dict) and isinstance(sink_bdata, dict)
+           and isinstance(selfloop, bool) and isinstance(twoblockloop, bool))
+
+    if not selfloop and not twoblockloop:
+        return None
+
+    # Intel's IACA needs binary, so dump code to ramdisk and compile it
+    iaca_in_fn = '/dev/shm/iaca_%s_%s_%s.c' % (getpid(), bbid, sink_bbid)
+
+    with open(iaca_in_fn, 'w') as iaca_in_file:
+        iaca_in_file.write('#include<iacaMarks.h>\n' +
+                           'int main(){\n' +
+                           '    IACA_START;\n' +
+                           '     __asm__(\n');
+
+        iaca_in_file.write(
+            '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
+                       for offset, instr in bdata['ASM']]))
+        if twoblockloop:
+            iaca_in_file.write(
+                '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
+                           for offset, instr in bdata['ASM']]))
+
+        iaca_in_file.write('             );\n' +
+                           '    IACA_END;\n' +
+                           '    return 0;\n' +
+                           '}\n')
+
+    # from github.com/torvalds/linux/blob/master/arch/x86/events/intel/core.c
+    ARCHS = {'haswell': 'HSW', 'broadwell': 'BDW', 'skylake': 'SKL'}
+    assert(arch in ARCHS)
+
+    # compile first, must? use -O0 since its assembly and shouldn't be removed
+    p = run(['icc', '-O0',
+             '-I%s' % (environ['IACAINCL'] if 'IACAINCL' in environ else '.'),
+             '-o', '%s.exe' % iaca_in_fn,
+             iaca_in_fn], stdout=PIPE, stderr=PIPE)
+    assert(0 == p.returncode)
+
+    # check block throughput with Intel's analysis tool
+    p = run(['iaca', '-arch', ARCHS[arch], #'-trace', '%s.t' % iaca_in_fn,
+             '%s.exe' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
+    assert(0 == p.returncode)
+    stdout = p.stdout.decode()
+
+    # clean up the temp file under /dev/shm
+    remove(iaca_in_fn)
+    #remove('%s.t' % iaca_in_fn)
+    remove('%s.exe' % iaca_in_fn)
+
+    cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
+                    stdout, IGNORECASE)
+    assert(cycles)
+    cycles = int(float(cycles.group(1)))
+
+    notes = search(r'Analysis\s+Notes:\n(.*)', stdout, flags=DOTALL|IGNORECASE)
+    if notes:
+        notes = notes.group(1)
+
+        notes = sub(r'Backend allocation was stalled due to unavailable' +
+                     ' allocation resources.\n',
+                    r'', notes, count=0, flags=IGNORECASE)
+        unsupp = search(r'There was an unsupported instruction(s), it was not'
+                         ' accounted in Analysis.', notes, flags=IGNORECASE)
+        if unsupp and 0 >= cycles:
+            return None
+
+        if len(notes):
+            print(notes)
+
+    return cycles
+
+
+def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
+    assert(isinstance(blockdata, dict) and isinstance(mapper, dict)
+           and isinstance(arch, str))
 
     # make the llvm-mca simulation more realistic / first step from gut feeling
     # assuming we have 3 basic blocks (random index fn of ld-linux-x86-64.so.2)
@@ -1012,6 +1091,13 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None):
             # clean up the temp file under /dev/shm
             remove(mca_in_fn)
 
+            iaca_estimate = \
+                simulate_cycles_with_INTEL_ACA(arch, bbid, sink_bbid,
+                                               bdata, sink_bdata,
+                                               selfloop, twoblockloop)
+            if iaca_estimate:
+                edge_data['CyclesPerIter'] = iaca_estimate
+
 
 def bb_graph(blockdata=None, mapper=None, thread_id=0):
     assert(isinstance(blockdata, dict) and isinstance(mapper, dict)
@@ -1135,6 +1221,13 @@ def postprocess_bb_graph(bb_graph=None, blockdata=None, mapper=None):
             else:
                 # if jump out we have to stop the DFS traversal below here
                 ignore_subtree = dfs_edges(bb_graph, source=next2_bbid)
+
+
+def get_cpu_arch():
+    with open('/sys/devices/cpu/caps/pmu_name', 'r') as pmu:
+        cpu_info = pmu.read()
+
+    return search(r'(\w+)', cpu_info, flags=DOTALL).group(1)
 
 
 def _id_in_range(interval, testid):
@@ -1417,8 +1510,9 @@ def main():
     data, mapper = convert_sde_data_to_something_usable(sde_data)
     del sde_data
 
-    cpufreq = cpu_freq()
-    simulate_cycles_with_LLVM_MCA(data, mapper)
+    arch = get_cpu_arch()
+
+    simulate_cycles_with_LLVM_MCA(data, mapper, arch)
     total_cycles_per_thread, thread_id = [], -1
     while True:
         thread_id += 1
@@ -1440,8 +1534,12 @@ def main():
             print("Edges of graph: ")
             #print(G.edges.data())
             for d in G.edges.data():
-                print(d)
+                print(d, '  ', end='')
+                if isinstance(d[1], str): dstbb = int(findall(r'\d+', d[1])[1])
+                else                    : dstbb = d[1]
+                print('fn: ', data[dstbb]['Func'])
 
+        cpufreq = cpu_freq()
         total_cycles = G.size(weight='cpu_cycles')
         print('Total CPU cycles on rank %s and thread ID %s : %s\n'
               % (0, thread_id, total_cycles) +
