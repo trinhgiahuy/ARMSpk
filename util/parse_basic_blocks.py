@@ -15,6 +15,8 @@ from subprocess import run, PIPE
 from networkx import DiGraph, has_path, find_cycle, dfs_edges, \
     NetworkXNoCycle, kamada_kawai_layout
 from copy import deepcopy
+from io import StringIO
+from osaca import osaca
 
 
 def _get_OBJDUMP_ASSEMBLY(sde_files=None):
@@ -820,6 +822,74 @@ def convert_sde_data_to_something_usable(sde_data=None):
     return (data, mapper)
 
 
+def simulate_cycles_with_OSACA(arch=None, bbid=None, sink_bbid=None,
+                               bdata=None, sink_bdata=None,
+                               selfloop=False, twoblockloop=False):
+    assert(isinstance(arch, str)
+           and isinstance(bbid, int) and isinstance(sink_bbid, int)
+           and isinstance(bdata, dict) and isinstance(sink_bdata, dict)
+           and isinstance(selfloop, bool) and isinstance(twoblockloop, bool))
+
+    if not selfloop and not twoblockloop:
+        return None
+
+    osaca_in_fn = '/dev/shm/osaca_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
+
+    with open(osaca_in_fn, 'w') as osaca_in_file:
+        osaca_in_file.write('# OSACA-BEGIN\n');
+
+        #FIXME: needs changing if we ever analyze non-trivial 2-block merges
+        osaca_in_file.write('\n'.join([instr
+                                       for offset, instr in bdata['ASM']]))
+        if twoblockloop:
+            osaca_in_file.write('\n' +
+                                '\n'.join([instr
+                                           for offset, instr
+                                           in sink_bdata['ASM']]))
+
+        osaca_in_file.write('\n# OSACA-END\n')
+
+    # from archspec
+    ARCHS = {'sandybridge': 'SNB', 'ivybridge': 'IVB', 'haswell': 'HSW',
+             'broadwell': 'BDW', 'skylake': 'SKX', 'cascadelake': 'CSX',
+             'icelake': 'ICL',
+             'zen': 'ZEN1', 'zen2': 'ZEN2',
+             'thunderx2': 'TX2', 'aarch64': 'N1', 'a64fx': 'A64FX'}
+    assert(arch in ARCHS)
+
+    oparser = osaca.create_parser()
+    oargs = oparser.parse_args(['--arch', ARCHS[arch],
+                                '--ignore-unknown', '--verbose', osaca_in_fn])
+    osaca.check_arguments(oargs, oparser)
+    # overwrite stdout with special output stream
+    osaca_out = StringIO()
+    try:
+        osaca.run(oargs, output_file=osaca_out)
+    except:
+        with open(osaca_in_fn, 'r') as osaca_in_file:
+            print('ERR in osaca:\n%s\n' % osaca_out.getvalue(),
+                  '  for asm input (%s):\n```\n%s\n```\n'
+                  % (osaca_in_fn, osaca_in_file.read()))
+        return None
+    print('INFO worked')
+
+    # clean up the temp file under /dev/shm
+    remove(osaca_in_fn)
+
+    # results listed without special prefix, but should only contain numbers
+    osaca_res_line, cycles = compile(r'^[\d\s\.]+$'), None
+    for line in osaca_out.getvalue().split('\n'):
+        if osaca_res_line.match(line):
+            cycles = [float(nr) for nr in findall(r'[-+]?\d*\.\d+|\d+', line)]
+    assert(cycles)
+
+    throughput, crit_path, loop_carried_dep = max(cycles[0:-2]), cycles[-2], \
+                                              cycles[-1]
+
+    # osaca devs: block runtime is estimated by =min(TP, LCD)
+    return min(throughput, loop_carried_dep)
+
+
 def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
                                    bdata=None, sink_bdata=None,
                                    selfloop=False, twoblockloop=False):
@@ -836,21 +906,21 @@ def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
 
     with open(iaca_in_fn, 'w') as iaca_in_file:
         iaca_in_file.write('#include<iacaMarks.h>\n' +
-                           'int main(){\n' +
+                           'void foo(){\n' +
                            '    IACA_START;\n' +
                            '     __asm__(\n');
 
+        #FIXME: needs changing if we ever analyze non-trivial 2-block merges
         iaca_in_file.write(
             '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
                        for offset, instr in bdata['ASM']]))
         if twoblockloop:
             iaca_in_file.write(
                 '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
-                           for offset, instr in bdata['ASM']]))
+                           for offset, instr in sink_bdata['ASM']]))
 
         iaca_in_file.write('             );\n' +
                            '    IACA_END;\n' +
-                           '    return 0;\n' +
                            '}\n')
 
     # from github.com/torvalds/linux/blob/master/arch/x86/events/intel/core.c
@@ -858,22 +928,29 @@ def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
     assert(arch in ARCHS)
 
     # compile first, must? use -O0 since its assembly and shouldn't be removed
-    p = run(['icc', '-O0',
+    # switch to gcc cause intel fails to inject its own assembly, FUCKING HELL
+    # (sometimes the linker fucks up, but IACA also takes in *.o  *facepalm*)
+    p = run(['gcc', '-c', '-O0',
              '-I%s' % (environ['IACAINCL'] if 'IACAINCL' in environ else '.'),
-             '-o', '%s.exe' % iaca_in_fn,
+             '-o', '%s.o' % iaca_in_fn,
              iaca_in_fn], stdout=PIPE, stderr=PIPE)
-    assert(0 == p.returncode)
+    stdout, stderr = p.stdout.decode(), p.stderr.decode()
+    if 0 != p.returncode:
+        print('\nstdout: ', stdout, '\nstderr: ', stderr)
+        assert(0 == p.returncode)
 
     # check block throughput with Intel's analysis tool
     p = run(['iaca', '-arch', ARCHS[arch], #'-trace', '%s.t' % iaca_in_fn,
-             '%s.exe' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
-    assert(0 == p.returncode)
-    stdout = p.stdout.decode()
+             '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.stdout.decode(), p.stderr.decode()
+    if 0 != p.returncode:
+        print('\nstdout: ', stdout, '\nstderr: ', stderr)
+        assert(0 == p.returncode)
 
     # clean up the temp file under /dev/shm
     remove(iaca_in_fn)
     #remove('%s.t' % iaca_in_fn)
-    remove('%s.exe' % iaca_in_fn)
+    remove('%s.o' % iaca_in_fn)
 
     cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
                     stdout, IGNORECASE)
@@ -992,15 +1069,16 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
                 elif bbid in sink_bdata['out_edges']:
                     twoblockloop = True
                     icnt = 100
-                    mca_in_file.write('\n')
-                    mca_in_file.write('\n'.join([instr
+                    mca_in_file.write('\n' +
+                                      '\n'.join([instr
                                                  for offset, instr
                                                  in sink_bdata['ASM']]))
                 else:
-                    mca_in_file.write('\n')
-                    mca_in_file.write('\n'.join([instr
+                    mca_in_file.write('\n' +
+                                      '\n'.join([instr
                                                  for offset, instr
                                                  in sink_bdata['ASM']]))
+                mca_in_file.write('\n')
 
             # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
             # get 'Total Cycles' from llvm-mca for each basic block
@@ -1084,9 +1162,9 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
             if cycles_per_iter == 0:
                 # leave a tiny weight, otherwise we get into trouble if we
                 # filter by {ThreadExecCnts|CyclesPerIter}=0 in bb_graph fn
-                edge_data['CyclesPerIter'] = pow(10, -10)
+                edge_data['CyclesPerIter'] = 5 * [pow(10, -10)]
             else:
-                edge_data['CyclesPerIter'] = cycles_per_iter
+                edge_data['CyclesPerIter'] = 5 * [cycles_per_iter]
 
             # clean up the temp file under /dev/shm
             remove(mca_in_fn)
@@ -1095,11 +1173,26 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
                 simulate_cycles_with_INTEL_ACA(arch, bbid, sink_bbid,
                                                bdata, sink_bdata,
                                                selfloop, twoblockloop)
+            # not sure which estimate is more accurate -> take the mean
             if iaca_estimate:
-                edge_data['CyclesPerIter'] = iaca_estimate
+                if twoblockloop: iaca_estimate = float(iaca_estimate) / 2
+                edge_data['CyclesPerIter'][1] = \
+                    0.5 * (edge_data['CyclesPerIter'][0] + iaca_estimate)
+                edge_data['CyclesPerIter'][2] = iaca_estimate
+
+            osaca_estimate = \
+                simulate_cycles_with_OSACA(arch, bbid, sink_bbid,
+                                           bdata, sink_bdata,
+                                           selfloop, twoblockloop)
+            # not sure which estimate is more accurate -> take the mean
+            if osaca_estimate:
+                if twoblockloop: osaca_estimate = float(osaca_estimate) / 2
+                edge_data['CyclesPerIter'][3] = \
+                    0.5 * (edge_data['CyclesPerIter'][0] + osaca_estimate)
+                edge_data['CyclesPerIter'][4] = osaca_estimate
 
 
-def bb_graph(blockdata=None, mapper=None, thread_id=0):
+def build_bb_graph(blockdata=None, mapper=None, thread_id=0):
     assert(isinstance(blockdata, dict) and isinstance(mapper, dict)
            and isinstance(thread_id, int) and thread_id > -1)
 
@@ -1132,19 +1225,22 @@ def bb_graph(blockdata=None, mapper=None, thread_id=0):
             curr2next_bbid_edge['ThreadExecCnts'][thread_id], \
             curr2next_bbid_edge['CyclesPerIter']
         # if edge (curr_bbid->next_bbid) isn't used or filtered for the thread?
-        if iter_cnt == 0 or cycle_cnt == 0:
+        if iter_cnt == 0 or cycle_cnt[0] == 0:
             continue
         else:
-            edge_weight = iter_cnt * cycle_cnt
+            edge_weight = [iter_cnt * cnt for cnt in cycle_cnt]
+            #edge_weight = iter_cnt * cycle_cnt
 
         # check if we would close a (self-)loop -> convert to leaf
         if curr_bbid == next_bbid or G.has_node(next_bbid):
             G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
-                       cpu_cycles=edge_weight)
+                       llvm_cycles=edge_weight[0], avg_cycles=edge_weight[1],
+                       iaca_cycles=edge_weight[2])
             continue
 
         # or simply add the edge and continue the DFS
-        G.add_edge(curr_bbid, next_bbid, cpu_cycles=edge_weight)
+        G.add_edge(curr_bbid, next_bbid, llvm_cycles=edge_weight[0],
+                   avg_cycles=edge_weight[1], iaca_cycles=edge_weight[2])
 
         branches += [[next_bbid, out_edge]
                      for out_edge in blockdata[next_bbid]['out_edges'].keys()]
@@ -1224,10 +1320,18 @@ def postprocess_bb_graph(bb_graph=None, blockdata=None, mapper=None):
 
 
 def get_cpu_arch():
-    with open('/sys/devices/cpu/caps/pmu_name', 'r') as pmu:
-        cpu_info = pmu.read()
+    try:
+        with open('/sys/devices/cpu/caps/pmu_name', 'r') as pmu:
+            cpu_info = pmu.read()
+        return search(r'(\w+)', cpu_info, flags=DOTALL).group(1)
+    except:
+        pass
 
-    return search(r'(\w+)', cpu_info, flags=DOTALL).group(1)
+    try:
+        from archspec.cpu import host
+        return host().to_dict()['name']
+    except:
+        exit('ERR: cannot determine arch')
 
 
 def _id_in_range(interval, testid):
@@ -1516,7 +1620,7 @@ def main():
     total_cycles_per_thread, thread_id = [], -1
     while True:
         thread_id += 1
-        G = bb_graph(data, mapper, thread_id)
+        G = build_bb_graph(data, mapper, thread_id)
         if G == None:
             break
 
@@ -1540,10 +1644,26 @@ def main():
                 print('fn: ', data[dstbb]['Func'])
 
         cpufreq = cpu_freq()
-        total_cycles = G.size(weight='cpu_cycles')
-        print('Total CPU cycles on rank %s and thread ID %s : %s\n'
+        total_cycles = G.size(weight='llvm_cycles')
+        print('LLVM: Total CPU cycles on rank %s and thread ID %s : %s\n'
               % (0, thread_id, total_cycles) +
-              '(Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
+              'LLVM: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
+              % (total_cycles / (cpufreq.min * pow(10, 6)),
+                 total_cycles / (cpufreq.current * pow(10, 6)),
+                 total_cycles / (cpufreq.max * pow(10, 6))))
+
+        total_cycles = G.size(weight='avg_cycles')
+        print('AVG: Total CPU cycles on rank %s and thread ID %s : %s\n'
+              % (0, thread_id, total_cycles) +
+              'AVG: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
+              % (total_cycles / (cpufreq.min * pow(10, 6)),
+                 total_cycles / (cpufreq.current * pow(10, 6)),
+                 total_cycles / (cpufreq.max * pow(10, 6))))
+
+        total_cycles = G.size(weight='iaca_cycles')
+        print('IACA: Total CPU cycles on rank %s and thread ID %s : %s\n'
+              % (0, thread_id, total_cycles) +
+              'IACA: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
               % (total_cycles / (cpufreq.min * pow(10, 6)),
                  total_cycles / (cpufreq.current * pow(10, 6)),
                  total_cycles / (cpufreq.max * pow(10, 6))))
