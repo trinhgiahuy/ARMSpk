@@ -12,6 +12,7 @@ spack load gcc; spack load llvm
 
 IACADIR=$ROOTDIR/dep/iaca-lin64
 export PATH=$IACADIR:$PATH; export IACAINCL=$IACADIR
+if [ ! -x "`which iaca 2>/dev/null`" ]; then echo "ERROR: IACA missing, please download from Intel iaca-version-v3.0-lin64.zip and unzip in ./dep folder"; exit; fi;
 
 ALL=("amg" "babelstream2gb" "babelstream14gb" "comd" "ffvc" "ffb" "hpcg" "hpl" "laghos" "macsio" "miniamr" "minife" "minitri" "modylas" "mvmc" "nekbone" "ngsa" "nicam" "ntchem" "qcd" "sw4lite" "swfft" "xsbench")
 SMALL=("babelstream2gb" "babelstream14gb" "hpcg" "macsio" "minitri" "qcd" "xsbench")
@@ -43,7 +44,7 @@ NH=`echo $((N/2))`
 if [ ${ACTION} -le 0 ]; then
 	if [[ " ${LARGE[@]} " =~ " ${BM} " ]]; then
 		for R in `seq 0 $((NH-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -53,7 +54,7 @@ if [ ${ACTION} -le 0 ]; then
 		done
 		wait
 		for R in `seq ${NH} $((N-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -64,7 +65,7 @@ if [ ${ACTION} -le 0 ]; then
 		wait
 	else
 		for R in `seq 0 $((N-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -79,7 +80,7 @@ fi
 if [ ${ACTION} -le 1 ]; then
 	if [[ " ${LARGE[@]} " =~ " ${BM} " ]]; then
 		for R in `seq 0 $((NH-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -89,7 +90,7 @@ if [ ${ACTION} -le 1 ]; then
 		done
 		wait
 		for R in `seq ${NH} $((N-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -100,7 +101,7 @@ if [ ${ACTION} -le 1 ]; then
 		wait
 	else
 		for R in `seq 0 $((N-1))`; do
-			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+			for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 				$ROOTDIR/util/parse_basic_blocks.py \
 					-j ${BDATA} \
 					-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
@@ -114,7 +115,7 @@ fi
 
 if [ ${ACTION} -le 2 ]; then
 	for R in `seq 0 $((N-1))`; do
-		for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep "rank-${R}\."`; do
+		for BDATA in `find -L ${D} -name '*.dcfg.json.bz2' | /bin/grep -e "rank-${R}[\./]"`; do
 			echo ${BDATA%'.dcfg.json.bz2'}.log
 			/bin/grep '^Total\|Converted' ${BDATA%'.dcfg.json.bz2'}.log
 			echo 'MAX:' `/bin/grep 'Converted' ${BDATA%'.dcfg.json.bz2'}.log | cut -d'/' -f4 | sort -r -g | head -1`
