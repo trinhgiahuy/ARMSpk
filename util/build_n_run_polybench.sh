@@ -59,7 +59,7 @@ for BM in ${BMs}; do
 	ts=`date +%s%N`
 	./`basename ${BM}`.exe
 	te=`date +%s%N`
-	echo "(${te}-${ts})/1000000000" | bc -l |tee -a realL.log
+	echo "(${te}-${ts})/10^9" | bc -l |tee -a realL.log
 done
 
 for BM in ${BMs}; do
