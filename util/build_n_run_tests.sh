@@ -161,3 +161,24 @@ mpiexec -genv OMP_NUM_THREADS=3 -genv OMP_SCHEDULE=static ${MPIEXECOPT} -np 4 ba
 	./${OUT}/${TEST}"
 mv dcfg-out.* ${OUT}
 
+TEST=sdetestOMP
+OUT=${TEST}_out
+mkdir -p ${OUT}
+gcc -static -O3 -march=native ./${TEST}.c -o ${OUT}/${TEST} -fopenmp -lm
+for OMP in 4 16 64 256 1024; do
+	mkdir -p ${OUT}/${OMP}
+	OMP_NUM_THREADS=${OMP}\
+		../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+		-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+		-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+		-bdw -- \
+		./${OUT}/${TEST}
+	mv dcfg-out.* ${OUT}/${OMP}
+done
+for OMP in 4 16 64 256 1024; do
+	D=sdetestOMP_out/${OMP};
+	./parse_basic_blocks.py -j $D/dcfg-out.dcfg.json.bz2 -b $D/dcfg-out.bb.txt.bz2 \
+		-s $D/dcfg-out.asm.b > /dev/null
+	./parse_basic_blocks.py -j $D/dcfg-out.dcfg.json.bz2 -b $D/dcfg-out.bb.txt.bz2 \
+		-l $D/dcfg-out.asm.b > $D/parser.log;
+done
