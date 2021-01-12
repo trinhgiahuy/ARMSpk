@@ -17,7 +17,31 @@ from networkx import DiGraph, has_path, find_cycle, dfs_edges, \
 from copy import deepcopy
 from io import StringIO
 from osaca import osaca
+from functools import reduce
 
+# info put together from different sources:
+#   github.com/archspec/archspec-json/blob/master/cpu/microarchitectures.json
+#   github.com/torvalds/linux/blob/master/arch/x86/events/intel/core.c
+KNOWN_ARCHS = {
+    # Intel
+    'x86': None, 'i686': None, 'pentium2': None, 'pentium3': None,
+    'pentium4': None, 'prescott': None, 'x86_64': None, 'nocona': None,
+    'core2': None, 'nehalem': None, 'westmere': None, 'sandybridge': None,
+    'ivybridge': None, 'haswell': None, 'broadwell': None, 'skylake': None,
+    'mic_knl': None, 'skylake_avx512': None, 'cannonlake': None,
+    'cascadelake': None, 'icelake': None,
+    # AMD
+    'k10': None, 'bulldozer': None, 'piledriver': None, 'steamroller': None,
+    'excavator': None, 'zen': None, 'zen2': None,
+    # IBM
+    'ppc64': None, 'power7': None, 'power8': None, 'power9': None,
+    'ppc64le': None, 'power8le': None, 'power9le': None,
+    # ARM
+    'aarch64': None, 'thunderx2': None, 'a64fx': None, 'graviton': None,
+    'graviton2': None, 'arm': None,
+    # other
+    'ppc': None, 'ppcle': None, 'sparc': None, 'sparc64': None
+}
 
 def _get_OBJDUMP_ASSEMBLY(sde_files=None):
     assert(isinstance(sde_files, dict))
@@ -822,40 +846,51 @@ def convert_sde_data_to_something_usable(sde_data=None):
     return (data, mapper)
 
 
-def simulate_cycles_with_OSACA(arch=None, bbid=None, sink_bbid=None,
-                               bdata=None, sink_bdata=None,
-                               selfloop=False, twoblockloop=False):
-    assert(isinstance(arch, str)
+def simulate_cycles_with_OSACA(keep=False, arch=None, bbid=None, sink_bbid=None,
+                               bdata=None, sink_bdata=None):
+    assert(isinstance(keep, bool) and isinstance(arch, str)
            and isinstance(bbid, int) and isinstance(sink_bbid, int)
-           and isinstance(bdata, dict) and isinstance(sink_bdata, dict)
-           and isinstance(selfloop, bool) and isinstance(twoblockloop, bool))
+           and isinstance(bdata, dict) and isinstance(sink_bdata, dict))
 
+    ARCHS = deepcopy(KNOWN_ARCHS)
+    ARCHS['sandybridge'] = 'SNB'
+    ARCHS['ivybridge'] = 'IVB'
+    ARCHS['haswell'] = 'HSW'
+    ARCHS['broadwell'] = 'BDW'
+    ARCHS['skylake_avx512'] = 'SKX'
+    ARCHS['cascadelake'] = 'CSX'
+    ARCHS['icelake'] = 'ICL'
+    ARCHS['zen'] = 'ZEN1'
+    ARCHS['zen2'] = 'ZEN2'
+    ARCHS['thunderx2'] = 'TX2'
+    ARCHS['aarch64'] = 'N1'
+    ARCHS['a64fx'] = 'A64FX'
+    assert(ARCHS[arch])
+
+    selfloop, twoblockloop = (bbid == sink_bbid), \
+        (bbid != sink_bbid and bbid in sink_bdata['out_edges'])
+
+    # sadly OSACA has no timeline, so result will be a lower bound and slightly
+    # overestimating the performance for blocks which are not self-/twoloop
     if not selfloop and not twoblockloop:
-        return None
+        print('WRN 13: osaca estimating cycles of non-trivial blk chain %s->%s'
+              % (bbid, sink_bbid))
+        #return None
 
     osaca_in_fn = '/dev/shm/osaca_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
     with open(osaca_in_fn, 'w') as osaca_in_file:
         osaca_in_file.write('# OSACA-BEGIN\n');
 
-        #FIXME: needs changing if we ever analyze non-trivial 2-block merges
+        if not selfloop:
+            osaca_in_file.write('\n'.join([instr
+                                           for offset, instr in bdata['ASM']])
+                                + '\n')
         osaca_in_file.write('\n'.join([instr
-                                       for offset, instr in bdata['ASM']]))
-        if twoblockloop:
-            osaca_in_file.write('\n' +
-                                '\n'.join([instr
-                                           for offset, instr
-                                           in sink_bdata['ASM']]))
+                                       for offset, instr in sink_bdata['ASM']])
+                            + '\n')
 
-        osaca_in_file.write('\n# OSACA-END\n')
-
-    # from archspec
-    ARCHS = {'sandybridge': 'SNB', 'ivybridge': 'IVB', 'haswell': 'HSW',
-             'broadwell': 'BDW', 'skylake': 'SKX', 'cascadelake': 'CSX',
-             'icelake': 'ICL',
-             'zen': 'ZEN1', 'zen2': 'ZEN2',
-             'thunderx2': 'TX2', 'aarch64': 'N1', 'a64fx': 'A64FX'}
-    assert(arch in ARCHS)
+        osaca_in_file.write('# OSACA-END\n')
 
     oparser = osaca.create_parser()
     oargs = oparser.parse_args(['--arch', ARCHS[arch],
@@ -871,10 +906,10 @@ def simulate_cycles_with_OSACA(arch=None, bbid=None, sink_bbid=None,
                   '  for asm input (%s):\n```\n%s\n```\n'
                   % (osaca_in_fn, osaca_in_file.read()))
         return None
-    print('INFO worked')
 
     # clean up the temp file under /dev/shm
-    remove(osaca_in_fn)
+    if not keep:
+        remove(osaca_in_fn)
 
     # results listed without special prefix, but should only contain numbers
     osaca_res_line, cycles = compile(r'^[\d\s\.]+$'), None
@@ -886,20 +921,31 @@ def simulate_cycles_with_OSACA(arch=None, bbid=None, sink_bbid=None,
     throughput, crit_path, loop_carried_dep = max(cycles[0:-2]), cycles[-2], \
                                               cycles[-1]
 
-    # osaca devs: block runtime is estimated by =min(TP, LCD)
-    return min(throughput, loop_carried_dep)
+    # osaca devs: block runtime is estimated by =max(TP, LCD)
+    cycles = float(max(throughput, loop_carried_dep))
+    if twoblockloop:
+        cycles /= 2
+
+    return cycles
 
 
-def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
-                                   bdata=None, sink_bdata=None,
-                                   selfloop=False, twoblockloop=False):
-    assert(isinstance(arch, str)
+def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
+                              bdata=None, sink_bdata=None):
+    assert(isinstance(keep, bool) and isinstance(arch, str)
            and isinstance(bbid, int) and isinstance(sink_bbid, int)
-           and isinstance(bdata, dict) and isinstance(sink_bdata, dict)
-           and isinstance(selfloop, bool) and isinstance(twoblockloop, bool))
+           and isinstance(bdata, dict) and isinstance(sink_bdata, dict))
 
-    if not selfloop and not twoblockloop:
-        return None
+    ARCHS = deepcopy(KNOWN_ARCHS)
+    ARCHS['broadwell'] = 'BDW'
+    ARCHS['haswell'] = 'HSW'
+    ARCHS['skylake'] = 'SKL'
+    ARCHS['skylake_avx512'] = 'SKX'
+    assert(ARCHS[arch])
+
+    tl_pipe = compile(r'^\s*(\d+)\|\s*(\d+)\|\s+TYPE_.*\s+:([\sAscdweRp\-_]+)$')
+
+    selfloop, twoblockloop = (bbid == sink_bbid), \
+        (bbid != sink_bbid and bbid in sink_bdata['out_edges'])
 
     # Intel's IACA needs binary, so dump code to ramdisk and compile it
     iaca_in_fn = '/dev/shm/iaca_%s_%s_%s.c' % (getpid(), bbid, sink_bbid)
@@ -910,22 +956,19 @@ def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
                            '    IACA_START;\n' +
                            '     __asm__(\n');
 
-        #FIXME: needs changing if we ever analyze non-trivial 2-block merges
-        iaca_in_file.write(
-            '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
-                       for offset, instr in bdata['ASM']]))
-        if twoblockloop:
-            iaca_in_file.write(
-                '\n'.join(['"%s\\n\\t"' % instr.split('#')[0].strip()
-                           for offset, instr in sink_bdata['ASM']]))
+        if not selfloop:
+            iaca_in_file.write('\n'.join(['"%s\\n\\t"'
+                                          % instr.split('#')[0].strip()
+                                          for offset, instr in bdata['ASM']])
+                               + '\n')
+        iaca_in_file.write('\n'.join(['"%s\\n\\t"'
+                                      % instr.split('#')[0].strip()
+                                      for offset, instr in sink_bdata['ASM']])
+                           + '\n')
 
         iaca_in_file.write('             );\n' +
                            '    IACA_END;\n' +
                            '}\n')
-
-    # from github.com/torvalds/linux/blob/master/arch/x86/events/intel/core.c
-    ARCHS = {'haswell': 'HSW', 'broadwell': 'BDW', 'skylake': 'SKL'}
-    assert(arch in ARCHS)
 
     # compile first, must? use -O0 since its assembly and shouldn't be removed
     # switch to gcc cause intel fails to inject its own assembly, FUCKING HELL
@@ -940,22 +983,70 @@ def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
         assert(0 == p.returncode)
 
     # check block throughput with Intel's analysis tool
-    p = run(['iaca', '-arch', ARCHS[arch], #'-trace', '%s.t' % iaca_in_fn,
+    p = run(['iaca',
+             '-arch', ARCHS[arch],
+             '-trace-cycle-count', '1024',
+             '-trace', '%s.t' % iaca_in_fn,
              '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.stdout.decode(), p.stderr.decode()
     if 0 != p.returncode:
         print('\nstdout: ', stdout, '\nstderr: ', stderr)
         assert(0 == p.returncode)
 
-    # clean up the temp file under /dev/shm
-    remove(iaca_in_fn)
-    #remove('%s.t' % iaca_in_fn)
-    remove('%s.o' % iaca_in_fn)
+    if selfloop or twoblockloop:
+        cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
+                        stdout, IGNORECASE)
+    else:
+        prev_inst_nr, timeline_data = -1, []
+        with open('%s.t' % iaca_in_fn, 'r') as iaca_tl_file:
+            for line in iaca_tl_file:
+                tl = tl_pipe.match(line)
+                if not tl:
+                    continue
 
-    cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
-                    stdout, IGNORECASE)
+                iter_nr, inst_nr, timeline = \
+                    int(tl.group(1)), int(tl.group(2)), tl.group(3).rstrip()
+                if timeline.find('R') < 0:
+                    print('WRN 14: retirement indicator missing from inst %s' +
+                          ' of basic block chain (%s->%s)'
+                          % (inst_nr, bbid, sink_bbid))
+                # sometimes we have gaps if iaca processes unsupported inst
+                # we just replicate the last known valid instruction
+                for nr in range(prev_inst_nr + 1, inst_nr):
+                    timeline_data.append(
+                        [nr, timeline_data[prev_inst_nr][1]
+                                if prev_inst_nr >= 0 else 'R'])
+                # and now store the real one, but check if we already had
+                # (in which case we overwrite if new retire is later)
+                if len(timeline_data) and timeline_data[-1][0] == inst_nr:
+                    if timeline_data[-1][1].find('R') < timeline.find('R'):
+                        timeline_data[-1] = [inst_nr, timeline]
+                else:
+                    timeline_data.append([inst_nr, timeline])
+                prev_inst_nr = inst_nr
+                if iter_nr > 0:
+                    break
+
+            else:
+                print('WRN 15: basic block chain (%s->%s) was longer than' +
+                      ' expected; try increasing trace-cycle-count for iaca'
+                      % (bbid, sink_bbid))
+                return None
+
+        cycles = \
+            timeline_data[-1][1].find('R') \
+            - timeline_data[bdata['NumASM'] - 1][1].find('R')
+
     assert(cycles)
-    cycles = int(float(cycles.group(1)))
+    cycles = float(cycles.group(1))
+    if twoblockloop:
+        cycles /= 2
+
+    # clean up the temp file under /dev/shm
+    if not keep:
+        remove(iaca_in_fn)
+        remove('%s.t' % iaca_in_fn)
+        remove('%s.o' % iaca_in_fn)
 
     notes = search(r'Analysis\s+Notes:\n(.*)', stdout, flags=DOTALL|IGNORECASE)
     if notes:
@@ -975,9 +1066,65 @@ def simulate_cycles_with_INTEL_ACA(arch=None, bbid=None, sink_bbid=None,
     return cycles
 
 
-def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
+def second_opinion_from_iaca_and_osaca(blkdata=None, mapper=None, arch=None,
+                                       keep=False):
+    assert(isinstance(blkdata, dict) and isinstance(mapper, dict)
+           and isinstance(arch, str) and isinstance(keep, bool))
+
+    # we don't check them all, just the most computational heavy blocks
+    branches = [[c_bbid, n_bbid,
+                 max(blkdata[c_bbid]['out_edges'][n_bbid]['ThreadExecCnts'])
+                 * blkdata[c_bbid]['out_edges'][n_bbid]['CyclesPerIter']]
+                for c_bbid in blkdata
+                for n_bbid in blkdata[c_bbid]['out_edges'].keys()]
+
+    # sort descending by runtiem
+    branches.sort(key=lambda x: x[2], reverse=True)
+    # get a sublist which has (in sum) 99% of the entire runtime
+    total = reduce(lambda x,y: x+y, (b[2] for b in branches))
+    i, subtotal = 0, 0
+    for i in range(len(branches)):
+        subtotal += branches[i][2]
+        if subtotal > 0.99 * total:
+            break
+    # remove useless tail
+    branches = branches[:i+1]
+
+    for bbid, sink_bbid, _ in branches:
+        edge_data = blkdata[bbid]['out_edges'][sink_bbid]
+        edge_data['CyclesPerIter'] = 3 * [edge_data['CyclesPerIter']]
+
+        try:
+            iaca_estimate = \
+                simulate_cycles_with_IACA(keep, arch, bbid, sink_bbid,
+                                          blkdata[bbid], blkdata[sink_bbid])
+        except:
+            print('WRN 11: iaca failed for blocks %s->%s and arch %s'
+                  % (bbid, sink_bbid, arch))
+            iaca_estimate = None
+            pass
+        try:
+            osaca_estimate = \
+                simulate_cycles_with_OSACA(keep, arch, bbid, sink_bbid,
+                                           blkdata[bbid], blkdata[sink_bbid])
+        except:
+            print('WRN 12: osaca failed for blocks %s->%s and arch %s'
+                  % (bbid, sink_bbid, arch))
+            osaca_estimate = None
+            pass
+
+        if iaca_estimate:
+            edge_data['CyclesPerIter'][1] = iaca_estimate
+
+        # not sure which estimate is more accurate -> take the mean
+        if osaca_estimate:
+            edge_data['CyclesPerIter'][2] = osaca_estimate
+
+
+def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None,
+                                  keep=False):
     assert(isinstance(blockdata, dict) and isinstance(mapper, dict)
-           and isinstance(arch, str))
+           and isinstance(arch, str) and isinstance(keep, bool))
 
     # make the llvm-mca simulation more realistic / first step from gut feeling
     # assuming we have 3 basic blocks (random index fn of ld-linux-x86-64.so.2)
@@ -1020,8 +1167,34 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
     # is 10-5=5 cycles and not 10 as predicted for standalone kernel
 
     asm_cnt = compile(r'^Instructions:\s+(\d+)$')
-    cyc_cnt = compile(r'^Total Cycles:\s+(\d+)$')
+    cyc_cnt = compile(r'^Total\s+Cycles:\s+(\d+)$')
+    rtp_cnt = compile(r'^Block\s+RThroughput:\s+(\d+)$')
     tl_pipe = compile(r'^(\[[\d,]+)\]\s+([\.D]+[DReE=\-\.\s]+)\s+([\.\(]?\w{2,}.*)$')
+
+    # info from `llvm-mca -mtriple=ARCH-unknown-linux-gnu -mcpu=help /dev/null`
+    # ARCH can be x86-64, aarch64, ppc64, sparc[v9] (more: `llvm-mca -version`)
+    ARCHS = deepcopy(KNOWN_ARCHS)
+    ARCHS['broadwell'] = ['x86_64', 'broadwell']
+    ARCHS['cannonlake'] = ['x86_64', 'cannonlake']
+    ARCHS['cascadelake'] = ['x86_64', 'cascadelake']
+    ARCHS['core2'] = ['x86_64', 'core2']
+    ARCHS['haswell'] = ['x86_64', 'haswell']
+    ARCHS['icelake'] = ['x86_64', 'icelake-server']
+    ARCHS['ivybridge'] = ['x86_64', 'ivybridge']
+    ARCHS['mic_knl'] = ['x86_64', 'knl']
+    ARCHS['nehalem'] = ['x86_64', 'nehalem']
+    ARCHS['sandybridge'] = ['x86_64', 'sandybridge']
+    ARCHS['skylake'] = ['x86_64', 'skylake']
+    ARCHS['skylake_avx512'] = ['x86_64', 'skylake-avx512']
+    ARCHS['westmere'] = ['x86_64', 'westmere']
+    ARCHS['x86_64'] = ['x86_64', 'x86-64']
+    ARCHS['aarch64'] = ['aarch64', 'generic']
+    ARCHS['thunderx2'] = ['aarch64', 'thunderx2t99']
+    ARCHS['a64fx'] = ['aarch64', 'generic -mattr=+fp-armv8,+v8.3a,+neon,+sve']
+    ARCHS['power7'] = ['ppc64', 'pwr7']
+    ARCHS['power8'] = ['ppc64', 'pwr8']
+    ARCHS['power9'] = ['ppc64', 'pwr9']
+    assert(ARCHS[arch])
 
     #fid2fn_m, bbid2fid_m, sbid2sbn_m = \
     #    mapper['fid2fn'], mapper['bbid2fid'], mapper['sbid2sbn']
@@ -1050,41 +1223,34 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
             # llvm-mca read assembly from file, so dump a copy to ramdisk
             mca_in_fn = '/dev/shm/asm_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
-            selfloop, twoblockloop, icnt = False, False, 1
+            selfloop, twoblockloop, icnt = (bbid == sink_bbid), \
+                (bbid != sink_bbid and bbid in sink_bdata['out_edges']), 1
+            # (1) self-edges indicate long running loops and compute phases
+            # hence we skip adding sink_block and increase iteration count
+            # (2) in case of a two-block loop we do that too but merge assembly
+            # but need to /2 the cycles, because the loop is counted twice
+            if selfloop or twoblockloop:
+                icnt = 1000
+
             num_asm_bbid, num_asm_sink_bbid = \
                 bdata['NumASM'], sink_bdata['NumASM']
 
             with open(mca_in_fn, 'w') as mca_in_file:
+                if not selfloop:
+                    mca_in_file.write('\n'.join([instr
+                                                 for offset, instr
+                                                 in bdata['ASM']])
+                                      + '\n')
                 mca_in_file.write('\n'.join([instr
                                              for offset, instr
-                                             in bdata['ASM']]))
-                # self-edges indicate long running loops and compute phases
-                # hence we skip adding sink_block and increase iteration count
-                if bbid == sink_bbid:
-                    selfloop = True
-                    icnt = 100
-                    #FIXME: have to change to account for ThreadExecCnts array
-                # in case of a two-block loop we do that too but merge assembly
-                # but need to /2 the cycles, because the loop is counted twice
-                elif bbid in sink_bdata['out_edges']:
-                    twoblockloop = True
-                    icnt = 100
-                    mca_in_file.write('\n' +
-                                      '\n'.join([instr
-                                                 for offset, instr
-                                                 in sink_bdata['ASM']]))
-                else:
-                    mca_in_file.write('\n' +
-                                      '\n'.join([instr
-                                                 for offset, instr
-                                                 in sink_bdata['ASM']]))
-                mca_in_file.write('\n')
+                                             in sink_bdata['ASM']])
+                                  + '\n')
 
             # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
             # get 'Total Cycles' from llvm-mca for each basic block
             p = run(['llvm-mca',
-                     '--mtriple=x86_64-unknown-linux-gnu',
-                     '--mcpu=native',
+                     '--mtriple=%s-unknown-linux-gnu' % ARCHS[arch][0],
+                     '--mcpu=%s' % ARCHS[arch][1],
                      '--iterations=%s' % icnt,
                      '-timeline',
                      '-timeline-max-iterations=1',
@@ -1111,6 +1277,15 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
 
                 elif cyc_cnt.match(line):
                     num_cycles = int(cyc_cnt.match(line).group(1).strip())
+
+                elif rtp_cnt.match(line):
+                    # RThroughput is reciprocal of maximum number of blocks
+                    # that can be executed per clock cycle (assume: no LCD)
+                    rthroughput = float(rtp_cnt.match(line).group(1).strip())
+                    # tp = 1/rthroughput; NOTE: if LCD is ignored then the
+                    # resulting number is rather useless (which is why OSACA
+                    # uses max(TP,LCD) => so ignore the rthroughput hereafter
+                    # and stick to Total Cycles / Iterations
 
                 elif tl_pipe.match(line):
                     tl = tl_pipe.match(line)
@@ -1162,34 +1337,13 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None):
             if cycles_per_iter == 0:
                 # leave a tiny weight, otherwise we get into trouble if we
                 # filter by {ThreadExecCnts|CyclesPerIter}=0 in bb_graph fn
-                edge_data['CyclesPerIter'] = 5 * [pow(10, -10)]
+                edge_data['CyclesPerIter'] = pow(10, -10)
             else:
-                edge_data['CyclesPerIter'] = 5 * [cycles_per_iter]
+                edge_data['CyclesPerIter'] = cycles_per_iter
 
             # clean up the temp file under /dev/shm
-            remove(mca_in_fn)
-
-            iaca_estimate = \
-                simulate_cycles_with_INTEL_ACA(arch, bbid, sink_bbid,
-                                               bdata, sink_bdata,
-                                               selfloop, twoblockloop)
-            # not sure which estimate is more accurate -> take the mean
-            if iaca_estimate:
-                if twoblockloop: iaca_estimate = float(iaca_estimate) / 2
-                edge_data['CyclesPerIter'][1] = \
-                    0.5 * (edge_data['CyclesPerIter'][0] + iaca_estimate)
-                edge_data['CyclesPerIter'][2] = iaca_estimate
-
-            osaca_estimate = \
-                simulate_cycles_with_OSACA(arch, bbid, sink_bbid,
-                                           bdata, sink_bdata,
-                                           selfloop, twoblockloop)
-            # not sure which estimate is more accurate -> take the mean
-            if osaca_estimate:
-                if twoblockloop: osaca_estimate = float(osaca_estimate) / 2
-                edge_data['CyclesPerIter'][3] = \
-                    0.5 * (edge_data['CyclesPerIter'][0] + osaca_estimate)
-                edge_data['CyclesPerIter'][4] = osaca_estimate
+            if not keep:
+                remove(mca_in_fn)
 
 
 def build_bb_graph(blockdata=None, mapper=None, thread_id=0):
@@ -1225,22 +1379,29 @@ def build_bb_graph(blockdata=None, mapper=None, thread_id=0):
             curr2next_bbid_edge['ThreadExecCnts'][thread_id], \
             curr2next_bbid_edge['CyclesPerIter']
         # if edge (curr_bbid->next_bbid) isn't used or filtered for the thread?
-        if iter_cnt == 0 or cycle_cnt[0] == 0:
+        if iter_cnt == 0 \
+                or (isinstance(cycle_cnt, list) and cycle_cnt[0] == 0) \
+                or (not isinstance(cycle_cnt, list) and cycle_cnt == 0):
             continue
         else:
-            edge_weight = [iter_cnt * cnt for cnt in cycle_cnt]
-            #edge_weight = iter_cnt * cycle_cnt
+            if isinstance(cycle_cnt, list):
+                edge_weight = [iter_cnt * cnt for cnt in cycle_cnt]
+            else:
+                edge_weight = 3 * [iter_cnt * cycle_cnt]
 
         # check if we would close a (self-)loop -> convert to leaf
         if curr_bbid == next_bbid or G.has_node(next_bbid):
             G.add_edge(curr_bbid, '%s->%s->|' % (curr_bbid, next_bbid),
-                       llvm_cycles=edge_weight[0], avg_cycles=edge_weight[1],
-                       iaca_cycles=edge_weight[2])
+                       llvm_cycles=edge_weight[0],
+                       iaca_cycles=edge_weight[1],
+                       osaca_cycles=edge_weight[2])
             continue
 
         # or simply add the edge and continue the DFS
-        G.add_edge(curr_bbid, next_bbid, llvm_cycles=edge_weight[0],
-                   avg_cycles=edge_weight[1], iaca_cycles=edge_weight[2])
+        G.add_edge(curr_bbid, next_bbid,
+                   llvm_cycles=edge_weight[0],
+                   iaca_cycles=edge_weight[1],
+                   osaca_cycles=edge_weight[2])
 
         branches += [[next_bbid, out_edge]
                      for out_edge in blockdata[next_bbid]['out_edges'].keys()]
@@ -1598,6 +1759,13 @@ def main():
                             help='backup objdump data to file to postprocess' +
                             ' on a different computer or get speedup locally',
                             type=str, metavar='<output file>', default=None,)
+    arg_parser.add_argument('-a', '--cpu_arch', dest='__cpu_arch__',
+                            help='change CPU architecture which should be' +
+                            ' simulated [default: native]',
+                            type=str, metavar='<arch>', default=None,)
+    arg_parser.add_argument('-k', '--keep', dest='__keep__',
+                            help='keep intermediate input/output files',
+                            action='store_true', default=False,)
     args = vars(arg_parser.parse_args())
 
     assert(args.get('__sde_json_f__') is not None
@@ -1614,9 +1782,12 @@ def main():
     data, mapper = convert_sde_data_to_something_usable(sde_data)
     del sde_data
 
-    arch = get_cpu_arch()
+    if args.get('__cpu_arch__') is None:
+        arch = get_cpu_arch()
+    assert(arch in KNOWN_ARCHS)
 
-    simulate_cycles_with_LLVM_MCA(data, mapper, arch)
+    simulate_cycles_with_LLVM_MCA(data, mapper, arch, args.get('__keep__'))
+    second_opinion_from_iaca_and_osaca(data, mapper, arch, args.get('__keep__'))
     total_cycles_per_thread, thread_id = [], -1
     while True:
         thread_id += 1
@@ -1652,18 +1823,18 @@ def main():
                  total_cycles / (cpufreq.current * pow(10, 6)),
                  total_cycles / (cpufreq.max * pow(10, 6))))
 
-        total_cycles = G.size(weight='avg_cycles')
-        print('AVG: Total CPU cycles on rank %s and thread ID %s : %s\n'
-              % (0, thread_id, total_cycles) +
-              'AVG: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
-              % (total_cycles / (cpufreq.min * pow(10, 6)),
-                 total_cycles / (cpufreq.current * pow(10, 6)),
-                 total_cycles / (cpufreq.max * pow(10, 6))))
-
         total_cycles = G.size(weight='iaca_cycles')
         print('IACA: Total CPU cycles on rank %s and thread ID %s : %s\n'
               % (0, thread_id, total_cycles) +
               'IACA: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
+              % (total_cycles / (cpufreq.min * pow(10, 6)),
+                 total_cycles / (cpufreq.current * pow(10, 6)),
+                 total_cycles / (cpufreq.max * pow(10, 6))))
+
+        total_cycles = G.size(weight='osaca_cycles')
+        print('OSACA: Total CPU cycles on rank %s and thread ID %s : %s\n'
+              % (0, thread_id, total_cycles) +
+              'OSACA: (Converted to time (with min/curr/max freq.): %ss / %ss / %ss)'
               % (total_cycles / (cpufreq.min * pow(10, 6)),
                  total_cycles / (cpufreq.current * pow(10, 6)),
                  total_cycles / (cpufreq.max * pow(10, 6))))
