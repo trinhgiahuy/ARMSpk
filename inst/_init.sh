@@ -117,7 +117,8 @@ VERSION="96fa6f0c1be4ab55ec6ba7cd5af059e1ed95351f"
 cd $ROOTDIR/dep/$BM/
 if [[ "`git branch`" = *"develop"* ]]; then
         git checkout -b precision ${VERSION}
-        sed -i -e 's/# build_jobs: 16/build_jobs: 32/' etc/spack/defaults/config.yaml
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
         source $ROOTDIR/dep/spack/share/spack/setup-env.sh
         spack compiler find
         # check system compiler and install one we like
@@ -126,7 +127,9 @@ if [[ "`git branch`" = *"develop"* ]]; then
                 spack load gcc@8.4.0
                 spack compiler find
         fi
-	spack install llvm@10.0.0%gcc@8.4.0 gold=False
+	spack install libpfm4@4.10.1%gcc@8.4.0
+	spack load libpfm4
+	spack install llvm@10.0.0%gcc@8.4.0 gold=False libpfm=True
 
 	#spack install openjdk@1.8.0_222-b10%gcc@8.4.0
 	#spack install maven@3.6.3%gcc@8.4.0 ^openjdk@1.8.0_222-b10
@@ -157,6 +160,34 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	#./bin/workloads/micro/wordcount/spark/run.sh
 fi
 cd $ROOTDIR
+
+echo -e '\nInit OSACA'
+BM="OSACA"
+VERSION="768a90de103755fa995c9f4e23e1f498e763aff2"
+cd $ROOTDIR/dep/$BM/
+if [[ "`git branch`" = *"master"* ]]; then
+        git checkout -b precision ${VERSION}
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	#get arch info in different way, since pmu_name is intel-only
+	python3 -m pip install --user --upgrade archspec==0.1.2
+	python3 -m pip install --user --upgrade pyparsing==2.4.2
+	python3 -m pip install --user --upgrade ruamel.yaml==0.16.12
+	python3 -m pip install --user --upgrade ruamel.yaml.clib==0.2.2
+	python3 -m pip install --user --upgrade networkx==2.4
+	python3 -m pip install --user --upgrade decorator==4.4.0
+	python3 setup.py bdist_wheel 2>&1 | tee comp
+	python3 -m pip install --user --upgrade dist/osaca-0.3.14-py3-none-any.whl
+fi
+cd $ROOTDIR
+
+echo -e '\nInit IACA'
+# IACA https://software.intel.com/content/www/us/en/develop/articles/intel-architecture-code-analyzer.html
+if [ -f $ROOTDIR/dep/iaca-version-v3.0-lin64.zip ]; then
+	cd $ROOTDIR/dep/; rm -rf iaca-lin64/; unzip ./iaca-version-v3.0-lin64.zip; cd -
+else
+	echo "ERR: missing ./iaca-version-v3.0-lin64.zip in dep/ folder"
+fi
 
 echo -e "\nIn case of reboot, run again:
 sudo sh -c 'echo 0 > /proc/sys/kernel/perf_event_paranoid'
