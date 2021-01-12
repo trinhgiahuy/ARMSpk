@@ -9,6 +9,10 @@ ulimit -n 4096
 source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 spack load gcc; spack load llvm
 
+export IACADIR=$ROOTDIR/dep/iaca-lin64
+export IACAINCL=$IACADIR
+export PATH=$IACADIR:$PATH
+
 if [ ! -f ./polybench-c-3.2.tar.gz ]; then
 	wget http://web.cse.ohio-state.edu/\~pouchet.2/software/polybench/download/polybench-c-3.2.tar.gz
 fi
@@ -55,11 +59,17 @@ for BM in ${BMs}; do
 done
 
 for BM in ${BMs}; do
-	echo `basename ${BM}` |tee -a realL.log
-	ts=`date +%s%N`
-	./`basename ${BM}`.exe
-	te=`date +%s%N`
-	echo "(${te}-${ts})/10^9" | bc -l |tee -a realL.log
+	echo -ne "`basename ${BM}`\t" |tee -a real.log
+	numactl -l -C 1 ./`basename ${BM}`.exe
+	t_min="999999.0"
+	for c in `seq 1 10`; do
+		ts=`date +%s%N`
+		numactl -l -C 1 ./`basename ${BM}`.exe
+		te=`date +%s%N`
+		t_curr=`echo "(${te}-${ts})/10^9" | bc -l`
+		if (( $(echo "${t_curr} < ${t_min}" | bc -l) )); then t_min=${t_curr}; fi
+	done
+	echo "(${te}-${ts})/10^9" | bc -l |tee -a real.log
 done
 
 for BM in ${BMs}; do
@@ -73,7 +83,7 @@ for BM in ${BMs}; do
 done
 
 for BM in ${BMs}; do
-	echo `basename ${BM}` |tee -a simL.log
+	echo `basename ${BM}` |tee -a sim.log
 	D="`basename ${BM}`_sde"
 	echo "get blocks:" `basename ${BM}`
 	../parse_basic_blocks.py \
@@ -85,5 +95,5 @@ for BM in ${BMs}; do
 		-j ${D}/dcfg-out.dcfg.json.bz2 \
 		-b ${D}/dcfg-out.bb.txt.bz2 \
 		-l ${D}/dcfg-out.asm.b > ${D}/parser.log 2>&1
-	/bin/grep 'Converted to' ${D}/parser.log | cut -d '/' -f4 | cut -d 's' -f1 | sort -g | tail -1 |tee -a simL.log
+	/bin/grep 'Total CPU\|Converted to' ${D}/parser.log |tee -a sim.log
 done
