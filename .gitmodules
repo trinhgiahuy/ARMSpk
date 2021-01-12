@@ -85,3 +85,6 @@
 [submodule "dep/mpi-wrap-gen"]
 	path = dep/mpi-wrap-gen
 	url = https://github.com/LLNL/wrap.git
+[submodule "dep/OSACA"]
+	path = dep/OSACA
+	url = https://github.com/RRZE-HPC/OSACA.git
