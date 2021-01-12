@@ -916,7 +916,7 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     for line in osaca_out.getvalue().split('\n'):
         if osaca_res_line.match(line):
             cycles = [float(nr) for nr in findall(r'[-+]?\d*\.\d+|\d+', line)]
-    assert(cycles)
+    assert(len(cycles) > 2)
 
     throughput, crit_path, loop_carried_dep = max(cycles[0:-2]), cycles[-2], \
                                               cycles[-1]
@@ -925,6 +925,9 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     cycles = float(max(throughput, loop_carried_dep))
     if twoblockloop:
         cycles /= 2
+    # rare cases with two blocks ending at same cycle, but they're legit
+    if cycles == 0:
+        cycles = pow(10, -10)
 
     return cycles
 
@@ -941,8 +944,6 @@ def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     ARCHS['skylake'] = 'SKL'
     ARCHS['skylake_avx512'] = 'SKX'
     assert(ARCHS[arch])
-
-    tl_pipe = compile(r'^\s*(\d+)\|\s*(\d+)\|\s+TYPE_.*\s+:([\sAscdweRp\-_]+)$')
 
     selfloop, twoblockloop = (bbid == sink_bbid), \
         (bbid != sink_bbid and bbid in sink_bdata['out_edges'])
@@ -996,7 +997,10 @@ def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     if selfloop or twoblockloop:
         cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
                         stdout, IGNORECASE)
+        cycles = float(cycles.group(1))
     else:
+        tl_pipe = compile(r'^\s*(\d+)\|\s*(\d+)\|\s+TYPE_.*\s+' +
+                          r':([\s|]*[\sAscdweRp\-_]+)(?:[\s|]+)?$')
         prev_inst_nr, timeline_data = -1, []
         with open('%s.t' % iaca_in_fn, 'r') as iaca_tl_file:
             for line in iaca_tl_file:
@@ -1037,11 +1041,6 @@ def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
             timeline_data[-1][1].find('R') \
             - timeline_data[bdata['NumASM'] - 1][1].find('R')
 
-    assert(cycles)
-    cycles = float(cycles.group(1))
-    if twoblockloop:
-        cycles /= 2
-
     # clean up the temp file under /dev/shm
     if not keep:
         remove(iaca_in_fn)
@@ -1062,6 +1061,13 @@ def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
 
         if len(notes):
             print(notes)
+
+    assert(cycles >= 0)
+    if twoblockloop:
+        cycles /= 2
+    # rare cases with two blocks ending at same cycle, but they're legit
+    if cycles == 0:
+        cycles = pow(10, -10)
 
     return cycles
 

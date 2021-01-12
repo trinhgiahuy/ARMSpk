@@ -83,17 +83,27 @@ for BM in ${BMs}; do
 done
 
 for BM in ${BMs}; do
-	echo `basename ${BM}` |tee -a sim.log
 	D="`basename ${BM}`_sde"
 	echo "get blocks:" `basename ${BM}`
 	../parse_basic_blocks.py \
 		-j ${D}/dcfg-out.dcfg.json.bz2 \
 		-b ${D}/dcfg-out.bb.txt.bz2 \
-		-s ${D}/dcfg-out.asm.b
+		-s ${D}/dcfg-out.asm.b &
+done
+wait
+
+for BM in ${BMs}; do
+	D="`basename ${BM}`_sde"
 	echo "analyze blocks:" `basename ${BM}`
 	../parse_basic_blocks.py \
 		-j ${D}/dcfg-out.dcfg.json.bz2 \
 		-b ${D}/dcfg-out.bb.txt.bz2 \
-		-l ${D}/dcfg-out.asm.b > ${D}/parser.log 2>&1
-	/bin/grep 'Total CPU\|Converted to' ${D}/parser.log |tee -a sim.log
+		-l ${D}/dcfg-out.asm.b > ${D}/parser.log 2>&1 &
 done
+wait
+
+for BM in ${BMs}; do
+	echo `basename ${BM}` |tee -a sim.log
+	/bin/grep 'Total CPU\|Converted to' `basename ${BM}`_sde/parser.log |tee -a sim.log
+done
+
