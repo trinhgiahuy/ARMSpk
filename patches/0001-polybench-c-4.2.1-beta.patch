@@ -1,0 +1,43 @@
+diff -Nur polybench-c-4.2.1-beta/utilities/polybench.c polybench-c-4.2.1-beta-exp/utilities/polybench.c
+--- polybench-c-4.2.1-beta/utilities/polybench.c	2016-05-20 18:30:49.000000000 +0900
++++ polybench-c-4.2.1-beta-exp/utilities/polybench.c	2021-01-19 13:22:25.991996409 +0900
+@@ -365,6 +365,7 @@
+ {
+   polybench_prepare_instruments ();
+ #ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
++STARTSDE(1,0);
+   polybench_t_start = rtclock ();
+ #else
+   polybench_c_start = rdtsc ();
+@@ -376,6 +377,7 @@
+ {
+ #ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
+   polybench_t_end = rtclock ();
++STOPSDE(1,0);
+ #else
+   polybench_c_end = rdtsc ();
+ #endif
+@@ -399,7 +401,7 @@
+ 		 (double)(polybench_t_end - polybench_t_start)) / 1000000000);
+ #else
+ # ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
+-      printf ("%0.6f\n", polybench_t_end - polybench_t_start);
++      printf ("Walltime of the main kernel: %0.6f sec\n", polybench_t_end - polybench_t_start);
+ # else
+       printf ("%Ld\n", polybench_c_end - polybench_c_start);
+ # endif
+diff -Nur polybench-c-4.2.1-beta/utilities/polybench.h polybench-c-4.2.1-beta-exp/utilities/polybench.h
+--- polybench-c-4.2.1-beta/utilities/polybench.h	2016-05-20 18:30:49.000000000 +0900
++++ polybench-c-4.2.1-beta-exp/utilities/polybench.h	2021-01-19 13:19:29.504716262 +0900
+@@ -217,6 +217,11 @@
+ extern void polybench_timer_stop();
+ extern void polybench_timer_print();
+ # endif
++#include <ittnotify.h>
++#include <signal.h>
++#include <stdlib.h>
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
+ 
+ /* PAPI support. */
+ # ifdef POLYBENCH_PAPI
