@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="HPCG"
 VERSION="5422fecd0a009a8731d0bd96b957d443297a53bc"
 if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
@@ -33,6 +40,7 @@ if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 		exit
 	fi
 	../configure $CONF
+	sed -i -e 's/mpiicpc/mpicxx/' -e 's/= -L${ADVISOR/= -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./setup/Make.IMPI_IOMP_AVX2
 	make
 	cd $ROOTDIR
 fi

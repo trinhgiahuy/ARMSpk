@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="MiniAMR"
 VERSION="07297b3a2a46ebf08bc9be33d8d28ea21c0f4956"
 if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
@@ -22,8 +29,12 @@ if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/ref
+	sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
+	for x in `/bin/grep -r 'exchange(' . | cut -d':' -f1 | sort -u`; do sed -i -e 's/exchange(/xxxexchange(/' $x; done
 	make
 	cd $ROOTDIR/$BM/openmp
+	sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
+	for x in `/bin/grep -r 'exchange(' . | cut -d':' -f1 | sort -u`; do sed -i -e 's/exchange(/xxxexchange(/' $x; done
 	make
 	cd $ROOTDIR
 fi

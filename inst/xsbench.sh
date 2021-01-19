@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="XSBench"
 VERSION="4772cf0194e2ae6d6752c5cacb8cf063fbfef7d0"
 if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
@@ -22,6 +29,7 @@ if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
+	sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 	make
 	cd $ROOTDIR
 fi

@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="Laghos"
 VERSION="9a074521257434e0b9acff9e59ff10e3e881bc32"
 if [ ! -f $ROOTDIR/$BM/laghos ]; then
@@ -43,9 +50,10 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		git checkout laghos-v1.0
 		git apply --check $ROOTDIR/patches/*1-mfem*.patch
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-mfem*.patch; fi
-		make parallel -j
+		make config MFEM_USE_MPI=YES MPICXX=mpicxx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
 		cd $ROOTDIR/$BM/
 	fi
+	sed -i -e 's/= -L${ADVISOR/= -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./makefile
 	make
 	cd $ROOTDIR
 fi

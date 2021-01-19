@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="AMG"
 VERSION="295de9693eaabf6f7330ac3a35fd9bd4ad030522"
 if [ ! -f $ROOTDIR/$BM/test/amg ]; then
@@ -25,6 +32,7 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 	if [[ $HOSTNAME = *"${IKNLHOST}"* ]] || [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 		sed -i -e 's/xHost/xCORE-AVX2/g' ./Makefile.include
 	fi
+	sed -i -e 's/INCLUDE_LFLAGS = /INCLUDE_LFLAGS = -static -static-intel -qopenmp-link=static /' ./Makefile.include
 	make
 	cd $ROOTDIR
 fi

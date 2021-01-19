@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
 VERSION="d0ef31454577740fbb87618cc35789b7ef838238"
 if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
@@ -36,6 +43,7 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	fi
 	export oldPATH=$PATH
 	export PATH=$ROOTDIR/$BM/fftw/bin:$oldPATH
+	sed -i -e 's/-L${ADVISOR/-lmpi_cxx -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./GNUmakefile
 	make -f GNUmakefile.openmp
 	export PATH=$oldPATH
 	unset oldPATH

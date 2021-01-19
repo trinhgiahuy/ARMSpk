@@ -14,6 +14,13 @@ alias ar=`which xiar`
 alias ld=`which xild`
 export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+export OMPI_CC=$I_MPI_CC
+export OMPI_CXX=$I_MPI_CXX
+export OMPI_F77=$I_MPI_F77
+export OMPI_FC=$I_MPI_F90
+
 BM="MACSio"
 VERSION1="e8bece99bfa5eab9355549bb587ee36aec9d6c67"
 VERSION2="30008dc17cd5f787dedd303c51367bb5a8885271"
@@ -27,7 +34,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		git checkout -b precision ${VERSION2}
 		cd $ROOTDIR/dep/json-cwx/json-cwx
 		./autogen.sh
-		./configure --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"
+		./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"
 		make
 		make install
 		cd $ROOTDIR/$BM/
@@ -43,7 +50,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 	fi
 	rm -rf build; mkdir -p build; cd build
 	cmake -DCMAKE_C_COMPILER=`which mpicc` -DCMAKE_C_FLAGS="-O3 -ipo -xHost -I${ADVISOR_2018_DIR}/include" -DCMAKE_CXX_COMPILER=`which mpicxx` -DCMAKE_CXX_FLAGS="-O3 -ipo -xHost -I${ADVISOR_2018_DIR}/include" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
-	sed -i -e "s# -lpthread # -lpthread -L${ADVISOR_2018_DIR}/lib64 -littnotify #" ./macsio/CMakeFiles/macsio.dir/link.txt
+	sed -i -e "s#libjson-cwx.a #libjson-cwx.a -static -static-intel -qopenmp-link=static -L${ADVISOR_2018_DIR}/lib64 -littnotify #" ./macsio/CMakeFiles/macsio.dir/link.txt
 	make
 	make install
 	cd $ROOTDIR
