@@ -19,7 +19,7 @@ sleep 10
 
 echo -e '\nInstalling known dependencies'
 if [[ -f /etc/redhat-release ]];then
-	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep perf
+	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep perf glibc-static libstdc++-static ncurses-static
 	# vim screen
 	# for Intel Parallel XE: gtk2 gtk3 pango xorg-x11-server-Xorg
 else
@@ -111,7 +111,7 @@ if [ ! -f $ROOTDIR/dep/$BM/msr-safe.ko ] || [ ! -r /dev/cpu/0/msr ]; then
 	cd $ROOTDIR
 fi
 
-echo -e '\nInit spack and new LLVM'
+echo -e '\nInit spack and new LLVM and MPI alternative'
 BM="spack"
 VERSION="96fa6f0c1be4ab55ec6ba7cd5af059e1ed95351f"
 cd $ROOTDIR/dep/$BM/
@@ -119,7 +119,7 @@ if [[ "`git branch`" = *"develop"* ]]; then
         git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
-        source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+        source $ROOTDIR/dep/$BM/share/spack/setup-env.sh
         spack compiler find
         # check system compiler and install one we like
         if [[ "`gcc --version | /usr/bin/grep 'gcc (GCC)' | cut -d ' ' -f3`" = "8.4.0" ]]; then
@@ -127,9 +127,15 @@ if [[ "`git branch`" = *"develop"* ]]; then
                 spack load gcc@8.4.0
                 spack compiler find
         fi
+	# llvm
 	spack install libpfm4@4.10.1%gcc@8.4.0
 	spack load libpfm4
 	spack install llvm@10.0.0%gcc@8.4.0 gold=False libpfm=True
+	# openmpi
+	#...issue with static external hwloc and no static verbs
+	sed -i -e "s/with-hwloc=.*/with-hwloc=internal')/" -e "s/depends_on('hwloc/#depends_on('hwloc/" $ROOTDIR/dep/$BM/var/spack/repos/builtin/packages/openmpi/package.py
+	spack install openmpi@3.1.6%gcc@8.4.0 fabrics=none thread_multiple=True vt=False cxx=True cxx_exceptions=False ^numactl@2.0.12/`spack find -l numactl@2.0.12%gcc@8.4.0 | /bin/grep numactl | cut -d' ' -f1`
+	spack install openmpi@3.1.6%intel@19.0.1.144 fabrics=none thread_multiple=True vt=False cxx=True cxx_exceptions=False
 
 	#spack install openjdk@1.8.0_222-b10%gcc@8.4.0
 	#spack install maven@3.6.3%gcc@8.4.0 ^openjdk@1.8.0_222-b10
