@@ -1307,15 +1307,16 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None,
             if selfloop:
                 cycles_per_iter = float(num_cycles) / icnt
                 #NOTE: llvm-mca completely messes up movs[b/w/q] estimates
-                #      so we get estimated cycles from sdetest3C.c
-                if num_instr == 100 \
+                #      so we get estimated cycles from sdetest3C.c  (~0.52)
+                if num_instr == icnt \
                         and search(r'^rep\s+movs[bwq]\s+', bdata['ASM'][0][1]):
+                    cycles_to_move_byte = 0.52 /4   # /4 from polybench durbin
                     if search(r'\s+movsb\s+', bdata['ASM'][0][1]):
-                        cycles_per_iter = 0.52
+                        cycles_per_iter = cycles_to_move_byte
                     elif search(r'\s+movsw\s+', bdata['ASM'][0][1]):
-                        cycles_per_iter = 2 * 0.52
+                        cycles_per_iter = 2 * cycles_to_move_byte
                     else:
-                        cycles_per_iter = 4 * 0.52
+                        cycles_per_iter = 4 * cycles_to_move_byte
             # div2 cycles for two-block loops to adjust for later counting algo
             elif twoblockloop:
                 cycles_per_iter = float(num_cycles) / icnt / 2
