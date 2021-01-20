@@ -8,7 +8,7 @@ export MKL_THREADING_LAYER=GNU
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="10m"
-export RUNSDE="yes"
+export RUNSDE="no"
 export RUNPCM="no"
 export RUNVTUNE="no"
 

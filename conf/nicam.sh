@@ -14,7 +14,8 @@ export RUNVTUNE="no"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="10|1 10|2 10|3 10|4 10|5 10|6"
-	export BESTCONF="10|4"
+	export BESTCONF="10|1" # doesnt seem to use threads at all, except on K "10|6"
+	export SCALCONF="" # doesnt support strong scaling AND no omp... facepalm
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="10|5 10|6 10|7 10|10 10|15 10|20 10|25"

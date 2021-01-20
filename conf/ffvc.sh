@@ -22,6 +22,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 48|1|4|4|3
 			 96|1|6|4|4"
 	export BESTCONF="12|4|3|2|2"
+	export SCALCONF="12|84|3|2|2 32|32|4|4|2 128|8|8|4|4"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64|1|1|1 1|128|1|1|1 1|192|1|1|1 1|256|1|1|1

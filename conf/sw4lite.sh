@@ -22,6 +22,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 48|1
 			 96|1"
 	export BESTCONF="24|2"
+	export SCALCONF="24|42 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export BINARY="./optimize_mp_${IKNLHOST}/sw4lite"

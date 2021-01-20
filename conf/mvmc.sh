@@ -3,7 +3,6 @@
 export APPDIR="./MVMC"
 export BINARY="../src/vmc.out"
 export INPUT="./multiDir.def"
-export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
@@ -23,6 +22,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 48|1 48|2
 			 96|1"
 	export BESTCONF="24|2"
+	export SCALCONF="24|42 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256

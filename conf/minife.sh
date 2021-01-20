@@ -23,6 +23,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 96|1"
 	export BBINARY="./mkl/src/miniFE.x"
 	export BESTCONF="24|1"
+	export SCALCONF="24|42 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256

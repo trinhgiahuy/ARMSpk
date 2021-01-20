@@ -16,7 +16,8 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 16|1 16|2 16|3 16|4
 			 32|1 32|2
 			 64|1"
-	export BESTCONF="16|3"
+	export BESTCONF="8|6" #openmpi maps this config oddly but fallback is as fast as before with intel mpi"16|3"
+	export SCALCONF="8|128 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="8|4 8|8 8|16 8|32

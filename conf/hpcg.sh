@@ -2,8 +2,8 @@
 
 export APPDIR="./HPCG/build"
 export BINARY="./bin/xhpcg"
-#export MAXXYZ=$((2*2*2*3*3*5)) doesnt work in flat mode
-export MAXXYZ=$((2*2*2*3*5))
+export MAXXYZ=$((2*2*2*3*3*5)) #doesnt work in flat mode
+#export MAXXYZ=$((2*2*2*3*5))
 export INPUT="--nx=NX --ny=NY --nz=NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
@@ -19,6 +19,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 12|1 12|2 12|3 12|4
 			 24|1 24|2"
 	export BESTCONF="2|24"
+	export SCALCONF="2|512 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256

@@ -2,7 +2,8 @@
 
 export APPDIR="./Laghos"
 export BINARY="./laghos"
-export INPUT="-p 1 -m data/square01_quad.mesh -rs 3 -tf 0.8 -no-vis -pa"
+#export INPUT="-p 1 -m data/square01_quad.mesh -rs 3 -tf 0.8 -no-vis -pa"
+export INPUT="-p 1 -pt 311 -m data/cube01_hex.mesh -rs 2 -tf 0.1 -no-vis -pa" #XXX: this only works for 24 mpi procs, but the non-cartesian code is broken AF with openmpi; also scale down runtime with tf 06 -> tf 0.1
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
@@ -22,6 +23,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 48|1
 			 96|1"
 	export BESTCONF="24|1"
+	export SCALCONF="24|42 32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256
