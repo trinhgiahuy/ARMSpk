@@ -47,7 +47,7 @@ for BEST in $BESTCONF; do
 			#mpiexec $MPIEXECOPT -genvall -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "$SDE python $BINARY $INPUT" >> $LOG 2>&1
 			export OMP_NUM_THREADS=$NumOMP; export KMP_BLOCKTIME=30; export KMP_SETTINGS=1; export KMP_AFFINITY="granularity=fine,compact,1,0"
 			numactl --preferred 1 $SDE python $BINARY $INPUT >> $LOG 2>&1
-			mkdir -p ${LOG}_sde; mv dcfg-out.* ${LOG}_sde
+			mkdir -p ${LOG}_${NumMPI}_${NumOMP}_sde; mv dcfg-out.* ${LOG}_${NumMPI}_${NumOMP}_sde/
 		fi
 		if [ "x$RUNPCM" = "xyes" ]; then
 			# reset PMU counters

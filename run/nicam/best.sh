@@ -8,7 +8,10 @@ source $ROOTDIR/conf/intel.cfg
 source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-MPIEXECOPT="-genv I_MPI_FABRICS=shm:ofi -genv FI_PROVIDER=sockets -genv I_MPI_HBW_POLICY=hbw_preferred -host `hostname`"
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openmpi@3.1.6%intel@19.0.1.144
+MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
+NumCORES=$((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2`))
 
 # ============================ NICam ==========================================
 source conf/nicam.sh
@@ -38,10 +41,10 @@ ln -s ../../../../data/grid/boundary/gl05rl00pe10/boundary_GL05RL00.pe000009 .
 for BEST in $BESTCONF; do
 	NumMPI="`echo $BEST | cut -d '|' -f1`"
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	echo "mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY" >> $LOG 2>&1
+	echo "mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
 		START="`date +%s.%N`"
-		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT -genv OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY >> $LOG 2>&1
+		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY >> $LOG 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 		ENDED="`date +%s.%N`"
 		cat ./msg.pe00000 >> $LOG 2>&1
