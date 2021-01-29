@@ -3,6 +3,7 @@ dep/sde-external-8.35.0-2019-03-11-lin/
 dep/sde-external-8.59.0-2020-10-05-lin/
 util/sdetest*_out*
 util/polybench-c-3.2*
+util/polybench-c-4.2*
 HPL/
 MODYLAS/
 dep/REVOCAP_Refiner-1.1.01.tgz
