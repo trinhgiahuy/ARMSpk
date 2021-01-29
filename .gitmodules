@@ -88,3 +88,6 @@
 [submodule "dep/OSACA"]
 	path = dep/OSACA
 	url = https://github.com/RRZE-HPC/OSACA.git
+[submodule "HiBench"]
+	path = HiBench
+	url = https://github.com/Intel-bigdata/HiBench.git
