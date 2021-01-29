@@ -136,36 +136,70 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	sed -i -e "s/with-hwloc=.*/with-hwloc=internal')/" -e "s/depends_on('hwloc/#depends_on('hwloc/" $ROOTDIR/dep/$BM/var/spack/repos/builtin/packages/openmpi/package.py
 	spack install openmpi@3.1.6%gcc@8.4.0 fabrics=none thread_multiple=True vt=False cxx=True cxx_exceptions=False ^numactl@2.0.12/`spack find -l numactl@2.0.12%gcc@8.4.0 | /bin/grep numactl | cut -d' ' -f1`
 	spack install openmpi@3.1.6%intel@19.0.1.144 fabrics=none thread_multiple=True vt=False cxx=True cxx_exceptions=False
-
-	#spack install openjdk@1.8.0_222-b10%gcc@8.4.0
-	#spack install maven@3.6.3%gcc@8.4.0 ^openjdk@1.8.0_222-b10
-	#spack install scala@2.11.11%gcc@8.4.0 ^openjdk@1.8.0_222-b10
-	#spack install hadoop@3.2.1%gcc@8.4.0 ^openjdk@1.8.0_222-b10
-	#sed -i "/a7e29e78bd43aa6d137f0bb0afd54a3017865d471456c6d436ae79475bbeb161/i \    version('2.4.0', sha256='b1d6d6cb49d8253b36df8372a722292bb323bd16315d83f0b0bafb66a4154ef2')" $ROOTDIR/dep/spack/var/spack/repos/builtin/packages/spark/package.py
-	#spack install spark@2.4.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
-	#spack load maven; spack load scala; spack load hadoop; spack load spark
-	#mvn -Dhadoop=3.2 -Dspark=2.4 -Dscala=2.12 clean package
-	#cd `spack find -p | /bin/grep hadoop | cut -d' ' -f2-`; sed -i '/<\/configuration>/i \  <property>\n    <name>fs.default.name</name>\n    <value>hdfs://localhost:8020</value>\n  </property>' etc/hadoop/core-site.xml
-	#./sbin/stop-all.sh
-	#rm -rf /tmp/*
-	#echo 'Y' | ./bin/hdfs namenode -format
-	#./sbin/start-all.sh
-	#cd `spack find -p | /bin/grep spark | cut -d' ' -f2-`
-	#export SPARK_DIST_CLASSPATH=`hadoop classpath`
-	#./sbin/start-master.sh ; sbin/start-slave.sh spark://`hostname`:7077 ; ###./sbin/start-all.sh not working
-	#cd HiBench
-	#cp conf/hadoop.conf.template conf/hadoop.conf
-	#cp conf/spark.conf.template conf/spark.conf
-	#sed -i -e "s#/PATH/TO/YOUR/HADOOP/ROOT#`spack find -p | /bin/grep hadoop | cut -d' ' -f2-`#" conf/hadoop.conf
-	#sed -i -e "s#/PATH/TO/YOUR/SPARK/HOME#`spack find -p | /bin/grep spark | cut -d' ' -f2-`#" conf/spark.conf
-	#sed -i -e "s#^hibench.spark.master.*#hibench.spark.master spark://`hostname`:7077#" conf/spark.conf
-	#sed -i -e "s#^hibench.masters.hostnames.*#hibench.masters.hostnames localhost#" conf/hibench.conf
-	#sed -i -e "s#^hibench.slaves.hostnames.*#hibench.slaves.hostnames localhost#" conf/hibench.conf
-	#./bin/workloads/micro/wordcount/prepare/prepare.sh
-	#./bin/workloads/micro/wordcount/hadoop/run.sh
-	#./bin/workloads/micro/wordcount/spark/run.sh
+	# hadoop/spark (reinstall spark from scratch because prebuild has no hive integration)
+	spack install openjdk@1.8.0_222-b10%gcc@8.4.0
+	spack install maven@3.6.3%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	spack install scala@2.11.11%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	spack install hadoop@2.10.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	spack load openjdk; spack load maven; spack load scala; spack load hadoop
+	export HADOOP_HOME=`spack find -p | /bin/grep hadoop | cut -d' ' -f2- | tr -d ' '`
+	export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+	export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+	export LD_LIBRARY_PATH=$HADOOP_COMMON_LIB_NATIVE_DIR:$LD_LIBRARY_PATH
+	export HADOOP_LOG_DIR=/scr0/hadoop-logs; export YARN_LOG_DIR=$HADOOP_LOG_DIR
+	export HADOOP_MAPRED_LOG_DIR=$HADOOP_LOG_DIR; export SPARK_LOG_DIR=$HADOOP_LOG_DIR
+	export MAVEN_OPTS="-Xmx4g -XX:ReservedCodeCacheSize=1024m"
+	sed -i "/a7e29e78bd43aa6d137f0bb0afd54a3017865d471456c6d436ae79475bbeb161/i \    version('2.4.0', sha256='b1d6d6cb49d8253b36df8372a722292bb323bd16315d83f0b0bafb66a4154ef2')" $ROOTDIR/dep/spack/var/spack/repos/builtin/packages/spark/package.py
+	spack install spark@2.4.0%gcc@8.4.0 hadoop=True ^hadoop@2.10.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
+	cd /tmp; wget https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0.tgz
+	tar xzf spark-2.4.0.tgz; cd spark-2.4.0
+	./dev/make-distribution.sh --name custom-spark \
+		--pip --tgz -Phadoop-provided -Phive -Phive-thriftserver -Pyarn -DskipTests
+	export SPARK_HOME=`spack find -p | /bin/grep spark | cut -d' ' -f2- | tr -d ' '`
+	export BN_SPARK_HOME=`basename $SPARK_HOME`
+	cd $SPARK_HOME/../; mv $BN_SPARK_HOME .$BN_SPARK_HOME; mkdir $BN_SPARK_HOME
+	tar xzf /tmp/spark-2.4.0/spark-2.4.0-bin-custom-spark.tgz --strip-components=1 -C $BN_SPARK_HOME
+	spack load spark
+	# config hadoop/spark for pseudo-distributed cluster mode (=> hibench/hadoop in local mode will not work https://github.com/Intel-bigdata/HiBench/issues/120; need hadoop even in spark-only mode for data preparation)
+	cd $HADOOP_HOME
+	sed -i '/<\/configuration>/i <property>\n<name>fs.defaultFS<\/name>\n<value>hdfs:\/\/localhost:9000<\/value>\n<\/property>\n<property>\n<name>hadoop.tmp.dir<\/name>\n<value>\/scr0\/hadoop-${user.name}<\/value>\n<\/property>' etc/hadoop/core-site.xml
+	sed -i '/<\/configuration>/i <property>\n<name>dfs.replication<\/name>\n<value>1<\/value>\n<\/property>' etc/hadoop/hdfs-site.xml
+	sed '/<\/configuration>/i <property>\n<name>mapreduce.framework.name<\/name>\n<value>yarn<\/value>\n<\/property>\n<property>\n<name>mapreduce.map.memory.mb<\/name>\n<value>2048<\/value>\n<\/property>\n<property>\n<name>mapreduce.reduce.memory.mb<\/name>\n<value>4096<\/value>\n<\/property>\n<property>\n<name>mapreduce.map.java.opts<\/name>\n<value>-Xmx1638m<\/value>\n<\/property>\n<property>\n<name>mapreduce.reduce.java.opts<\/name>\n<value>-Xmx3278m<\/value>\n<\/property>' etc/hadoop/mapred-site.xml.template > etc/hadoop/mapred-site.xml
+	sed -i '/<\/configuration>/i <property>\n<name>yarn.nodemanager.aux-services<\/name>\n<value>mapreduce_shuffle<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.disk-health-checker.enable<\/name>\n<value>false<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.local-dirs<\/name>\n<value>\/scr0\/hadoop-${user.name}\/nm-local-dir<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.log-dirs<\/name>\n<value>\/scr0\/hadoop-${user.name}\/containers<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.remote-app-log-dir<\/name>\n<value>\/scr0\/hadoop-${user.name}\/apps<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.resource.detect-hardware-capabilities<\/name>\n<value>true<\/value>\n<\/property>\n<property>\n<name>yarn.scheduler.maximum-allocation-mb<\/name>\n<value>MAXALLOC<\/value>\n<\/property>' etc/hadoop/yarn-site.xml
+	sed -i -e "s/MAXALLOC/$(echo "`free -m | /bin/grep 'Mem:' | awk -F'[^0-9]*' '$0=$2'` / 2" | bc)/" etc/hadoop/yarn-site.xml
+	sed -i -e "s#export JAVA_HOME.*#export JAVA_HOME=$JAVA_HOME#" -e "s#.*export HADOOP_LOG_DIR.*#export HADOOP_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_SECURE_DN_LOG_DIR.*#export HADOOP_SECURE_DN_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_PID_DIR.*#export HADOOP_PID_DIR=$HADOOP_LOG_DIR#" -e '/^export HADOOP_OPTS/a export HADOOP_NAMENODE_OPTS=-Xmx4g\nexport HADOOP_DATANODE_OPTS=-Xmx4g\nexport HADOOP_SECONDARYNAMENODE_OPTS=-Xmx4g' etc/hadoop/hadoop-env.sh
+	sed -i -e "s#.*export YARN_NODEMANAGER_OPTS=.*#export YARN_NODEMANAGER_OPTS=-Xmx4g#" -e "s#.*export YARN_RESOURCEMANAGER_OPTS=.*#export YARN_RESOURCEMANAGER_OPTS=-Xmx4g#" etc/hadoop/yarn-env.sh
+	sed -i -e 's/logger=INFO/logger=FATAL/' etc/hadoop/log4j.properties
+	# run test
+	cd $HADOOP_HOME; echo 'N' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh
+	./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/jens; ./sbin/start-yarn.sh
+	cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077
+	# shutdown again
+	cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh
+	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java
 fi
 cd $ROOTDIR
+
+#BM=""
+#VERSION=""
+#echo -e "\nInit $BM"
+#if []; then
+#	git clone https://github.com/GoogleCloudPlatform/PerfKitBenchmarker.git
+#	git checkout v1.15.1
+#	sed -i -e 's/^PyYAML==.*/PyYAML==5.2/' ./requirements.txt
+#	python3 -m pip install --user --upgrade -r requirements.txt
+#	ssh-keygen -P '' -f ~/.ssh/id_rsa_perfkit
+#	cat ~/.ssh/id_rsa_perfkit.pub >> ~/.ssh/authorized_keys
+#	#on kiev1 and kiev2 as ROOT (XXX)
+#	#echo "jens ALL=(ALL) NOPASSWD: /usr/sbin/fdisk -l, /usr/sbin/sysctl vm.drop_caches=3, /usr/bin/mkdir -p /opt/pkb, /usr/bin/chmod a+rwxt /opt/pkb, /usr/sbin/sync, /usr/bin/tee" >> /etc/sudoers.d/pccstaff
+#	#yum -y install iperf
+#	mkdir -p /scr0/jens/input; mkdir -p /scr0/jens/output
+#	#sed -i -e 's/^DEFAULT =.*/DEFAULT = CENTOS7/' perfkitbenchmarker/os_types.py
+#	cp ~/.ssh/id_rsa_perfkit.pub /dev/shm
+#	docker build --rm -t perfkit .
+#	docker run --privileged -ti -p 2222:22 -p 3003:3003 -p 12865:12865 -p 20000:20000 -v /dev/shm/id_rsa_perfkit.pub:/root/.ssh/authorized_keys -v /scr0/jens/input:/data0 -v /scr0/jens/output:/data1 -e SSH_ENABLE_ROOT=true -e MOTD='' perfkit
+#	ssh root@localhost -p2222 -i ~/.ssh/id_rsa_perfkit -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+#fi
 
 echo -e '\nInit OSACA'
 BM="OSACA"
