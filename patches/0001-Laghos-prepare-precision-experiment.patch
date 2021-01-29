@@ -1,4 +1,4 @@
-From ecab2ada583696ebfe6618a15c2a825d70e79203 Mon Sep 17 00:00:00 2001
+From 7dbf0abe795a791dba03353ccb08508227c8ebaa Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 03:24:55 +0900
 Subject: [PATCH] Laghos: prepare precision experiment
@@ -45,16 +45,16 @@ index d808287..0b59f93 100644
     switch (ode_solver_type)
     {
 diff --git a/laghos_solver.cpp b/laghos_solver.cpp
-index 6a4c210..e3997bd 100644
+index 6a4c210..5be925f 100644
 --- a/laghos_solver.cpp
 +++ b/laghos_solver.cpp
 @@ -227,7 +227,9 @@ void LagrangianHydroOperator::Mult(const Vector &S, Vector &dS_dt) const
     {
        Force = 0.0;
        timer.sw_force.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        Force.Assemble();
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_force.Stop();
     }
  
@@ -62,9 +62,9 @@ index 6a4c210..e3997bd 100644
     if (p_assembly)
     {
        timer.sw_force.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        ForcePA.Mult(one, rhs);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_force.Stop();
        rhs.Neg();
  
@@ -72,9 +72,9 @@ index 6a4c210..e3997bd 100644
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        cg.Mult(B, X);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        VMassPA.RecoverFEMSolution(X, rhs, dv);
@@ -82,9 +82,9 @@ index 6a4c210..e3997bd 100644
     else
     {
        timer.sw_force.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        Force.Mult(one, rhs);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_force.Stop();
        rhs.Neg();
  
@@ -92,9 +92,9 @@ index 6a4c210..e3997bd 100644
        cg.SetMaxIter(cg_max_iter);
        cg.SetPrintLevel(0);
        timer.sw_cgH1.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        cg.Mult(B, X);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_cgH1.Stop();
        timer.H1cg_iter += cg.GetNumIterations();
        Mv.RecoverFEMSolution(X, rhs, dv);
@@ -102,9 +102,9 @@ index 6a4c210..e3997bd 100644
     if (p_assembly)
     {
        timer.sw_force.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        ForcePA.MultTranspose(v, e_rhs);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_force.Stop();
  
        if (e_source) { e_rhs += *e_source; }
@@ -112,9 +112,9 @@ index 6a4c210..e3997bd 100644
     else
     {
        timer.sw_force.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
        Force.MultTranspose(v, e_rhs);
-+STOPSDE(0,0);
++//STOPSDE(0,0);
        timer.sw_force.Stop();
        if (e_source) { e_rhs += *e_source; }
        for (int z = 0; z < nzones; z++)
@@ -131,7 +131,7 @@ index 6a4c210..e3997bd 100644
  {
     if (quad_data_is_current) { return; }
     timer.sw_qdata.Start();
-+STARTSDE(0,0);
++//STARTSDE(0,0);
  
     const int nqp = integ_rule.GetNPoints();
  
@@ -139,7 +139,7 @@ index 6a4c210..e3997bd 100644
     delete [] Jpr_b;
     quad_data_is_current = true;
  
-+STOPSDE(0,0);
++//STOPSDE(0,0);
     timer.sw_qdata.Stop();
     timer.quad_tstep += nzones;
  }
