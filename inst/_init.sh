@@ -167,7 +167,7 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	sed '/<\/configuration>/i <property>\n<name>mapreduce.framework.name<\/name>\n<value>yarn<\/value>\n<\/property>\n<property>\n<name>mapreduce.map.memory.mb<\/name>\n<value>2048<\/value>\n<\/property>\n<property>\n<name>mapreduce.reduce.memory.mb<\/name>\n<value>4096<\/value>\n<\/property>\n<property>\n<name>mapreduce.map.java.opts<\/name>\n<value>-Xmx1638m<\/value>\n<\/property>\n<property>\n<name>mapreduce.reduce.java.opts<\/name>\n<value>-Xmx3278m<\/value>\n<\/property>' etc/hadoop/mapred-site.xml.template > etc/hadoop/mapred-site.xml
 	sed -i '/<\/configuration>/i <property>\n<name>yarn.nodemanager.aux-services<\/name>\n<value>mapreduce_shuffle<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.disk-health-checker.enable<\/name>\n<value>false<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.local-dirs<\/name>\n<value>\/scr0\/hadoop-${user.name}\/nm-local-dir<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.log-dirs<\/name>\n<value>\/scr0\/hadoop-${user.name}\/containers<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.remote-app-log-dir<\/name>\n<value>\/scr0\/hadoop-${user.name}\/apps<\/value>\n<\/property>\n<property>\n<name>yarn.nodemanager.resource.detect-hardware-capabilities<\/name>\n<value>true<\/value>\n<\/property>\n<property>\n<name>yarn.scheduler.maximum-allocation-mb<\/name>\n<value>MAXALLOC<\/value>\n<\/property>' etc/hadoop/yarn-site.xml
 	sed -i -e "s/MAXALLOC/$(echo "`free -m | /bin/grep 'Mem:' | awk -F'[^0-9]*' '$0=$2'` / 2" | bc)/" etc/hadoop/yarn-site.xml
-	sed -i -e "s#export JAVA_HOME.*#export JAVA_HOME=$JAVA_HOME#" -e "s#.*export HADOOP_LOG_DIR.*#export HADOOP_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_SECURE_DN_LOG_DIR.*#export HADOOP_SECURE_DN_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_PID_DIR.*#export HADOOP_PID_DIR=$HADOOP_LOG_DIR#" -e '/^export HADOOP_OPTS/a export HADOOP_NAMENODE_OPTS=-Xmx4g\nexport HADOOP_DATANODE_OPTS=-Xmx4g\nexport HADOOP_SECONDARYNAMENODE_OPTS=-Xmx4g' etc/hadoop/hadoop-env.sh
+	sed -i -e "s#export JAVA_HOME.*#export JAVA_HOME=$JAVA_HOME#" -e "s#.*export HADOOP_LOG_DIR.*#export HADOOP_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_SECURE_DN_LOG_DIR.*#export HADOOP_SECURE_DN_LOG_DIR=$HADOOP_LOG_DIR#" -e "s#.*export HADOOP_PID_DIR.*#export HADOOP_PID_DIR=$HADOOP_LOG_DIR#" -e '/^export HADOOP_OPTS/a export HADOOP_NAMENODE_OPTS=-Xmx8g\nexport HADOOP_DATANODE_OPTS=-Xmx8g\nexport HADOOP_SECONDARYNAMENODE_OPTS=-Xmx8g' etc/hadoop/hadoop-env.sh
 	sed -i -e "s#.*export YARN_NODEMANAGER_OPTS=.*#export YARN_NODEMANAGER_OPTS=-Xmx4g#" -e "s#.*export YARN_RESOURCEMANAGER_OPTS=.*#export YARN_RESOURCEMANAGER_OPTS=-Xmx4g#" etc/hadoop/yarn-env.sh
 	sed -i -e 's/logger=INFO/logger=FATAL/' etc/hadoop/log4j.properties
 	# run test
@@ -177,6 +177,7 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	# shutdown again
 	cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh
 	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java
+	spack unload spark; spack unload hadoop; spack unload scala; spack unload maven; spack unload openjdk; spack unload libpfm4
 fi
 cd $ROOTDIR
 
