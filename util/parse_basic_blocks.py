@@ -136,6 +136,10 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 # llvm hates: `jg,pt ...`, check llvm-objdump to replace
                 fn_asm_in = sub(r'^jg,pt\s+', r'jg ', fn_asm_in,
                                 count=0, flags=IGNORECASE)
+                # compiler doesnt like `data16 data16 ... <op>`
+                for x in [16, 32]:
+                    fn_asm_in = sub(r'^(data%s\s){2,}' % x, r'data%s ' % x,
+                                    fn_asm_in, count=0, flags=IGNORECASE)
 
                 fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
 
@@ -205,6 +209,19 @@ def _get_single_block_from_OBJDUMP(sde_file=None, from_addr=None,
             # llvm hates: `bnd jmpq *%r11`, check llvm-objdump to replace
             fn_asm_in = sub(r'bnd\s+jmpq', r'repne\njmpq', fn_asm_in,
                             count=0, flags=IGNORECASE)
+            # llvm hates: `fs addr32 nop`, check llvm-objdump to replace
+            fn_asm_in = sub(r'^fs\s+addr32\s+nop', r'nop', fn_asm_in,
+                            count=0, flags=IGNORECASE)
+            # llvm hates: `ds jmpq ...`, check llvm-objdump to replace
+            fn_asm_in = sub(r'^ds\s+jmpq\s+\*', r'jmpq *', fn_asm_in,
+                            count=0, flags=IGNORECASE)
+            # llvm hates: `jg,pt ...`, check llvm-objdump to replace
+            fn_asm_in = sub(r'^jg,pt\s+', r'jg ', fn_asm_in,
+                            count=0, flags=IGNORECASE)
+            # compiler doesnt like `data16 data16 ... <op>`
+            for x in [16, 32]:
+                fn_asm_in = sub(r'^(data%s\s){2,}' % x, r'data%s ' % x,
+                                fn_asm_in, count=0, flags=IGNORECASE)
 
             fn_asm_os = '0x' + format(int(fn_asm_os, 16) - load_os, 'x')
             asm.append([fn_asm_os, fn_asm_in])
@@ -846,11 +863,10 @@ def convert_sde_data_to_something_usable(sde_data=None):
     return (data, mapper)
 
 
-def simulate_cycles_with_OSACA(keep=False, arch=None, bbid=None, sink_bbid=None,
-                               bdata=None, sink_bdata=None):
+def simulate_cycles_with_OSACA(keep=False, arch=None, blkdata=None,
+                               branches=None):
     assert(isinstance(keep, bool) and isinstance(arch, str)
-           and isinstance(bbid, int) and isinstance(sink_bbid, int)
-           and isinstance(bdata, dict) and isinstance(sink_bdata, dict))
+           and isinstance(blkdata, dict) and isinstance(branches, list))
 
     ARCHS = deepcopy(KNOWN_ARCHS)
     ARCHS['sandybridge'] = 'SNB'
@@ -867,76 +883,95 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     ARCHS['a64fx'] = 'A64FX'
     assert(ARCHS[arch])
 
-    selfloop, twoblockloop = (bbid == sink_bbid), \
-        (bbid != sink_bbid and bbid in sink_bdata['out_edges'])
-
-    # sadly OSACA has no timeline, so result will be a lower bound and slightly
-    # overestimating the performance for blocks which are not self-/twoloop
-    if not selfloop and not twoblockloop:
-        print('WRN 13: osaca estimating cycles of non-trivial blk chain %s->%s'
-              % (bbid, sink_bbid))
-        #return None
-
-    osaca_in_fn = '/dev/shm/osaca_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
-
-    with open(osaca_in_fn, 'w') as osaca_in_file:
-        osaca_in_file.write('# OSACA-BEGIN\n');
-
-        if not selfloop:
-            osaca_in_file.write('\n'.join([instr
-                                           for offset, instr in bdata['ASM']])
-                                + '\n')
-        osaca_in_file.write('\n'.join([instr
-                                       for offset, instr in sink_bdata['ASM']])
-                            + '\n')
-
-        osaca_in_file.write('# OSACA-END\n')
-
     oparser = osaca.create_parser()
     oargs = oparser.parse_args(['--arch', ARCHS[arch],
-                                '--ignore-unknown', '--verbose', osaca_in_fn])
+                                '--ignore-unknown', '--verbose',
+                                path.realpath(__file__)])
     osaca.check_arguments(oargs, oparser)
-    # overwrite stdout with special output stream
-    osaca_out = StringIO()
-    try:
-        osaca.run(oargs, output_file=osaca_out)
-    except:
-        with open(osaca_in_fn, 'r') as osaca_in_file:
-            print('ERR in osaca:\n%s\n' % osaca_out.getvalue(),
-                  '  for asm input (%s):\n```\n%s\n```\n'
-                  % (osaca_in_fn, osaca_in_file.read()))
-        return None
+    osaca_res_line = compile(r'^[\d\s\.]+$')
+    bak_machine_model_pickle, bak_machine_isa_pickle = None, None
 
-    # clean up the temp file under /dev/shm
-    if not keep:
-        remove(osaca_in_fn)
+    for bbid, sink_bbid, _ in branches:
+        edge_data = blkdata[bbid]['out_edges'][sink_bbid]
 
-    # results listed without special prefix, but should only contain numbers
-    osaca_res_line, cycles = compile(r'^[\d\s\.]+$'), None
-    for line in osaca_out.getvalue().split('\n'):
-        if osaca_res_line.match(line):
-            cycles = [float(nr) for nr in findall(r'[-+]?\d*\.\d+|\d+', line)]
-    assert(len(cycles) > 2)
+        selfloop, twoblockloop = (bbid == sink_bbid), \
+            (bbid != sink_bbid and bbid in blkdata[sink_bbid]['out_edges'])
 
-    throughput, crit_path, loop_carried_dep = max(cycles[0:-2]), cycles[-2], \
-                                              cycles[-1]
+        # sadly OSACA has no timeline, so result will be a lower bound and
+        # slightly overestimating the performance for blocks which are not
+        # self-/twoloop
+        if not selfloop and not twoblockloop:
+            print('WRN 13: osaca estimating cycles of non-trivial blk chain' +
+                  '%s->%s' % (bbid, sink_bbid))
+            #return None
 
-    # osaca devs: block runtime is estimated by =max(TP, LCD)
-    cycles = float(max(throughput, loop_carried_dep))
-    if twoblockloop:
-        cycles /= 2
-    # rare cases with two blocks ending at same cycle, but they're legit
-    if cycles == 0:
-        cycles = pow(10, -10)
+        osaca_in_fn = '/dev/shm/osaca_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
 
-    return cycles
+        with open(osaca_in_fn, 'w') as osaca_in_file:
+            osaca_in_file.write('# OSACA-BEGIN\n');
+
+            if not selfloop:
+                osaca_in_file.write('\n'.join([instr
+                                               for offset, instr
+                                               in blkdata[bbid]['ASM']])
+                                    + '\n')
+            osaca_in_file.write('\n'.join([instr
+                                           for offset, instr
+                                           in blkdata[sink_bbid]['ASM']])
+                                + '\n')
+
+            osaca_in_file.write('# OSACA-END\n')
+
+        # overwrite stdout with special output stream
+        osaca_out = StringIO()
+        try:
+            with open(osaca_in_fn, 'r') as osaca_in_file:
+                oargs.file = osaca_in_file
+                bak_machine_model_pickle, bak_machine_isa_pickle = \
+                    osaca.run(oargs, output_file=osaca_out,
+                              mmodel=bak_machine_model_pickle,
+                              misa=bak_machine_isa_pickle)
+        except:
+            with open(osaca_in_fn, 'r') as osaca_in_file:
+                print('ERR in osaca:\n%s\n' % osaca_out.getvalue(),
+                      '  for asm input (%s):\n```\n%s\n```\n'
+                      % (osaca_in_fn, osaca_in_file.read()))
+            continue
+
+        # clean up the temp file under /dev/shm
+        if not keep:
+            remove(osaca_in_fn)
+
+        # results listed without special prefix, but should only contain numbers
+        cycles = None
+        for line in osaca_out.getvalue().split('\n'):
+            if osaca_res_line.match(line):
+                cycles = [float(nr)
+                          for nr in findall(r'[-+]?\d*\.\d+|\d+', line)]
+
+        if len(cycles) < 3:
+            continue
+
+        throughput, crit_path, loop_carried_dep = \
+            max(cycles[0:-2]), cycles[-2], cycles[-1]
+
+        # osaca devs: block runtime is estimated by =max(TP, LCD)
+        cycles = float(max(throughput, loop_carried_dep))
+        if twoblockloop:
+            cycles /= 2
+        # rare cases with two blocks ending at same cycle, but they're legit
+        if cycles == 0:
+            cycles = pow(10, -10)
+
+        # not sure which estimate is more accurate -> take the mean
+        if cycles:
+            edge_data['CyclesPerIter'][2] = cycles
 
 
-def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
-                              bdata=None, sink_bdata=None):
+def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
+                              branches=None):
     assert(isinstance(keep, bool) and isinstance(arch, str)
-           and isinstance(bbid, int) and isinstance(sink_bbid, int)
-           and isinstance(bdata, dict) and isinstance(sink_bdata, dict))
+           and isinstance(blkdata, dict) and isinstance(branches, list))
 
     ARCHS = deepcopy(KNOWN_ARCHS)
     ARCHS['broadwell'] = 'BDW'
@@ -945,131 +980,146 @@ def simulate_cycles_with_IACA(keep=False, arch=None, bbid=None, sink_bbid=None,
     ARCHS['skylake_avx512'] = 'SKX'
     assert(ARCHS[arch])
 
-    selfloop, twoblockloop = (bbid == sink_bbid), \
-        (bbid != sink_bbid and bbid in sink_bdata['out_edges'])
+    for bbid, sink_bbid, _ in branches:
+        edge_data = blkdata[bbid]['out_edges'][sink_bbid]
 
-    # Intel's IACA needs binary, so dump code to ramdisk and compile it
-    iaca_in_fn = '/dev/shm/iaca_%s_%s_%s.c' % (getpid(), bbid, sink_bbid)
+        selfloop, twoblockloop = (bbid == sink_bbid), \
+            (bbid != sink_bbid and bbid in blkdata[sink_bbid]['out_edges'])
 
-    with open(iaca_in_fn, 'w') as iaca_in_file:
-        iaca_in_file.write('#include<iacaMarks.h>\n' +
-                           'void foo(){\n' +
-                           '    IACA_START;\n' +
-                           '     __asm__(\n');
+        # Intel's IACA needs binary, so dump code to ramdisk and compile it
+        iaca_in_fn = '/dev/shm/iaca_%s_%s_%s.c' % (getpid(), bbid, sink_bbid)
 
-        if not selfloop:
+
+        with open(iaca_in_fn, 'w') as iaca_in_file:
+            iaca_in_file.write('#include<iacaMarks.h>\n' +
+                               'void foo(){\n' +
+                               '    IACA_START;\n' +
+                               '     __asm__(\n');
+
+            if not selfloop:
+                iaca_in_file.write('\n'.join(['"%s\\n\\t"'
+                                              % instr.split('#')[0].strip()
+                                              for offset, instr
+                                              in blkdata[bbid]['ASM']])
+                                   + '\n')
             iaca_in_file.write('\n'.join(['"%s\\n\\t"'
                                           % instr.split('#')[0].strip()
-                                          for offset, instr in bdata['ASM']])
+                                          for offset, instr
+                                          in blkdata[sink_bbid]['ASM']])
                                + '\n')
-        iaca_in_file.write('\n'.join(['"%s\\n\\t"'
-                                      % instr.split('#')[0].strip()
-                                      for offset, instr in sink_bdata['ASM']])
-                           + '\n')
 
-        iaca_in_file.write('             );\n' +
-                           '    IACA_END;\n' +
-                           '}\n')
+            iaca_in_file.write('             );\n' +
+                               '    IACA_END;\n' +
+                               '}\n')
 
-    # compile first, must? use -O0 since its assembly and shouldn't be removed
-    # switch to gcc cause intel fails to inject its own assembly, FUCKING HELL
-    # (sometimes the linker fucks up, but IACA also takes in *.o  *facepalm*)
-    p = run(['gcc', '-c', '-O0',
-             '-I%s' % (environ['IACAINCL'] if 'IACAINCL' in environ else '.'),
-             '-o', '%s.o' % iaca_in_fn,
-             iaca_in_fn], stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.stdout.decode(), p.stderr.decode()
-    if 0 != p.returncode:
-        print('\nstdout: ', stdout, '\nstderr: ', stderr)
-        assert(0 == p.returncode)
+        # compile first, must? use -O0 since its assembly and shouldn't
+        # be removed switch to gcc cause intel fails to inject its own
+        # assembly, FUCKING HELL...
+        # (sometimes linker fucks up, but IACA also takes in *.o  *facepalm*)
+        p = run(['gcc', '-c', '-O0',
+                 '-I%s' % (environ['IACAINCL']
+                           if 'IACAINCL' in environ else '.'),
+                 '-o', '%s.o' % iaca_in_fn,
+                 iaca_in_fn], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.stdout.decode(), p.stderr.decode()
+        if 0 != p.returncode:
+            print('\nstdout: ', stdout, '\nstderr: ', stderr)
+            continue
 
-    # check block throughput with Intel's analysis tool
-    p = run(['iaca',
-             '-arch', ARCHS[arch],
-             '-trace-cycle-count', '1024',
-             '-trace', '%s.t' % iaca_in_fn,
-             '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.stdout.decode(), p.stderr.decode()
-    if 0 != p.returncode:
-        print('\nstdout: ', stdout, '\nstderr: ', stderr)
-        assert(0 == p.returncode)
+        # check block throughput with Intel's analysis tool
+        p = run(['iaca',
+                '-arch', ARCHS[arch],
+                '-trace-cycle-count', '1024',
+                '-trace', '%s.t' % iaca_in_fn,
+                '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.stdout.decode(), p.stderr.decode()
+        if 0 != p.returncode:
+            print('\nstdout: ', stdout, '\nstderr: ', stderr)
+            continue
 
-    if selfloop or twoblockloop:
-        cycles = search(r'Block\s+Throughput:\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
-                        stdout, IGNORECASE)
-        cycles = float(cycles.group(1))
-    else:
-        tl_pipe = compile(r'^\s*(\d+)\|\s*(\d+)\|\s+TYPE_.*\s+' +
-                          r':([\s|]*[\sAscdweRp\-_]+)(?:[\s|]+)?$')
-        prev_inst_nr, timeline_data = -1, []
-        with open('%s.t' % iaca_in_fn, 'r') as iaca_tl_file:
-            for line in iaca_tl_file:
-                tl = tl_pipe.match(line)
-                if not tl:
+        if selfloop or twoblockloop:
+            cycles = search(r'Block\s+Throughput:' +
+                            r'\s+([-+]?\d*\.\d+|\d+)\s+Cycles',
+                            stdout, IGNORECASE)
+            cycles = float(cycles.group(1))
+        else:
+            tl_pipe = compile(r'^\s*(\d+)\|\s*(\d+)\|\s+TYPE_.*\s+' +
+                              r':([\s|]*[\sAscdweRp\-_]+)(?:[\s|]+)?$')
+            prev_inst_nr, timeline_data = -1, []
+            with open('%s.t' % iaca_in_fn, 'r') as iaca_tl_file:
+                for line in iaca_tl_file:
+                    tl = tl_pipe.match(line)
+                    if not tl:
+                        continue
+
+                    iter_nr, inst_nr, timeline = \
+                        int(tl.group(1)), int(tl.group(2)), tl.group(3).rstrip()
+                    if timeline.find('R') < 0:
+                        print('WRN 14: retirement indicator missing from' +
+                              ' inst %s of basic block chain (%s->%s)'
+                              % (inst_nr, bbid, sink_bbid))
+                    # sometimes we have gaps if iaca processes unsupported inst
+                    # we just replicate the last known valid instruction
+                    for nr in range(prev_inst_nr + 1, inst_nr):
+                        timeline_data.append(
+                            [nr, timeline_data[prev_inst_nr][1]
+                                    if prev_inst_nr >= 0 else 'R'])
+                    # and now store the real one, but check if we already had
+                    # (in which case we overwrite if new retire is later)
+                    if len(timeline_data) and timeline_data[-1][0] == inst_nr:
+                        if timeline_data[-1][1].find('R') < timeline.find('R'):
+                            timeline_data[-1] = [inst_nr, timeline]
+                    else:
+                        timeline_data.append([inst_nr, timeline])
+                    prev_inst_nr = inst_nr
+                    if iter_nr > 0:
+                        break
+
+                else:
+                    print('WRN 15: basic block chain (%s->%s) was longer than' +
+                          ' expected; try increasing trace-cycle-count for iaca'
+                          % (bbid, sink_bbid))
                     continue
 
-                iter_nr, inst_nr, timeline = \
-                    int(tl.group(1)), int(tl.group(2)), tl.group(3).rstrip()
-                if timeline.find('R') < 0:
-                    print('WRN 14: retirement indicator missing from inst %s' +
-                          ' of basic block chain (%s->%s)'
-                          % (inst_nr, bbid, sink_bbid))
-                # sometimes we have gaps if iaca processes unsupported inst
-                # we just replicate the last known valid instruction
-                for nr in range(prev_inst_nr + 1, inst_nr):
-                    timeline_data.append(
-                        [nr, timeline_data[prev_inst_nr][1]
-                                if prev_inst_nr >= 0 else 'R'])
-                # and now store the real one, but check if we already had
-                # (in which case we overwrite if new retire is later)
-                if len(timeline_data) and timeline_data[-1][0] == inst_nr:
-                    if timeline_data[-1][1].find('R') < timeline.find('R'):
-                        timeline_data[-1] = [inst_nr, timeline]
-                else:
-                    timeline_data.append([inst_nr, timeline])
-                prev_inst_nr = inst_nr
-                if iter_nr > 0:
-                    break
+            cycles = \
+                timeline_data[-1][1].find('R') \
+                - timeline_data[blkdata[bbid]['NumASM'] - 1][1].find('R')
 
-            else:
-                print('WRN 15: basic block chain (%s->%s) was longer than' +
-                      ' expected; try increasing trace-cycle-count for iaca'
-                      % (bbid, sink_bbid))
-                return None
+        # clean up the temp file under /dev/shm
+        if not keep:
+            remove(iaca_in_fn)
+            remove('%s.t' % iaca_in_fn)
+            remove('%s.o' % iaca_in_fn)
 
-        cycles = \
-            timeline_data[-1][1].find('R') \
-            - timeline_data[bdata['NumASM'] - 1][1].find('R')
+        notes = search(r'Analysis\s+Notes:\n(.*)',
+                       stdout, flags=DOTALL|IGNORECASE)
+        if notes:
+            notes = notes.group(1)
 
-    # clean up the temp file under /dev/shm
-    if not keep:
-        remove(iaca_in_fn)
-        remove('%s.t' % iaca_in_fn)
-        remove('%s.o' % iaca_in_fn)
+            notes = sub(r'Backend allocation was stalled due to unavailable' +
+                        r' allocation resources.\n',
+                        r'', notes, count=0, flags=IGNORECASE)
+            unsupp = search(r'There was an unsupported instruction(s), it' +
+                            r' was not accounted in Analysis.',
+                            notes, flags=IGNORECASE)
+            if unsupp and 0 >= cycles:
+                continue
 
-    notes = search(r'Analysis\s+Notes:\n(.*)', stdout, flags=DOTALL|IGNORECASE)
-    if notes:
-        notes = notes.group(1)
+            if len(notes):
+                print(notes)
 
-        notes = sub(r'Backend allocation was stalled due to unavailable' +
-                     ' allocation resources.\n',
-                    r'', notes, count=0, flags=IGNORECASE)
-        unsupp = search(r'There was an unsupported instruction(s), it was not'
-                         ' accounted in Analysis.', notes, flags=IGNORECASE)
-        if unsupp and 0 >= cycles:
-            return None
+        if cycles < 0:
+            print('WRN 16: basic block chain (%s->%s) resulted in negative' +
+                  ' cycles; this makes no sense' % (bbid, sink_bbid))
+            continue
+        if twoblockloop:
+            cycles /= 2
+        # rare cases with two blocks ending at same cycle, but they're legit
+        if cycles == 0:
+            cycles = pow(10, -10)
 
-        if len(notes):
-            print(notes)
-
-    assert(cycles >= 0)
-    if twoblockloop:
-        cycles /= 2
-    # rare cases with two blocks ending at same cycle, but they're legit
-    if cycles == 0:
-        cycles = pow(10, -10)
-
-    return cycles
+        if cycles:
+            edge_data['CyclesPerIter'][1] = cycles
 
 
 def second_opinion_from_iaca_and_osaca(blkdata=None, mapper=None, arch=None,
@@ -1100,31 +1150,8 @@ def second_opinion_from_iaca_and_osaca(blkdata=None, mapper=None, arch=None,
         edge_data = blkdata[bbid]['out_edges'][sink_bbid]
         edge_data['CyclesPerIter'] = 3 * [edge_data['CyclesPerIter']]
 
-        try:
-            iaca_estimate = \
-                simulate_cycles_with_IACA(keep, arch, bbid, sink_bbid,
-                                          blkdata[bbid], blkdata[sink_bbid])
-        except:
-            print('WRN 11: iaca failed for blocks %s->%s and arch %s'
-                  % (bbid, sink_bbid, arch))
-            iaca_estimate = None
-            pass
-        try:
-            osaca_estimate = \
-                simulate_cycles_with_OSACA(keep, arch, bbid, sink_bbid,
-                                           blkdata[bbid], blkdata[sink_bbid])
-        except:
-            print('WRN 12: osaca failed for blocks %s->%s and arch %s'
-                  % (bbid, sink_bbid, arch))
-            osaca_estimate = None
-            pass
-
-        if iaca_estimate:
-            edge_data['CyclesPerIter'][1] = iaca_estimate
-
-        # not sure which estimate is more accurate -> take the mean
-        if osaca_estimate:
-            edge_data['CyclesPerIter'][2] = osaca_estimate
+    simulate_cycles_with_IACA(keep, arch, blkdata, branches)
+    simulate_cycles_with_OSACA(keep, arch, blkdata, branches)
 
 
 def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None,

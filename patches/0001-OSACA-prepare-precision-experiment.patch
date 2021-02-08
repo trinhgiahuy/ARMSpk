@@ -1,0 +1,67 @@
+From 606c0e4651c75cc52fcfa5e59a96f0c7aee73dff Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Mon, 8 Feb 2021 22:42:05 +0900
+Subject: [PATCH] OSACA: prepare precision experiment
+
+---
+ osaca/osaca.py | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/osaca/osaca.py b/osaca/osaca.py
+index 89a57e0..953e691 100755
+--- a/osaca/osaca.py
++++ b/osaca/osaca.py
+@@ -245,7 +245,7 @@ def insert_byte_marker(args):
+         f.write(assembly)
+ 
+ 
+-def inspect(args, output_file=sys.stdout):
++def inspect(args, output_file=sys.stdout, machine_model=None, isa=None):
+     """
+     Does the actual throughput and critical path analysis of OSACA and prints it to the
+     terminal.
+@@ -260,7 +260,8 @@ def inspect(args, output_file=sys.stdout):
+     # Detect ISA if necessary
+     arch = args.arch if args.arch is not None else DEFAULT_ARCHS[BaseParser.detect_ISA(code)]
+     print_arch_warning = False if args.arch else True
+-    isa = MachineModel.get_isa_for_arch(arch)
++    if not isa:
++        isa = MachineModel.get_isa_for_arch(arch)
+     verbose = args.verbose
+     ignore_unknown = args.ignore_unknown
+ 
+@@ -289,7 +290,8 @@ def inspect(args, output_file=sys.stdout):
+         kernel = reduce_to_section(parsed_code, isa)
+         # Print warning if kernel has no markers and is larger than threshold (100)
+         print_length_warning = True if len(kernel) == len(parsed_code) and len(kernel) > 100 else False
+-    machine_model = MachineModel(arch=arch)
++    if not machine_model:
++        machine_model = MachineModel(arch=arch)
+     semantics = ArchSemantics(machine_model)
+     semantics.add_semantics(kernel)
+     # Do optimal schedule for kernel throughput if wished
+@@ -313,9 +315,10 @@ def inspect(args, output_file=sys.stdout):
+         ),
+         file=output_file,
+     )
++    return (machine_model, isa)
+ 
+ 
+-def run(args, output_file=sys.stdout):
++def run(args, output_file=sys.stdout, mmodel=None, misa=None):
+     """
+     Main entry point for OSACAs workflow. Decides whether to run an analysis or other things.
+ 
+@@ -337,7 +340,8 @@ def run(args, output_file=sys.stdout):
+         insert_byte_marker(args)
+     else:
+         # Analyze kernel
+-        inspect(args, output_file=output_file)
++        return inspect(args, output_file=output_file,
++                       machine_model=mmodel, isa=misa)
+ 
+ 
+ def get_asm_parser(arch) -> BaseParser:
+-- 
+1.8.3.1
+
