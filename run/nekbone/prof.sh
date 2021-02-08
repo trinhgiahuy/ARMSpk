@@ -7,7 +7,7 @@ source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/intel.cfg
 source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
-ulimit -n 4096
+ulimit -n 8192; ulimit -u 8192
 source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 spack load openmpi@3.1.6%intel@19.0.1.144
 MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
