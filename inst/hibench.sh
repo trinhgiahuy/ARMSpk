@@ -37,7 +37,10 @@ if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; the
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	#fix a stupid bug...https://github.com/Intel-bigdata/HiBench/issues/534
+	sed -i -e 's/^ *$CMD/eval $CMD/' bin/functions/workload_functions.sh
 	mvn -Phadoopbench -Psparkbench -Dspark=2.4 -Dscala=2.11 clean package
+	#change config options to fit our need
 	cp conf/hadoop.conf.template conf/hadoop.conf
 	cp conf/spark.conf.template conf/spark.conf
 	sed -i -e "s#/PATH/TO/YOUR/HADOOP/ROOT#$HADOOP_HOME#" conf/hadoop.conf
@@ -45,8 +48,8 @@ if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; the
 	sed -i -e "s#/PATH/TO/YOUR/SPARK/HOME#$SPARK_HOME#" conf/spark.conf
 	sed -i -e "s#^hibench.spark.master.*#hibench.spark.master yarn#" conf/spark.conf
 	## derive from https://www.delltechnologies.com/nl-be/collaterals/unauth/competitive-reports/products/servers/poweredge_fx2_apache_spark_tco_comparison.pdf
-	sed -i -e "s#^hibench.yarn.executor.num.*#hibench.yarn.executor.num $((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2` - 4))#" conf/spark.conf
-	sed -i -e "s#^hibench.yarn.executor.cores.*#hibench.yarn.executor.cores 4#" conf/spark.conf
+	sed -i -e "s#^hibench.yarn.executor.num.*#hibench.yarn.executor.num $((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2` / 2 - 4))#" conf/spark.conf
+	sed -i -e "s#^hibench.yarn.executor.cores.*#hibench.yarn.executor.cores 1#" conf/spark.conf
 	sed -i -e "s#^spark.executor.memory.*#spark.executor.memory 16g#" conf/spark.conf
 	sed -i -e "s#^spark.driver.memory.*#spark.driver.memory 16g#" conf/spark.conf
 	sed -i -e "s#^hibench.streambench.spark.receiverNumber.*#hibench.streambench.spark.receiverNumber 1#" conf/spark.conf

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 export APPDIR="./HiBench"
-export BINARYS="./bin/run_all.sh"
+export BINARY="./bin/run_all.sh"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="60m"
+export MAXTIME="90m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
