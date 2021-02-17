@@ -902,7 +902,7 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, blkdata=None,
         # self-/twoloop
         if not selfloop and not twoblockloop:
             print('WRN 13: osaca estimating cycles of non-trivial blk chain' +
-                  '%s->%s' % (bbid, sink_bbid))
+                  ' %s->%s' % (bbid, sink_bbid))
             #return None
 
         osaca_in_fn = '/dev/shm/osaca_%s_%s_%s.s' % (getpid(), bbid, sink_bbid)
@@ -989,7 +989,7 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
         # Intel's IACA needs binary, so dump code to ramdisk and compile it
         iaca_in_fn = '/dev/shm/iaca_%s_%s_%s.c' % (getpid(), bbid, sink_bbid)
 
-
+        num_instr_in_input = 0
         with open(iaca_in_fn, 'w') as iaca_in_file:
             iaca_in_file.write('#include<iacaMarks.h>\n' +
                                'void foo(){\n' +
@@ -1002,11 +1002,14 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
                                               for offset, instr
                                               in blkdata[bbid]['ASM']])
                                    + '\n')
+                num_instr_in_input += len(blkdata[bbid]['ASM'])
+
             iaca_in_file.write('\n'.join(['"%s\\n\\t"'
                                           % instr.split('#')[0].strip()
                                           for offset, instr
                                           in blkdata[sink_bbid]['ASM']])
                                + '\n')
+            num_instr_in_input += len(blkdata[sink_bbid]['ASM'])
 
             iaca_in_file.write('             );\n' +
                                '    IACA_END;\n' +
@@ -1029,7 +1032,7 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
         # check block throughput with Intel's analysis tool
         p = run(['iaca',
                 '-arch', ARCHS[arch],
-                '-trace-cycle-count', '1024',
+                '-trace-cycle-count', '%s' % max(1024, 3 * num_instr_in_input),
                 '-trace', '%s.t' % iaca_in_fn,
                 '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.stdout.decode(), p.stderr.decode()
@@ -1076,9 +1079,10 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
                         break
 
                 else:
-                    print('WRN 15: basic block chain (%s->%s) was longer than' +
-                          ' expected; try increasing trace-cycle-count for iaca'
-                          % (bbid, sink_bbid))
+                    print('WRN 15: basic block chain (%s->%s)'
+                          % (bbid, sink_bbid) +
+                          ' was longer than expected; try increasing' +
+                          ' trace-cycle-count for iaca')
                     continue
 
             cycles = \
@@ -1109,8 +1113,9 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
                 print(notes)
 
         if cycles < 0:
-            print('WRN 16: basic block chain (%s->%s) resulted in negative' +
-                  ' cycles; this makes no sense' % (bbid, sink_bbid))
+            print('WRN 16: basic block chain (%s->%s)'
+                  % (bbid, sink_bbid) +
+                  ' resulted in negative cycles; this makes no sense')
             continue
         if twoblockloop:
             cycles /= 2
