@@ -4,22 +4,32 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-export I_MPI_CC=icc
-export I_MPI_CXX=icpc
-export I_MPI_F77=ifort
-export I_MPI_F90=ifort
-alias ar=`which xiar`
-alias ld=`which xild`
-export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
+if [ -z $1 ]; then
+	source $ROOTDIR/conf/intel.cfg
+	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
+	export I_MPI_CC=icc
+	export I_MPI_CXX=icpc
+	export I_MPI_F77=ifort
+	export I_MPI_F90=ifort
+	alias ar=`which xiar`
+	alias ld=`which xild`
+	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
 
-source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-spack load openmpi@3.1.6%intel@19.0.1.144
-export OMPI_CC=$I_MPI_CC
-export OMPI_CXX=$I_MPI_CXX
-export OMPI_F77=$I_MPI_F77
-export OMPI_FC=$I_MPI_F90
+	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+	spack load openmpi@3.1.6%intel@19.0.1.144
+	export OMPI_CC=$I_MPI_CC
+	export OMPI_CXX=$I_MPI_CXX
+	export OMPI_F77=$I_MPI_F77
+	export OMPI_FC=$I_MPI_F90
+else
+	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+	spack load gcc@8.4.0
+	spack load openmpi@3.1.6%gcc@8.4.0
+	export OMPI_CC=gcc
+	export OMPI_CXX=g++
+	export OMPI_F77=gfortran
+	export OMPI_FC=gfortran
+fi
 
 if [ ! -f $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz ]; then
 	echo "ERR: Cannot find REVOCAP_Refiner-1.1.01.tgz"
@@ -39,22 +49,36 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
 		tar xzf metis-5.1.0.tar.gz
 		cd ./metis-5.1.0/
-		make config cc=icc prefix=`pwd`
+		if [ -z $1 ]; then
+			make config cc=icc prefix=`pwd`
+		else
+			make config cc=gcc prefix=`pwd`
+		fi
 		make install
 		cd $ROOTDIR/$BM/src
 	fi
 	if [ ! -f ./REVOCAP_Refiner-1.1.01/lib/x86_64-linux-intel/libRcapRefiner.a ]; then
 		tar xzf $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz
 		cd ./REVOCAP_Refiner-1.1.01
-		rm ./MakefileConfig.in; ln -s ./MakefileConfig.LinuxIntelCompiler ./MakefileConfig.in
-		sed -i -e 's/O2 -w2 -wd1782/O2 -w2 -xHost -wd1782/g' ./MakefileConfig.in
-		sed -i '/#include <sstream>/a #include <stdlib.h>' ./RevocapIO/kmbHecmwIO_V3.cpp
+		if [ -z $1 ]; then
+			rm ./MakefileConfig.in; ln -s ./MakefileConfig.LinuxIntelCompiler ./MakefileConfig.in
+			sed -i -e 's/O2 -w2 -wd1782/O2 -w2 -xHost -wd1782/g' ./MakefileConfig.in
+			sed -i '/#include <sstream>/a #include <stdlib.h>' ./RevocapIO/kmbHecmwIO_V3.cpp
+		fi
 		make
+		if [ -n $1 ]; then
+			cd ./lib/; ln -s ./x86_64-linux x86_64-linux-intel; cd -
+		fi
 		ln -s ./Refiner include
 		cd $ROOTDIR/$BM/src
 	fi
 	sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
-	sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux-intel #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-xHost/g" -e 's/LIBS += -L${ADVISOR/LIBS += -static -static-intel -qopenmp-link=static -pthread -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -L${ADVISOR/' ./make_setting
+	if [ -z $1 ]; then
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux-intel #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-xHost/g" -e 's/LIBS += -L${ADVISOR/LIBS += -static -static-intel -qopenmp-link=static -pthread -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -L${ADVISOR/' ./make_setting
+	else
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-march=native -static/g" -e 's/LIBS += -L${ADVISOR.*/LIBS += -static/' -e 's# -I${ADVISOR_2018_DIR}/include##g' ./make_setting
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	fi
 	make
 	cd $ROOTDIR
 fi
