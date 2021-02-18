@@ -61,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 	for x in `find ./workflow -name 'workflow*.sh'`; do sed -i -e 's/MPI_LOCALRANKID/PMIX_RANK/g' $x; done
 	make -f makefile.x86_64_intel
 	# we also need to get an input data set
-	if [  -f $ROOTDIR/$BM/ngsa_mini_input/reference.fa ]; then
+	if [ ! -f $ROOTDIR/$BM/ngsa_mini_input/reference.fa ]; then
 		echo "Creating $BM input may take 1h or more (stay tuned) ..."
 		mkdir -p ./ngsa_mini_input/work/../bwa_db; cd ./ngsa_mini_input
 		echo "  (downloading and processing reference genome)"
