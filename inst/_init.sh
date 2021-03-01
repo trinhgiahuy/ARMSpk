@@ -116,17 +116,17 @@ BM="spack"
 VERSION="96fa6f0c1be4ab55ec6ba7cd5af059e1ed95351f"
 cd $ROOTDIR/dep/$BM/
 if [[ "`git branch`" = *"develop"* ]]; then
-        git checkout -b precision ${VERSION}
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
-        source $ROOTDIR/dep/$BM/share/spack/setup-env.sh
-        spack compiler find
-        # check system compiler and install one we like
-        if [[ "`gcc --version | /usr/bin/grep 'gcc (GCC)' | cut -d ' ' -f3`" = "8.4.0" ]]; then
-                spack install gcc@8.4.0
-                spack load gcc@8.4.0
-                spack compiler find
-        fi
+	source $ROOTDIR/dep/$BM/share/spack/setup-env.sh
+	spack compiler find
+	# check system compiler and install one we like
+	if [[ "`gcc --version | /usr/bin/grep 'gcc (GCC)' | cut -d ' ' -f3`" = "8.4.0" ]]; then
+		spack install gcc@8.4.0
+		spack load gcc@8.4.0
+		spack compiler find
+	fi
 	# llvm
 	spack install libpfm4@4.10.1%gcc@8.4.0
 	spack load libpfm4
@@ -207,7 +207,7 @@ BM="OSACA"
 VERSION="768a90de103755fa995c9f4e23e1f498e763aff2"
 cd $ROOTDIR/dep/$BM/
 if [[ "`git branch`" = *"master"* ]]; then
-        git checkout -b precision ${VERSION}
+	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	#get arch info in different way, since pmu_name is intel-only
