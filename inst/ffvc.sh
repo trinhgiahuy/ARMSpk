@@ -44,7 +44,8 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		sed -i -e 's/= -lifport/= -static -static-intel -qopenmp-link=static -lifport/' ./make_setting
 	else
 		rm make_setting; ln -s make_setting.gcc make_setting
-		sed -i -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -march=native/g' ./make_setting
+		#XXX: RAGE.... segfaults w/o -g, i give up, this is getting beyond stupid
+		sed -i -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -g -march=native/g' ./make_setting
 		sed -i -e 's/\$(LIBS).*/\$(LIBS) -static -l:libgfortran.a -l:libquadmath.a/g' ./FFV/Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
