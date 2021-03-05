@@ -37,6 +37,9 @@ if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; the
 	git checkout -b precision ${VERSION}
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	# need some hack derived from https://www.themetabytes.com/2017/11/25/ld_preload-hacks/
+	icc -c -fPIC -I${ADVISOR_2018_DIR}/include -I. -I$JAVA_HOME/include -I$JAVA_HOME/include/linux ../util/sde_java_hack.c
+	ld -shared ./sde_java_hack.o -o sde_java_hack.so ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 	#fix a stupid bug...https://github.com/Intel-bigdata/HiBench/issues/534
 	sed -i -e 's/^ *$CMD/eval $CMD/' bin/functions/workload_functions.sh
 	mvn -Phadoopbench -Psparkbench -Dspark=2.4 -Dscala=2.11 clean package
@@ -58,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; the
 	sed -i -e "s#^hibench.masters.hostnames.*#hibench.masters.hostnames localhost#" conf/hibench.conf
 	sed -i -e "s#^hibench.slaves.hostnames.*#hibench.slaves.hostnames localhost#" conf/hibench.conf
 	sed -i -e "s#^hibench.scale.profile.*#hibench.scale.profile tiny#" conf/hibench.conf
-	#sed -i -e 's/.*hadoop/#hadoop/' conf/frameworks.lst
+	sed -i -e 's/.*hadoop/#hadoop/' conf/frameworks.lst
 	cd $ROOTDIR
 fi
 

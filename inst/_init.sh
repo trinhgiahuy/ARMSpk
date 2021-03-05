@@ -159,6 +159,19 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	export BN_SPARK_HOME=`basename $SPARK_HOME`
 	cd $SPARK_HOME/../; mv $BN_SPARK_HOME .$BN_SPARK_HOME; mkdir $BN_SPARK_HOME
 	tar xzf /tmp/spark-2.4.0/spark-2.4.0-bin-custom-spark.tgz --strip-components=1 -C $BN_SPARK_HOME
+	cd $SPARK_HOME
+	sed -i -e 's/.*exec "${CMD\[@\]}"/#exec "${CMD[@]}"/' bin/spark-class
+	cat <<EOF >> bin/spark-class
+if [ -z \$RUNNINGWITHSDE ] || [ -z \$ROOTDIR ]; then
+  exec "\${CMD[@]}"
+else
+  PATH=\$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:\$PATH \\
+  LD_PRELOAD=\$ROOTDIR/HiBench/sde_java_hack.so \\
+  exec \`which sde64\` -follow_subprocess 1 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \\
+                       -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \\
+                       -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -bdw -- "\${CMD[@]}"
+fi
+EOF
 	spack load spark
 	# config hadoop/spark for pseudo-distributed cluster mode (=> hibench/hadoop in local mode will not work https://github.com/Intel-bigdata/HiBench/issues/120; need hadoop even in spark-only mode for data preparation)
 	cd $HADOOP_HOME
@@ -172,7 +185,7 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	sed -i -e 's/logger=INFO/logger=FATAL/' etc/hadoop/log4j.properties
 	# run test
 	cd $HADOOP_HOME; echo 'N' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh
-	./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/jens; ./sbin/start-yarn.sh
+	./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/`logname`; ./sbin/start-yarn.sh
 	cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077
 	# shutdown again
 	cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh
