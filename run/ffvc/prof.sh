@@ -53,7 +53,11 @@ for BEST in $BESTCONF $SCALCONF; do
 		echo "=== sde run ===" >> $LOG 2>&1
 		echo "mpiexec $MPIEXECOPT --map-by slot:pe=$ProcElem -x OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c \"$SDE $BINARY $INPUT\"" >> $LOG 2>&1
 		for R in $TenRanks; do
-			mpiexec $MPIEXECOPT --map-by slot:pe=$ProcElem -x OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "if [[ \$PMIX_RANK = ${R} ]]; then $SDE $BINARY $INPUT; else $BINARY $INPUT; fi" >> $LOG 2>&1
+			trial=0 #something isn't stable and -g doesnt help either to fix random crashes => run multiple times
+			while : ; do
+				mpiexec $MPIEXECOPT --map-by slot:pe=$ProcElem -x OMP_NUM_THREADS=$NumOMP -n $NumMPI bash -c "if [[ \$PMIX_RANK = ${R} ]]; then $SDE $BINARY $INPUT; else $BINARY $INPUT; fi" >> $LOG 2>&1
+				if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then if [ $trial -eq 5 ]; then break; fi; echo "again for rank ${R}"; trial=$((trial+1)); else break; fi
+			done
 		done
 		mkdir -p ${LOG}_${NumMPI}_${NumOMP}_sde; mv dcfg-out.* ${LOG}_${NumMPI}_${NumOMP}_sde/
 	fi
