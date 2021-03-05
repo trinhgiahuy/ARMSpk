@@ -50,7 +50,7 @@ for BEST in $BESTCONF $SCALCONF; do
 	# test to identify hpcg's internal dimensions
 	rm -f hpcg_log_* n*.yaml
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
-	mpiexec $MPIEXECOPT -n $NumMPI $BINARY -n 1 > /dev/null 2>&1
+	mpiexec $MPIEXECOPT --map-by slot:pe=$ProcElem -x OMP_NUM_THREADS=1 -n $NumMPI $BINARY -n 1 > /dev/null 2>&1
 	if [ ! "x$?" = "x0" ]; then continue; fi
 	if [ -f n*.yaml ]; then
 		X=$(($MAXXYZ / `grep 'npx:' n*.yaml | awk -F 'npx:' '{print $2}'`))
