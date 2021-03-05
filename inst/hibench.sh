@@ -42,6 +42,7 @@ if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; the
 	ld -shared ./sde_java_hack.o -o sde_java_hack.so ${ADVISOR_2018_DIR}/lib64/libittnotify.a
 	#fix a stupid bug...https://github.com/Intel-bigdata/HiBench/issues/534
 	sed -i -e 's/^ *$CMD/eval $CMD/' bin/functions/workload_functions.sh
+	for x in `find bin -name 'run.sh' | /bin/grep spark`; do sed -i -e '/^run_spark_job/i kill -s USR1 `cat /dev/shm/sde.java.hack.pid`' -e '/^run_spark_job/a kill -s USR2 `cat /dev/shm/sde.java.hack.pid`' $x; done
 	mvn -Phadoopbench -Psparkbench -Dspark=2.4 -Dscala=2.11 clean package
 	#change config options to fit our need
 	cp conf/hadoop.conf.template conf/hadoop.conf

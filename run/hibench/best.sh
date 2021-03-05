@@ -42,26 +42,26 @@ for BEST in $BESTCONF; do
 	killall -9 java
 	rm -rf /scr0/hadoop-`whoami` /scr0/hadoop-logs
 	cd $HADOOP_HOME; echo 'Y' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh; ./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/`logname`; ./sbin/start-yarn.sh; cd -
-        sleep 10
-        for BINARY in $BINARYS; do
-                cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077; cd -
-                sleep 10
-                echo "Prepare $BINARY $INPUT" >> $LOG 2>&1
-                `dirname $BINARY`/../prepare/prepare.sh
-                sleep 10
-                echo "$BINARY $INPUT" >> $LOG 2>&1
-                for i in `seq 1 $NumRunsBEST`; do
-                        START="`date +%s.%N`"
-                        timeout --kill-after=30s $MAXTIME $BINARY $INPUT >> $LOG 2>&1
-                        if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
-                        ENDED="`date +%s.%N`"
-                        echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-                        sleep 10; cat report/hibench.report >> $LOG; rm -rf report/
-                done
-                # shutdown shit again
-                cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh; cd -
-        done
-        cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java; cd -
+	sleep 10
+	for BINARY in $BINARYS; do
+		cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077; cd -
+		sleep 10
+		echo "Prepare $BINARY $INPUT" >> $LOG 2>&1
+		`dirname $BINARY`/../prepare/prepare.sh >> $LOG 2>&1
+		sleep 10
+		echo "$BINARY $INPUT" >> $LOG 2>&1
+		for i in `seq 1 $NumRunsBEST`; do
+			START="`date +%s.%N`"
+			timeout --kill-after=30s $MAXTIME $BINARY $INPUT >> $LOG 2>&1
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
+			ENDED="`date +%s.%N`"
+			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+			sleep 10; cat report/hibench.report >> $LOG; rm -rf report/
+		done
+		# shutdown shit again
+		cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh; cd -
+	done
+	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java; cd -
 done
 echo ""
 cd $ROOTDIR

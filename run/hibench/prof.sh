@@ -25,9 +25,7 @@ export HADOOP_HEAPSIZE="8192"
 export HADOOP_NAMENODE_INIT_HEAPSIZE="4096"
 export MAHOUT_HEAPSIZE="8192"
 export NUTCH_HEAPSIZE="8192"
-
-#XXX
-RUNNINGWITHSDE
+if [ ! -x "`PATH=$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:$PATH which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.35.0-2019-03-11-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 
 # ============================ HiBench ====================================
 source conf/hibench.sh
@@ -46,24 +44,28 @@ for BEST in $BESTCONF; do
 	rm -rf /scr0/hadoop-`whoami` /scr0/hadoop-logs
 	cd $HADOOP_HOME; echo 'Y' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh; ./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/`logname`; ./sbin/start-yarn.sh; cd -
 	sleep 10
-	for BINARY in $BINARYS; do
-		cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077; cd -
-		sleep 10
-		echo "Prepare $BINARY $INPUT" >> $LOG 2>&1
-		`dirname $BINARY`/../prepare/prepare.sh
-		sleep 10
-		echo "$BINARY $INPUT" >> $LOG 2>&1
-		for i in `seq 1 $NumRunsBEST`; do
+	if [ "x$RUNSDE" = "xyes" ]; then
+		for BINARY in $BINARYS; do
+			unset RUNNINGWITHSDE; cd $SPARK_HOME; ./sbin/start-master.sh; ./sbin/start-slave.sh spark://`hostname`:7077; cd -; sleep 5m
+			echo "Prepare $BINARY $INPUT" >> $LOG 2>&1
+			`dirname $BINARY`/../prepare/prepare.sh >> $LOG 2>&1
+			sleep 10
+			cd $SPARK_HOME; ./sbin/stop-slaves.sh; sleep 10; export RUNNINGWITHSDE=1; ./sbin/start-slave.sh spark://`hostname`:7077; cd -; sleep 5m
+			echo "$BINARY $INPUT" >> $LOG 2>&1
 			START="`date +%s.%N`"
 			timeout --kill-after=30s $MAXTIME $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 			sleep 10; cat report/hibench.report >> $LOG; rm -rf report/
+			# shutdown shit again
+			cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh
+			#and wait 10min ...
+			c=0; while [ `ps aux | grep org.apache.spark.deploy.worker.Worker | grep java | wc -l` -eq 1 ]; do sleep 1m; c=$((c+1)); if [ $c -eq 10 ]; then break; fi; done
+			mkdir -p ${LOG}_${NumMPI}_${NumOMP}_sde; mv dcfg-out.* ${LOG}_${NumMPI}_${NumOMP}_sde/
+			cd -
 		done
-		# shutdown shit again
-		cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh; cd -
-	done
+	fi
 	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java; cd -
 done
 echo ""
