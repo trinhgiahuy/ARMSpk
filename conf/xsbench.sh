@@ -2,7 +2,8 @@
 
 export APPDIR="./XSBench/src"
 export BINARY="./XSBench"
-export INPUT="-t OMPNT -s large -l 15000000 -G unionized"
+#export INPUT="-t OMPNT -s large -l 15000000 -G unionized"
+export INPUT="-t OMPNT -s small -l 15000000 -G unionized"	# need 'small' to not exceed memory with many ranks
 export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="1m"
@@ -12,6 +13,7 @@ export RUNVTUNE="no"
 
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
+	### XXX : https://github.com/ANL-CESAR/XSBench#MPI-Support : 'This is a "weak scaling" approach' => in embarrassingly parallel fashion :-(
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
 			 2|6 2|12 2|24
 			 4|1 4|2 4|4 4|6 4|12
@@ -21,8 +23,8 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 32|1 32|2
 			 48|1
 			 96|1"
-	export BESTCONF="1|96"
-	export SCALCONF="1|1024 32|32 128|8"
+	export BESTCONF="1|48"
+	export SCALCONF="21|48 128|8"	#1|1024 causing SDE crash 'DcfgBuilder.cpp: startThread: 150: assertion failed: tid < DCFG_MAX_THREADS'
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256
