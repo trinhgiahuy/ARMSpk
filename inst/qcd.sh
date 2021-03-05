@@ -46,7 +46,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i -e 's/-shared-intel -mcmodel=medium/-static -static-intel -qopenmp-link=static/' -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./make.${TYPE}.inc
 	else
 		TYPE=gfortran
-		sed -i -e 's/-march=core2/-march=native/' -e 's/LDFLAGS = /LDFLAGS = -static /' ./make.${TYPE}.inc
+		sed -i -e 's/-march=core2 -msse3/-march=native -fno-inline-small-functions/' -e 's/LDFLAGS = /LDFLAGS = -static /' ./make.${TYPE}.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	for TEST in $TESTCONF; do

@@ -1,14 +1,12 @@
-From c64f82b6177961f947bf0c9407462370bb5fce71 Mon Sep 17 00:00:00 2001
+From 3d182447c96adc848deae23299845bc226a37514 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
-Date: Fri, 23 Feb 2018 04:09:52 +0900
+Date: Mon, 1 Mar 2021 22:09:59 +0900
 Subject: [PATCH] MACSio: prepare precision experiment
 
-Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- .gitignore             |  4 +++-
- macsio/macsio_clargs.c |  2 +-
- macsio/macsio_main.c   | 12 ++++++++++++
- 3 files changed, 16 insertions(+), 2 deletions(-)
+ .gitignore           |  4 +++-
+ macsio/macsio_main.c | 12 ++++++++++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/.gitignore b/.gitignore
 index cd1cc91..d87bc0c 100644
@@ -27,26 +25,8 @@ index cd1cc91..d87bc0c 100644
 -doc/MACSio_User_Guide
 \ No newline at end of file
 +doc/MACSio_User_Guide
-diff --git a/macsio/macsio_clargs.c b/macsio/macsio_clargs.c
-index 9983c26..779fcfa 100644
---- a/macsio/macsio_clargs.c
-+++ b/macsio/macsio_clargs.c
-@@ -226,12 +226,12 @@ MACSIO_CLARGS_ProcessCmdline(
-    knownArgs = NULL;
-    firstArg = 1;
-    depth = 1;
-+   MACSIO_KnownArgInfo_t *newArg, *oldArg;
-    while (1)
-    {
-       int n, paramCount, argNameLength;
-       char *fmtStr, *defStr, *helpStr, *p, *paramTypes, *paramFlags;
-       void **paramPtrs;
--      MACSIO_KnownArgInfo_t *newArg, *oldArg;
-       int isgroup_begin, isgroup_end;
- 
-       /* get this arg's format specifier string */
 diff --git a/macsio/macsio_main.c b/macsio/macsio_main.c
-index 2fd4dfd..f5a678f 100644
+index ef35c31..1a7a7bf 100644
 --- a/macsio/macsio_main.c
 +++ b/macsio/macsio_main.c
 @@ -60,6 +60,12 @@ extern "C" {
@@ -62,7 +42,7 @@ index 2fd4dfd..f5a678f 100644
  /*!
   * \mainpage
   *
-@@ -800,9 +806,12 @@ main(int argc, char *argv[])
+@@ -808,9 +814,12 @@ main(int argc, char *argv[])
      mpi_errno = MPI_SUCCESS;
  #endif
      errno = 0;
@@ -75,7 +55,7 @@ index 2fd4dfd..f5a678f 100644
  
      MACSIO_LOG_StdErr = MACSIO_LOG_LogInit(MACSIO_MAIN_Comm, 0, 0, 0, 0);
  
-@@ -837,6 +846,9 @@ main(int argc, char *argv[])
+@@ -845,6 +854,9 @@ main(int argc, char *argv[])
      else
          main_write(argi, argc, argv, main_obj);
  
