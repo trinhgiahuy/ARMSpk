@@ -182,3 +182,20 @@ for OMP in 4 16 64 256 1024; do
 	./parse_basic_blocks.py -j $D/dcfg-out.dcfg.json.bz2 -b $D/dcfg-out.bb.txt.bz2 \
 		-l $D/dcfg-out.asm.b > $D/parser.log;
 done
+
+TEST=SdeTestJava
+OUT=${TEST}_out
+mkdir -p ${OUT}
+icc -c -fPIC -I${ADVISOR_2019_DIR}/include -I. -I$JAVA_HOME/include -I$JAVA_HOME/include/linux ssc.c
+icc -shared -Wl,-soname,libssc.so ssc.o -o libssc.so ${ADVISOR_2019_DIR}/lib64/libittnotify.a
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load openjdk
+javac ./SdeTestJava.java
+javah -classpath . SdeTestJava
+LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH ../dep/sde-external-8.35.0-2019-03-11-lin/sde64 \
+	-sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \
+	-align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \
+	-bdw -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -- \
+	`which java` -classpath . SdeTestJava
+mv dcfg-out.* ${OUT}/
+rm -f ssc.o libssc.so SdeTestJava.h SdeTestJava.class
