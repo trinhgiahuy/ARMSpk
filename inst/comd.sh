@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 	spack load openmpi@3.1.6%gcc@8.4.0
@@ -29,6 +29,8 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	module load FujitsuCompiler/202007
 fi
 
 BM="CoMD"
@@ -42,12 +44,19 @@ if [ ! -f $ROOTDIR/$BM/bin/CoMD-openmp-mpi ]; then
 	#cp Makefile.vanilla Makefile
 	if [ -z $1 ]; then
 		sed -i -e 's/OTHER_LIB =/OTHER_LIB = -static -static-intel -qopenmp-link=static/' ./Makefile
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native -static/g' ./Makefile
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/^DO_MPI =.*/DO_MPI = OFF/g' -e 's/^CC =.*/CC = fccpx/' ./Makefile
+		sed -i -e 's/-ipo -xHost/-Bstatic/g' ./Makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e '/.*include.*stdio\.h/i #define _POSIX_C_SOURCE 199309L' -e 's/.*include.*ittnotify\.h.*/#include <sys\/types.h>\n#include <signal.h>\n#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e '/.*include.*mpi\.h/d' $FILE; done
 	fi
 	make
+	#missing mpi in fuji version caused change in binary name -> fix that
+	if [[ "$1" = *"fuji"* ]]; then mv $ROOTDIR/$BM/bin/CoMD-openmp $ROOTDIR/$BM/bin/CoMD-openmp-mpi; fi
 	cd $ROOTDIR
 fi
 
