@@ -31,6 +31,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
 	module load FujitsuCompiler/202007
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="Laghos"
