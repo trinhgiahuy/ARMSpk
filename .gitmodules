@@ -91,3 +91,6 @@
 [submodule "HiBench"]
 	path = HiBench
 	url = https://github.com/Intel-bigdata/HiBench.git
+[submodule "dep/mpistub"]
+	path = dep/mpistub
+	url = https://github.com/hsorby/mpistub.git
