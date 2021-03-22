@@ -30,14 +30,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
-	echo 'this does NOT work, because gem5 doesnt like socket API'; exit 1
 	module load FujitsuCompiler/202007
-	export PATH=$HOME/ompi-3.1.6/bin:$PATH
-	export LD_LIBRARY_PATH=$HOME/ompi-3.1.6/lib:$LD_LIBRARY_PATH
-	export OMPI_CC=fccpx
-	export OMPI_CXX=FCCpx
-	export OMPI_F77=frtpx
-	export OMPI_FC=frtpx
 else
 	echo 'wrong compiler'
 	exit 1
@@ -61,9 +54,11 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/-ipo -xHost/-Bstatic/g' ./Makefile.include
+		sed -i -e 's/define HYPRE_MPI_INT MPI_LONG_LONG.*/define HYPRE_MPI_INT MPI_LONG_LONG_INT/g' ./HYPRE.h
+		sed -i -e 's/^CC =.*/CC = fccpx/g' -e 's/ -DTIMER_USE_MPI//g' -e 's/-ipo -xHost/-DHYPRE_SEQUENTIAL=1 -Bstatic/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		sed -i -e 's/-lm -DHYPRE_SEQUENTIAL=1 -Bstatic/-Bstatic -lm -DHYPRE_SEQUENTIAL=1/g' ./Makefile.include
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	make
 	cd $ROOTDIR
