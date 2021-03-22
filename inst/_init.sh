@@ -215,6 +215,29 @@ cd $ROOTDIR
 #	ssh root@localhost -p2222 -i ~/.ssh/id_rsa_perfkit -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 #fi
 
+BM="mpistub"
+VERSION="e3b0d504e6daba0116907589c944a3be39547057"
+cd $ROOTDIR/dep/$BM/
+if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
+	if [[ "`hostname -s`" = *"peach"* ]]; then
+		cd $ROOTDIR/dep/$BM/
+		git checkout -b precision ${VERSION}
+		git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+		module load FujitsuCompiler/202007
+		rm -rf $ROOTDIR/dep/$BM/build; mkdir -p $ROOTDIR/dep/$BM/build; cd $ROOTDIR/dep/$BM/build
+		if ! CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ ; then
+			# peach has too old cmake
+			source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+			spack install cmake@3.4.3; spack load cmake@3.4.3
+			CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/
+		fi
+		make
+		make install
+	fi
+fi
+cd $ROOTDIR
+
 echo -e '\nInit OSACA'
 BM="OSACA"
 VERSION="768a90de103755fa995c9f4e23e1f498e763aff2"
