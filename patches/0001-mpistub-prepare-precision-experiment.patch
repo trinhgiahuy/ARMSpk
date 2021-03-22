@@ -1,0 +1,155 @@
+From 13e67b05fe1e13ac173a895b83ce675014b35b07 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Mon, 22 Mar 2021 17:07:05 +0900
+Subject: [PATCH] mpistub: prepare precision experiment
+
+---
+ src/CMakeLists.txt |  4 ++--
+ src/main_mpicc.c   |  2 ++
+ src/main_mpicxx.c  |  2 ++
+ src/main_mpif90.c  |  2 ++
+ src/mpi.c          | 42 ++++++++++++++++++++++++++++++++++++++++--
+ src/mpi.h          |  9 +++++++++
+ 6 files changed, 57 insertions(+), 4 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 6ab1e0b..0a38ab0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -3,8 +3,8 @@ add_executable(mpiexec main_mpiexec.c)
+ add_executable(mpicc main_mpicc.c argcheck.c argcheck.h)
+ add_executable(mpicxx main_mpicxx.c argcheck.c argcheck.h)
+ add_executable(mpif90 main_mpif90.c argcheck.c argcheck.h)
+-add_library(mpi mpi.c mpi.h)
+-add_library(mpifort mpi_stubs.f90)
++add_library(mpi STATIC mpi.c mpi.h)
++add_library(mpifort STATIC mpi_stubs.f90)
+ 
+ target_include_directories(mpi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+ target_include_directories(mpifort PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+diff --git a/src/main_mpicc.c b/src/main_mpicc.c
+index 7f3ca76..809d5cd 100644
+--- a/src/main_mpicc.c
++++ b/src/main_mpicc.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: fccpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/main_mpicxx.c b/src/main_mpicxx.c
+index 38ba66b..c0521a0 100644
+--- a/src/main_mpicxx.c
++++ b/src/main_mpicxx.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: FCCpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/main_mpif90.c b/src/main_mpif90.c
+index e5e777c..6cf1d56 100644
+--- a/src/main_mpif90.c
++++ b/src/main_mpif90.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: frtpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi -lmpifort\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/mpi.c b/src/mpi.c
+index 0443547..998ecea 100644
+--- a/src/mpi.c
++++ b/src/mpi.c
+@@ -200,7 +200,7 @@ int MPI_Request_free(MPI_Request *request)
+ int MPI_Send(const void *buf, int count, MPI_Datatype datatype,
+              int dest, int tag, MPI_Comm comm)
+ {
+-  printf("MPI Stub WARNING: Should not send message to self\n");
++  printf("MPI Stub WARNING: Should not Send message to self\n");
+   return 0;
+ }
+ 
+@@ -209,7 +209,7 @@ int MPI_Send(const void *buf, int count, MPI_Datatype datatype,
+ int MPI_Isend(const void *buf, int count, MPI_Datatype datatype,
+               int source, int tag, MPI_Comm comm, MPI_Request *request)
+ {
+-  printf("MPI Stub WARNING: Should not send message to self\n");
++  printf("MPI Stub WARNING: Should not Isend message to self\n");
+   return 0;
+ }
+ 
+@@ -630,3 +630,41 @@ int MPI_Type_struct(int count, const int *array_of_blocklengths,
+ }
+ 
+ /* ---------------------------------------------------------------------- */
++
++int MPI_Address(void *location, MPI_Aint *address)
++{
++  address = location;
++  return 0;
++}
++
++int MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag,
++               MPI_Status *status)
++{
++  return MPI_ERR_UNKNOWN;
++}
++
++int MPI_Ssend(const void *buf, int count, MPI_Datatype datatype,
++              int dest, int tag, MPI_Comm comm)
++{
++  printf("MPI Stub WARNING: Should not Ssend message to self\n");
++  return 0;
++}
++
++int MPI_Issend(const void *buf, int count, MPI_Datatype datatype,
++              int source, int tag, MPI_Comm comm, MPI_Request *request)
++{
++  printf("MPI Stub WARNING: Should not Issend message to self\n");
++  return 0;
++}
++
++int MPI_Type_vector(int count, int blocklength, int stride,
++                    MPI_Datatype old_type, MPI_Datatype *newtype_p)
++{
++  if (nextra_datatype == MAXEXTRA_DATATYPE) return -1;
++  ptr_datatype[nextra_datatype] = newtype_p;
++  index_datatype[nextra_datatype] = -(nextra_datatype + 1);
++  size_datatype[nextra_datatype] = count * blocklength * stubtypesize(old_type)
++      + (count - 1) * stubtypesize(old_type);
++  nextra_datatype++;
++  return 0;
++}
+diff --git a/src/mpi.h b/src/mpi.h
+index 6547527..82f5091 100644
+--- a/src/mpi.h
++++ b/src/mpi.h
+@@ -262,6 +262,15 @@ int MPI_Alltoallv(void *sendbuf, int *sendcounts, int *sdispls,
+ int MPI_Type_struct(int count, const int *array_of_blocklengths,
+                     const MPI_Aint *array_of_displacements,
+                     const MPI_Datatype *array_of_types, MPI_Datatype *newtype);
++int MPI_Address(void *location, MPI_Aint *address);
++int MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag,
++               MPI_Status *status);
++int MPI_Ssend(const void *buf, int count, MPI_Datatype datatype,
++              int dest, int tag, MPI_Comm comm);
++int MPI_Issend(const void *buf, int count, MPI_Datatype datatype,
++               int source, int tag, MPI_Comm comm, MPI_Request *request);
++int MPI_Type_vector(int count, int blocklength, int stride,
++                    MPI_Datatype old_type, MPI_Datatype *newtype_p);
+ 
+ /* ---------------------------------------------------------------------- */
+ 
+-- 
+1.8.3.1
+
