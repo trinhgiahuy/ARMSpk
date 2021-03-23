@@ -142,6 +142,42 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	spack install scala@2.11.11%gcc@8.4.0 ^openjdk@1.8.0_222-b10
 	spack install hadoop@2.10.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
 	spack load openjdk; spack load maven; spack load scala; spack load hadoop
+	cd $JAVA_HOME/bin
+	mv ./java ./java.org; ln -s ./java.org java
+	cat <<EOF > ./java.sh
+#!/bin/bash
+trap cleanup2 2
+trap cleanup9 9
+trap cleanup11 11
+trap cleanup15 15
+cleanup2() { kill -2 "\$SUBC"; exit 0; }
+cleanup9() { kill -9 "\$SUBC"; exit 0; }
+cleanup11() { kill -11 "\$SUBC"; exit 0; }
+cleanup15() { kill -15 "\$SUBC"; exit 0; }
+
+CDIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
+EXID="\$(echo \\"\$@\\" | awk 'match(\$0, "executor-id[[:blank:]]+([0-9]+)", m) {print m[1]}')"
+SUBC=""
+
+if [ "x\$EXID" != "x" ] && [ -f /dev/shm/RUNNINGWITHSDE ]; then
+	SDEBIN=\$(cat /dev/shm/RUNNINGWITHSDE | head -1);
+	SDEOUT=\$(cat /dev/shm/RUNNINGWITHSDE | tail -1);
+	echo "\$SDEBIN -log -log:mt -log:basename \$SDEOUT/dcfg-out.executor-id-\$EXID" \\
+		" -sse-sde -disasm_att 1 -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw" \\
+		" -- \$CDIR/java.org \$@" >> /dev/shm/java.call.log
+	"\$CDIR"/java.org "\$@" & SUBC=\$!
+	sleep 4
+	\$SDEBIN -log -log:mt -log:basename "\$SDEOUT"/dcfg-out.executor-id-"\$EXID" \\
+		-sse-sde -disasm_att 1 -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw \\
+		-attach-pid \$SUBC
+	wait \$SUBC
+else
+	echo "\$CDIR/java.org \$@" >> /dev/shm/java.call.log
+	"\$CDIR"/java.org "\$@" & SUBC=\$!
+	wait \$SUBC
+fi
+EOF
+	cd -
 	export HADOOP_HOME=`spack find -p | /bin/grep hadoop | cut -d' ' -f2- | tr -d ' '`
 	export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 	export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
@@ -159,19 +195,19 @@ if [[ "`git branch`" = *"develop"* ]]; then
 	export BN_SPARK_HOME=`basename $SPARK_HOME`
 	cd $SPARK_HOME/../; mv $BN_SPARK_HOME .$BN_SPARK_HOME; mkdir $BN_SPARK_HOME
 	tar xzf /tmp/spark-2.4.0/spark-2.4.0-bin-custom-spark.tgz --strip-components=1 -C $BN_SPARK_HOME
-	cd $SPARK_HOME
-	sed -i -e 's/.*exec "${CMD\[@\]}"/#exec "${CMD[@]}"/' bin/spark-class
-	cat <<EOF >> bin/spark-class
-if [ -z \$RUNNINGWITHSDE ] || [ -z \$ROOTDIR ]; then
-  exec "\${CMD[@]}"
-else
-  PATH=\$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:\$PATH \\
-  LD_PRELOAD=\$ROOTDIR/HiBench/sde_java_hack.so \\
-  exec \`which sde64\` -follow_subprocess 1 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \\
-                       -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \\
-                       -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -bdw -- "\${CMD[@]}"
-fi
-EOF
+#	cd $SPARK_HOME
+#	sed -i -e 's/.*exec "${CMD\[@\]}"/#exec "${CMD[@]}"/' bin/spark-class
+#	cat <<EOF >> bin/spark-class
+#if [ -z \$RUNNINGWITHSDE ] || [ -z \$ROOTDIR ]; then
+#  exec "\${CMD[@]}"
+#else
+#  export PATH=\$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin:\$PATH
+#  LD_PRELOAD=\$ROOTDIR/HiBench/sde_java_hack.so \\
+#  exec \`which sde64\` -follow_subprocess 1 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 \\
+#                       -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 \\
+#                       -start_ssc_mark 111:repeat -stop_ssc_mark 222:repeat -bdw -- "\${CMD[@]}"
+#fi
+#EOF
 	spack load spark
 	# config hadoop/spark for pseudo-distributed cluster mode (=> hibench/hadoop in local mode will not work https://github.com/Intel-bigdata/HiBench/issues/120; need hadoop even in spark-only mode for data preparation)
 	cd $HADOOP_HOME

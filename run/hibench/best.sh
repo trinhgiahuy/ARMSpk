@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "NO ;-)"; exit 1
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
@@ -28,7 +29,7 @@ export NUTCH_HEAPSIZE="8192"
 
 # ============================ HiBench ====================================
 source conf/hibench.sh
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/hibench"
+LOG="$ROOTDIR/log/`hostname -s`/bestrun/hibench.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
@@ -39,13 +40,11 @@ for BEST in $BESTCONF; do
 	ssh -O exit 0.0.0.0;   ssh -o StrictHostKeyChecking=no 0.0.0.0 echo 0
 	ssh -O exit 127.0.0.1; ssh -o StrictHostKeyChecking=no 127.0.0.1 echo 0
 	# start all this java trash
-	killall -9 java
-	rm -rf /scr0/hadoop-`whoami` /scr0/hadoop-logs
-	cd $HADOOP_HOME; echo 'Y' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh; ./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/`logname`; ./sbin/start-yarn.sh; cd -
-	sleep 10
+	killall -9 java.org; killall -9 java
+	rm -rf /scr0/hadoop-`whoami` /scr0/hadoop-logs /tmp/Jetty_*
+	cd $HADOOP_HOME; echo 'Y' | ./bin/hdfs namenode -format; ./sbin/start-dfs.sh; ./bin/hdfs dfs -mkdir /user; ./bin/hdfs dfs -mkdir /user/`logname`; ./sbin/start-yarn.sh; cd -; sleep 10
 	for BINARY in $BINARYS; do
-		cd $SPARK_HOME; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077; cd -
-		sleep 10
+		cd $SPARK_HOME; rm -f ./conf/spark-defaults.conf ./conf/log4j.properties; ./sbin/start-master.sh ; ./sbin/start-slave.sh spark://`hostname`:7077; cd -; sleep 10
 		echo "Prepare $BINARY $INPUT" >> $LOG 2>&1
 		`dirname $BINARY`/../prepare/prepare.sh >> $LOG 2>&1
 		sleep 10
@@ -61,7 +60,7 @@ for BEST in $BESTCONF; do
 		# shutdown shit again
 		cd $SPARK_HOME; ./sbin/stop-slaves.sh; ./sbin/stop-master.sh; cd -
 	done
-	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java; cd -
+	cd $HADOOP_HOME; ./sbin/stop-yarn.sh; ./sbin/stop-dfs.sh; killall -9 java.org; killall -9 java; cd -
 done
 echo ""
 cd $ROOTDIR
