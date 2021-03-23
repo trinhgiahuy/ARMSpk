@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source `echo $INTEL_PACKAGE | cut -d'/' -f-3`/mkl/bin/mklvars.sh intel64 > /dev/null 2>&1
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
@@ -30,6 +30,12 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	echo "ERR: cannot use this one either"; exit 1
+	module load FujitsuCompiler/202007
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="Nekbone"
@@ -43,11 +49,18 @@ if [ ! -f $ROOTDIR/$BM/test/nek_mgrid/nekbone ]; then
 	sed -i -e 's/lp = 10)/lp = 576)/' -e 's/lelt=100/lelt=1024/' SIZE
 	if [ -z $1 ]; then
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' $ROOTDIR/$BM/src/makefile.template
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' -e 's# -mkl # -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -static #g' -e 's# -mkl-static# -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_gf_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -static#' $ROOTDIR/$BM/src/makefile.template
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -mkl-static# -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_gf_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl#g' ./makenek
 		sed -i -e 's/-fdefault-real-8/-fdefault-real-8 -fdefault-double-8/g' $ROOTDIR/$BM/src/makenek.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r ../../ | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fuji"* ]]; then
+		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2
+		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
+		sed -i -e 's/^IFMPI=.*/IFMPI=false/' -e 's/-ipo -xHost/-march=native/g' $ROOTDIR/$BM/src/makefile.template
+		sed -i -e 's/gfortran/frtpx/g' -e 's/^ptrSize=/ptrSize=8 #/g' -e 's/-fdefault-real-8 -x f77-cpp-input/-CcdRR8 -Ccpp/g' $ROOTDIR/$BM/src/makenek.inc
+		sed -i -e 's/^CC=.*/CC=fccpx/g' -e 's/^F77=.*/F77=frtpx/g' -e 's/-ipo -xHost/-march=native/g' -e "s# -mkl-static# -L$ROOTDIR/$BM/ -L$SSL2LIB -SSL2BLAMP -Bstatic#g" ./makenek
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r ../../ | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	./makenek NotUsedCasename $ROOTDIR/$BM/src
 	cd $ROOTDIR

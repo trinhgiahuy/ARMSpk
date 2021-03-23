@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 	spack load openmpi@3.1.6%gcc@8.4.0
@@ -29,6 +29,8 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	echo "lol, no thanks not touching this one"; exit 1
 fi
 
 BM="NGSAnalyzer"

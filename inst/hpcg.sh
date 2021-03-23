@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 	spack load openmpi@3.1.6%gcc@8.4.0
@@ -29,6 +29,11 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	module load FujitsuCompiler/202007
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="HPCG"
@@ -49,16 +54,16 @@ if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 		CONF="IMPI_IOMP_KNL"
 	elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 		CONF="IMPI_IOMP_KNL"
-	else
-		echo "Unsupported host"
-		exit
 	fi
 	if [ -z $1 ]; then
 		../configure $CONF
 		sed -i -e 's/mpiicpc/mpicxx/' -e 's/= -L${ADVISOR/= -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./setup/Make.IMPI_IOMP_AVX2
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		../configure MPI_GCC_OMP
 		sed -i -e 's/-O3/-O3 -march=native -static/g' ./setup/Make.MPI_GCC_OMP
+	elif [[ "$1" = *"fuji"* ]]; then
+		../configure MPI_GCC_OMP
+		sed -i -e 's/^CXX .*=.*/CXX = FCCpx/g' -e 's/^HPCG_OPTS .*=.*/HPCG_OPTS = -DHPCG_NO_MPI/g' -e 's/-O3/-O3 -Bstatic/g' ./setup/Make.MPI_GCC_OMP
 	fi
 	make
 	cd $ROOTDIR

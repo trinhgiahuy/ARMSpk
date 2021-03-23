@@ -10,7 +10,7 @@ export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
-if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+if [[ $HOSTNAME = *"${XEONHOST}"* ]] || [[ $HOSTNAME = *"peach"* ]]; then
 	# on "normal" Xeon
 	# all classes low perf (<10%) when used w/ MPI, fokus: MPI=1 and OMP>1
 	export TESTCONF="1|6|1|1|1 1|12|1|1|1 1|24|1|1|1 1|32|1|1|1 1|48|1|1|1 1|96|1|1|1

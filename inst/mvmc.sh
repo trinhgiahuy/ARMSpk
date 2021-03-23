@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source `echo $INTEL_PACKAGE | cut -d'/' -f-3`/mkl/bin/mklvars.sh intel64 > /dev/null 2>&1
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
@@ -30,6 +30,13 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	echo "ERR: cannot use this one either, because peach's SSL2 has no Cblacs_gridinit and other fn"; exit 1
+	module load FujitsuCompiler/202007
+	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="MVMC"
@@ -43,11 +50,18 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 	for x in `/bin/grep -r 'init_by_array(' . | cut -d':' -f1 | sort -u`; do sed -i -e 's/init_by_array(/xxxinit_by_array(/' $x; done
 	if [ -z $1 ]; then
 		sed -i -e 's/blacs_intelmpi/blacs_openmpi/' -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g" ./Makefile_intel
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g" -e 's/blacs_intelmpi/blacs_openmpi/' -e 's/mkl_intel_thread/mkl_gnu_thread/' -e 's/-lpthread/-lgomp -lpthread -lm -ldl/' -e 's/ -qopt-prefetch=3 -nofor-main//' -e 's/ -vec-report//' ./Makefile_intel
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ ifort/ gfortran/' -e 's/-implicitnone/-fimplicit-none/' ./pfapack/Makefile_intel
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ icc/ gcc/' -e 's/-no-ansi-alias//' ./sfmt/Makefile_intel
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fuji"* ]]; then
+		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64
+		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a
+		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e 's/-ipo -xHost/-march=native/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -Bstatic#g" -e "s#\$(MKL)#-L$ROOTDIR/$BM/ -L$SSL2LIB -SCALAPACK -SSL2BLAMP#g" ./Makefile_intel
+		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ ifort/ frtpx/' -e 's/-implicitnone//' ./pfapack/Makefile_intel
+		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ icc/ fccpx/' -e 's/-no-ansi-alias//' -e 's/-DHAVE_SSE2//' ./sfmt/Makefile_intel
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	make intel
 	cd $ROOTDIR

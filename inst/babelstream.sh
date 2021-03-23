@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 	spack load openmpi@3.1.6%gcc@8.4.0
@@ -29,6 +29,11 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	module load FujitsuCompiler/202007
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="BabelStream"
@@ -40,9 +45,13 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ -z $1 ]; then
 		make -f OpenMP.make COMPILER=INTEL TARGET=CPU EXTRA_FLAGS="-static -static-intel -qopenmp-link=static"
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-static"
+	elif [[ "$1" = *"fuji"* ]]; then
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
+		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Bstatic"
 	fi
 	cd $ROOTDIR
 fi

@@ -1,0 +1,401 @@
+From be284d74a98492e2c452f1117ac73e55386dbd53 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Mon, 22 Mar 2021 17:07:05 +0900
+Subject: [PATCH] mpistub: prepare precision experiment
+
+---
+ src/CMakeLists.txt  |   4 +-
+ src/main_mpicc.c    |   2 +
+ src/main_mpicxx.c   |   2 +
+ src/main_mpif90.c   |   2 +
+ src/mpi.c           | 124 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/mpi.h           |  42 ++++++++++++++++++
+ src/mpi_stubs.f90   |  87 ++++++++++++++++++++++++++++++++++++
+ src/mpi_stubs_f90.h |  16 +++++++
+ 8 files changed, 275 insertions(+), 4 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 6ab1e0b..0a38ab0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -3,8 +3,8 @@ add_executable(mpiexec main_mpiexec.c)
+ add_executable(mpicc main_mpicc.c argcheck.c argcheck.h)
+ add_executable(mpicxx main_mpicxx.c argcheck.c argcheck.h)
+ add_executable(mpif90 main_mpif90.c argcheck.c argcheck.h)
+-add_library(mpi mpi.c mpi.h)
+-add_library(mpifort mpi_stubs.f90)
++add_library(mpi STATIC mpi.c mpi.h)
++add_library(mpifort STATIC mpi_stubs.f90)
+ 
+ target_include_directories(mpi PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+ target_include_directories(mpifort PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+diff --git a/src/main_mpicc.c b/src/main_mpicc.c
+index 7f3ca76..809d5cd 100644
+--- a/src/main_mpicc.c
++++ b/src/main_mpicc.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: fccpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/main_mpicxx.c b/src/main_mpicxx.c
+index 38ba66b..c0521a0 100644
+--- a/src/main_mpicxx.c
++++ b/src/main_mpicxx.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: FCCpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/main_mpif90.c b/src/main_mpif90.c
+index e5e777c..6cf1d56 100644
+--- a/src/main_mpif90.c
++++ b/src/main_mpif90.c
+@@ -6,6 +6,8 @@
+ 
+ int main(int argc, char* argv[])
+ {
++    printf("USE: frtpx -I<path>/include/mpistub -Wl,-rpath -Wl,<path>/lib/mpistub -L<path>/lib/mpistub -lmpi -lmpifort\n"); return -1;
++
+     char command[16384];
+     int i = 1;
+     int argCheckResult = -1;
+diff --git a/src/mpi.c b/src/mpi.c
+index 0443547..f725e74 100644
+--- a/src/mpi.c
++++ b/src/mpi.c
+@@ -200,7 +200,7 @@ int MPI_Request_free(MPI_Request *request)
+ int MPI_Send(const void *buf, int count, MPI_Datatype datatype,
+              int dest, int tag, MPI_Comm comm)
+ {
+-  printf("MPI Stub WARNING: Should not send message to self\n");
++  printf("MPI Stub WARNING: Should not Send message to self\n");
+   return 0;
+ }
+ 
+@@ -209,7 +209,7 @@ int MPI_Send(const void *buf, int count, MPI_Datatype datatype,
+ int MPI_Isend(const void *buf, int count, MPI_Datatype datatype,
+               int source, int tag, MPI_Comm comm, MPI_Request *request)
+ {
+-  printf("MPI Stub WARNING: Should not send message to self\n");
++  printf("MPI Stub WARNING: Should not Isend message to self\n");
+   return 0;
+ }
+ 
+@@ -630,3 +630,123 @@ int MPI_Type_struct(int count, const int *array_of_blocklengths,
+ }
+ 
+ /* ---------------------------------------------------------------------- */
++
++int MPI_Address(void *location, MPI_Aint *address)
++{
++  *address = (MPI_Aint)location;
++  return 0;
++}
++
++int MPI_Get_address(void *location, MPI_Aint *address)
++{
++  *address = (MPI_Aint)location;
++  return 0;
++}
++
++int MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag,
++               MPI_Status *status)
++{
++  return MPI_ERR_UNKNOWN;
++}
++
++int MPI_Ssend(const void *buf, int count, MPI_Datatype datatype,
++              int dest, int tag, MPI_Comm comm)
++{
++  printf("MPI Stub WARNING: Should not Ssend message to self\n");
++  return 0;
++}
++
++int MPI_Issend(const void *buf, int count, MPI_Datatype datatype,
++              int source, int tag, MPI_Comm comm, MPI_Request *request)
++{
++  printf("MPI Stub WARNING: Should not Issend message to self\n");
++  return 0;
++}
++
++int MPI_Type_vector(int count, int blocklength, int stride,
++                    MPI_Datatype old_type, MPI_Datatype *newtype_p)
++{
++  if (nextra_datatype == MAXEXTRA_DATATYPE) return -1;
++  ptr_datatype[nextra_datatype] = newtype_p;
++  index_datatype[nextra_datatype] = -(nextra_datatype + 1);
++  size_datatype[nextra_datatype] = count * blocklength * stubtypesize(old_type)
++      + (count - 1) * stubtypesize(old_type);
++  nextra_datatype++;
++  return 0;
++}
++
++int MPI_Type_create_struct(int count, int *blocklength,
++                           MPI_Aint *array_of_blocklengths,
++                           MPI_Datatype *array_of_types, MPI_Datatype *newtype)
++{
++  printf("MPI Stub WARNING: Please don't call me ever, I'm baka!\n");
++  return -1;
++}
++
++int MPI_Error_class(int errorcode, int *errorclass)
++{
++  if (!errorcode)
++    return 0;
++  else
++    return MPI_ERR_UNKNOWN;
++}
++
++int MPI_Error_string(int errorcode, char *string, int *resultlen)
++{
++  if (!errorcode)
++    snprintf(string, MPI_MAX_ERROR_STRING, "MPI_SUCCESS");
++  else
++    snprintf(string, MPI_MAX_ERROR_STRING, "MPI_ERR_UNKNOWN");
++  return 0;
++}
++
++int MPI_Comm_set_errhandler(MPI_Comm comm, MPI_Errhandler errhandler)
++{
++  return 0;
++}
++
++#include <time.h>
++double MPI_Wtick()
++{
++  struct timespec mkrtsclock1, mkrtsclock2;
++  clock_gettime(CLOCK_MONOTONIC, &mkrtsclock1);
++  clock_gettime(CLOCK_MONOTONIC, &mkrtsclock2);
++  return (mkrtsclock2.tv_sec + mkrtsclock2.tv_nsec * .000000001)
++      - (mkrtsclock1.tv_sec + mkrtsclock1.tv_nsec * .000000001);
++}
++
++int MPI_Group_free(MPI_Group *group)
++{
++  if (group)
++    free(group);
++  group = NULL;
++  return 0;
++}
++
++int MPI_Dims_create(int nnodes, int ndims, int *dims)
++{
++  if (!dims[0])
++    dims[0] = 1;
++  return 0;
++}
++
++int MPI_Cart_sub(MPI_Comm comm, int *remain_dims, MPI_Comm *newcomm)
++{
++  *newcomm = comm;
++  return 0;
++}
++
++int MPI_Cart_coords(MPI_Comm comm, int rank, int maxdims, int *coords)
++{
++  coords[0] = 0;
++  return 0;
++}
++
++int MPI_Type_create_subarray(int ndims, int array_of_sizes[],
++                             int array_of_subsizes[], int array_of_starts[],
++                             int order, MPI_Datatype oldtype,
++                             MPI_Datatype *newtype)
++{
++  printf("MPI Stub WARNING: Please don't call me ever, I'm baka!\n");
++  return -1;
++}
+diff --git a/src/mpi.h b/src/mpi.h
+index 6547527..3cd6d58 100644
+--- a/src/mpi.h
++++ b/src/mpi.h
+@@ -86,6 +86,7 @@ extern "C" {
+ #define MPI_IN_PLACE NULL
+ 
+ #define MPI_MAX_PROCESSOR_NAME 128
++#define MPI_MAX_ERROR_STRING 64
+ 
+ typedef int MPI_Datatype;
+ #define MPI_CHAR           ((MPI_Datatype)0x4c000101)
+@@ -262,6 +263,47 @@ int MPI_Alltoallv(void *sendbuf, int *sendcounts, int *sdispls,
+ int MPI_Type_struct(int count, const int *array_of_blocklengths,
+                     const MPI_Aint *array_of_displacements,
+                     const MPI_Datatype *array_of_types, MPI_Datatype *newtype);
++int MPI_Address(void *location, MPI_Aint *address);
++int MPI_Get_address(void *location, MPI_Aint *address);
++int MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag,
++               MPI_Status *status);
++int MPI_Ssend(const void *buf, int count, MPI_Datatype datatype,
++              int dest, int tag, MPI_Comm comm);
++int MPI_Issend(const void *buf, int count, MPI_Datatype datatype,
++               int source, int tag, MPI_Comm comm, MPI_Request *request);
++int MPI_Type_vector(int count, int blocklength, int stride,
++                    MPI_Datatype old_type, MPI_Datatype *newtype_p);
++int MPI_Type_create_struct(int count, int *blocklength,
++                           MPI_Aint *array_of_blocklengths,
++                           MPI_Datatype *array_of_types, MPI_Datatype *newtype);
++int MPI_Error_class(int errorcode, int *errorclass);
++int MPI_Error_string(int errorcode, char *string, int *resultlen);
++#define MPI_Errhandler void*
++#define MPI_ERRORS_RETURN NULL
++#define MPI_ERRORS_ARE_FATAL NULL
++#define MPI_REQUEST_NULL NULL 
++#define MPI_COMM_SELF MPI_COMM_WORLD
++int MPI_Comm_set_errhandler(MPI_Comm comm, MPI_Errhandler errhandler);
++double MPI_Wtick();
++int MPI_Group_free(MPI_Group *group);
++#define MPI_ORDER_C 0
++#define MPI_ORDER_FORTRAN 1
++int MPI_Dims_create(int nnodes, int ndims, int *dims);
++int MPI_Cart_sub(MPI_Comm comm, int *remain_dims, MPI_Comm *newcomm);
++int MPI_Cart_coords(MPI_Comm comm, int rank, int maxdims, int *coords);
++int MPI_Type_create_subarray(int ndims, int array_of_sizes[],
++                             int array_of_subsizes[], int array_of_starts[],
++                             int order, MPI_Datatype oldtype,
++                             MPI_Datatype *newtype);
++#define MPI_PROC_NULL -1
++#define MPI_DATATYPE_NULL -1
++#define MPI_OP_NULL -1
++#define MPI_PROD 7
++#define MPI_LAND 8
++#define MPI_BAND 9
++#define MPI_BOR 10
++#define MPI_LXOR 11
++#define MPI_BXOR 12
+ 
+ /* ---------------------------------------------------------------------- */
+ 
+diff --git a/src/mpi_stubs.f90 b/src/mpi_stubs.f90
+index f1048c2..ea664a4 100644
+--- a/src/mpi_stubs.f90
++++ b/src/mpi_stubs.f90
+@@ -2252,3 +2252,90 @@ subroutine timestring ( string )
+   return
+ end
+ 
++subroutine mpi_sendrecv ( data, n, datatype, iproc, itag, data2, m, datatype2, iproc2, itag2, comm, istatus, ierror )
++  implicit none
++
++  include "mpi_stubs_f90.h"
++
++  integer n, m
++
++  integer comm
++  integer data(n), data2(m)
++  integer datatype, datatype2
++  integer ierror
++  integer iproc, iproc2
++  integer itag, itag2
++  integer istatus
++
++  ierror = MPI_FAILURE
++
++  if (iproc .eq. iproc2 .and. m .eq. n) then
++    ierror = MPI_SUCCESS
++    data2(1:m) = data(1:n)
++    return
++  end if
++  write ( *, '(a)' ) ' '
++  write ( *, '(a)' ) 'MPI_SENDRECV - Error!'
++  write ( *, '(a)' )  '  Should not send message to self.'
++
++  return
++end
++
++subroutine mpi_gatherv ( data, n, datatype, data2, m, disp, datatype2, iproc, comm, ierror )
++  implicit none
++
++  include "mpi_stubs_f90.h"
++
++  integer n, m(:), disp(:)
++
++  integer comm
++  integer data(n), data2(m(1))
++  integer datatype, datatype2
++  integer ierror
++  integer iproc, iproc2
++  integer itag, itag2
++  integer istatus
++
++  ierror = MPI_FAILURE
++
++  if (iproc .eq. 0 .and. m(1) .eq. n) then
++    ierror = MPI_SUCCESS
++    data2(1:m(1)) = data(1:n)
++    return
++  end if
++  write ( *, '(a)' ) ' '
++  write ( *, '(a)' ) 'MPI_GATHERV - Error!'
++  write ( *, '(a)' )  '  Should not send message to self.'
++
++  return
++end
++
++subroutine mpi_get_processor_name ( name, resultlen, ierror )
++  implicit none
++
++  include "mpi_stubs_f90.h"
++
++  character*(MPI_MAX_PROCESSOR_NAME) name
++
++  integer ierror
++  integer resultlen
++
++  ierror = MPI_SUCCESS
++  name = 'aarch64'
++
++  return
++end
++
++subroutine mpi_initialized ( flag, ierror )
++  implicit none
++
++  include "mpi_stubs_f90.h"
++
++  integer flag
++  integer ierror
++
++  ierror = MPI_SUCCESS
++  flag = .true.
++
++  return
++end
+diff --git a/src/mpi_stubs_f90.h b/src/mpi_stubs_f90.h
+index c3565a0..4138265 100644
+--- a/src/mpi_stubs_f90.h
++++ b/src/mpi_stubs_f90.h
+@@ -52,6 +52,22 @@
+        parameter ( mpi_logical = 4 )
+        integer mpi_character
+        parameter ( mpi_character = 5 )
++       integer mpi_integer4
++       parameter ( mpi_integer4 = 6 )
++       integer mpi_real8
++       parameter ( mpi_real8 = 7 )
++       integer mpi_double_complex
++       parameter ( mpi_double_complex = 8)
++       integer mpi_complex8
++       parameter ( mpi_complex8 = 9)
++       integer mpi_complex16
++       parameter ( mpi_complex16 = 10)
++       integer mpi_real4
++       parameter ( mpi_real4 = 11)
++       integer mpi_double
++       parameter ( mpi_double = 12 )
++       integer mpi_max_processor_name
++       parameter ( mpi_max_processor_name = 256 )
+ !
+ !  allreduce operations
+ !
+-- 
+1.8.3.1
+
