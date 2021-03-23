@@ -21,7 +21,7 @@ if [ -z $1 ]; then
 	export OMPI_CXX=$I_MPI_CXX
 	export OMPI_F77=$I_MPI_F77
 	export OMPI_FC=$I_MPI_F90
-else
+elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 	spack load openmpi@3.1.6%gcc@8.4.0
@@ -29,6 +29,12 @@ else
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "$1" = *"fuji"* ]]; then
+	module load FujitsuCompiler/202007
+	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
+else
+	echo 'wrong compiler'
+	exit 1
 fi
 
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
@@ -49,9 +55,13 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 			else
 				make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
 			fi
-		else
+		elif [[ "$1" = *"gnu"* ]]; then
 			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=gcc
 			make -j CFLAGS="-O3 -march=native"
+		elif [[ "$1" = *"fuji"* ]]; then
+			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
+				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fccpx
+			make -j CFLAGS="-O3"
 		fi
 		make install
 		cd $ROOTDIR/$BM/
@@ -60,10 +70,17 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	export PATH=$ROOTDIR/$BM/fftw/bin:$oldPATH
 	if [ -z $1 ]; then
 		sed -i -e 's/-L${ADVISOR/-lmpi_cxx -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./GNUmakefile
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile.openmp
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fuji"* ]]; then
+		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
+		sed -i -e 's/?= mpicc/?= fccpx/g' -e 's/?= mpicxx/?= FCCpx/g' -e 's/?= mpif90/?= frtpx/g' -e 's/-ipo -xHost//g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's#DFFT_MPI_FC) $(DFFT_MPI_FFLAGS) -o#DFFT_MPI_CXX) $(DFFT_MPI_CXXFLAGS) -o#g' -e 's/ $(DFFT_MPI_FLDFLAGS)//g' -e "s# -lm# --linkfortran -L$ROOTDIR/$BM -Bstatic -lm#g" ./GNUmakefile
+		sed -i -e 's/-ipo -xHost//g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s# -lm# --linkfortran -L$ROOTDIR/$BM -Bstatic -lm#g" ./GNUmakefile.openmp
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
+		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./FDistribution.f90
+		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./TestFDfft.f90
 	fi
 	make -f GNUmakefile.openmp
 	export PATH=$oldPATH
