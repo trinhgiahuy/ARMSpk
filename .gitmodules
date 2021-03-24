@@ -94,3 +94,6 @@
 [submodule "dep/mpistub"]
 	path = dep/mpistub
 	url = https://github.com/hsorby/mpistub.git
+[submodule "dep/gem5_riken"]
+	path = dep/gem5_riken
+	url = https://github.com/RIKEN-RCCS/riken_simulator.git

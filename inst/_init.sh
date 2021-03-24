@@ -256,7 +256,6 @@ VERSION="e3b0d504e6daba0116907589c944a3be39547057"
 cd $ROOTDIR/dep/$BM/
 if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
 	if [[ "`hostname -s`" = *"peach"* ]]; then
-		cd $ROOTDIR/dep/$BM/
 		git checkout -b precision ${VERSION}
 		git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
@@ -270,6 +269,48 @@ if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
 		fi
 		make
 		make install
+	fi
+fi
+cd $ROOTDIR
+
+BM="gem5_riken"
+VERSION="19103648cfd8c720128f26b63923551bd043d287"
+cd $ROOTDIR/dep/$BM/
+if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
+	git checkout -b precision ${VERSION}
+	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
+	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+	spack load gcc@8.4.0; spack load python
+	wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
+	tar xzf scons-1.3.1.tar.gz; cd scons-1.3.1
+	if ! which python3 >/dev/null 2>&1; then
+		if ! [ `python -V 2>&1 | cut -d'.' -f2` -ge 7 ]; then
+			wget https://www.python.org/ftp/python/2.7/Python-2.7.tar.bz2
+			tar xjf Python-2.7.tar.bz2
+			cd Python-2.7
+			./configure --prefix=$ROOTDIR/dep/$BM/py27
+			make -j; make install
+			export PATH=$ROOTDIR/dep/$BM/py27/bin:$PATH
+			export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM/py27/lib:$LD_LIBRARY_PATH
+			export SPACK_PYTHON=`which python2.7`
+			cd -
+		fi
+		wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
+		tar xzf scons-1.3.1.tar.gz; cd scons-1.3.1
+		python2 setup.py install
+		cd -
+	else
+		python3 -m pip install --user --upgrade scons==3.1.2
+	fi
+	sed -i -e "s#PREFIX=/opt/riken_simulator#PREFIX=$ROOTDIR/dep/$BM#g" ./util/gem5-o3
+	sed -i "369,372s:^:#:" ./SConstruct
+	sed -i -e 's/ exit(/ sys.exit(/g' ./util/cpt_upgrader.py
+	sed -i -e 's/if NO_FALLOCATE.*/if NO_FALLOCATE==0/' ./src/sim/syscall_emul.cc
+	if ! which python3 >/dev/null 2>&1; then
+		echo "" | scons build/ARM/gem5.opt -j 16
+	else
+		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` scons build/ARM/gem5.opt -j 16
 	fi
 fi
 cd $ROOTDIR
