@@ -4,11 +4,7 @@ function dump_omp_config {
 cat <<EOF > $1
 action         = validate
 delay          = 1
-%if '%{COMP}' eq 'sde'
 iterations     = 1
-%else
-iterations     = 10
-%endif
 output_format  = text
 teeout         = no
 teerunout      = yes
@@ -27,7 +23,7 @@ submit         = ulimit -n 4096; ulimit -s unlimited; \$command
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'sde'
-submit         = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
+submit         = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
@@ -136,8 +132,6 @@ else
 fi
 
 BM="SPEC_OMP"
-dump_omp_config $ROOTDIR/$BM/config/nedo.cfg
-exit	#XXX
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	if [ ! -f $ROOTDIR/dep/omp2012-1.1.iso ]; then
 		echo -e "ERR: cannot find omp2012-1.1.iso under dep/; please fix it!"

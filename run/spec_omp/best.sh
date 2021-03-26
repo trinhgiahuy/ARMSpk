@@ -4,19 +4,19 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-#source $ROOTDIR/conf/intel.cfg
-#source $INTEL_PACKAGE intel64 > /dev/null 2>&1
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-#source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-#spack load gcc@8.4.0
-### all static, no need for compilers and envs
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load gcc@8.4.0
+### all static, no need for compilers and envs -> XXX: not true for 2 intel version...
 
-SPECCMD="runcpu --config=nedo.cfg --nobuild --action=run --noreportable --use_submit_for_speed"
+SPECCMD="runspec --config=nedo.cfg --nobuild --action=run --noreportable"
 
-# ============================ SPEC CPU =======================================
-source conf/spec_cpu.sh
-LOGDIR="$ROOTDIR/log/`hostname -s`/bestrun/spec_cpu"
+# ============================ SPEC OMP =======================================
+source conf/spec_omp.sh
+LOGDIR="$ROOTDIR/log/`hostname -s`/bestrun/spec_omp"
 mkdir -p $LOGDIR
 cd $APPDIR
 for BENCH in $BINARY; do
@@ -33,7 +33,7 @@ for BENCH in $BINARY; do
 		REPORT="`find $ROOTDIR/$APPDIR/result -type f -name '*.log' | tail -1`"
 		cat $REPORT >> $LOG 2>&1
 		/bin/grep 'Run Reported' $REPORT >> $LOG 2>&1
-		echo "Best $BENCH run: " "`/bin/grep 'Run Reported' $REPORT | cut -d'(' -f2 | cut -d')' -f1 | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1`"
+		echo "Best $BENCH run: " "`/bin/grep 'Reported' $REPORT | awk -F'Reported:[[:blank:]]+' '{print $2}' | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1`"
 	done
 done
 cd $ROOTDIR

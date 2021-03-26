@@ -4,22 +4,22 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-#source $ROOTDIR/conf/intel.cfg
-#source $INTEL_PACKAGE intel64 > /dev/null 2>&1
+source $ROOTDIR/conf/intel.cfg
+source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-#source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-#spack load gcc@8.4.0
-### all static, no need for compilers and envs
+source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+spack load gcc@8.4.0
+### all static, no need for compilers and envs -> XXX: not true for 2 intel version...
 
-SPECCMD="runcpu --config=nedo.cfg --nobuild --action=run --noreportable --use_submit_for_speed"
+SPECCMD="runspec --config=nedo.cfg --nobuild --action=run --noreportable"
 
 SDEPATH=$ROOTDIR/dep/sde-external-8.35.0-2019-03-11-lin
 if [ ! -x "`PATH=$SDEPATH:$PATH which sde64 2>/dev/null`" ]; then echo "ERROR: SDE missing, please download from Intel sde-external-8.35.0-2019-03-11-lin.tar.bz2 and untar in ./dep folder"; exit; fi;
 
-# ============================ SPEC CPU =======================================
-source conf/spec_cpu.sh
-LOGDIR="$ROOTDIR/log/`hostname -s`/profrun/spec_cpu"
+# ============================ SPEC OMP =======================================
+source conf/spec_omp.sh
+LOGDIR="$ROOTDIR/log/`hostname -s`/profrun/spec_omp"
 mkdir -p $LOGDIR
 cd $APPDIR
 for BENCH in $BINARY; do

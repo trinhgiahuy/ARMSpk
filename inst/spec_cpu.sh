@@ -7,11 +7,7 @@ default:
    bench_post_setup     = sync
    command_add_redirect = 1
    flagsurl1            = http://www.spec.org/cpu2017/flags/Intel-ic19.0u1-official-linux64.2019-07-09.xml
-%if '%{COMP}' eq 'sde'
    iterations           = 1
-%else
-   iterations           = 10
-%endif
    line_width           = 1020
    log_line_width       = 1020
    makeflags            = -j 32
@@ -38,7 +34,7 @@ default:
 #rate:  The tester chooses how many concurrent copies to run. OpenMP is disabled.
 intspeed,fpspeed:
 %if '%{COMP}' eq 'sde'
-   submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
+   submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
 %else
    submit               = ulimit -n 4096; ulimit -s unlimited; \$command
 %endif
@@ -164,8 +160,6 @@ else
 fi
 
 BM="SPEC_CPU"
-dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg
-exit
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
         if [ ! -f $ROOTDIR/dep/cpu2017-1.1.0.iso ]; then
                 echo -e "ERR: cannot find cpu2017-1.1.0.iso under dep/; please fix it!"

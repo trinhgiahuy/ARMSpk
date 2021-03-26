@@ -2,8 +2,8 @@
 
 export APPDIR="./SPEC_CPU"
 #options test->train->ref; 'ref' run for >7min which is too much for gem5
-export BINARY="600.perlbench_s|intel|train
-602.gcc_s|intel|train
+export BINARY="600.perlbench_s|intel|train"
+a="602.gcc_s|intel|train
 605.mcf_s|intel|train
 620.omnetpp_s|intel|train
 623.xalancbmk_s|intel|train
@@ -22,10 +22,9 @@ export BINARY="600.perlbench_s|intel|train
 644.nab_s|intel|train
 649.fotonik3d_s|intel|train
 654.roms_s|intel|train"
-export BINARY="654.roms_s|intel|train" #XXX
 export INPUT=""
 export NumRunsTEST=1
-export NumRunsBEST=1	# spec itself does 3 iter per default
+export NumRunsBEST=10
 export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
