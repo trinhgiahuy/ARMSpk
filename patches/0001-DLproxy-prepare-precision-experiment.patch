@@ -1,0 +1,82 @@
+From e6fb7100ef1efaf52596a4b415b484c2b6f7aa86 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Mon, 29 Mar 2021 22:27:55 +0900
+Subject: [PATCH] DLproxy: prepare precision experiment
+
+---
+ benchmarks/conv_gemm/Makefile |  9 +++++++--
+ benchmarks/conv_gemm/main.cpp | 17 +++++++++++++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/benchmarks/conv_gemm/Makefile b/benchmarks/conv_gemm/Makefile
+index 26a2471..f600dd7 100644
+--- a/benchmarks/conv_gemm/Makefile
++++ b/benchmarks/conv_gemm/Makefile
+@@ -1,5 +1,10 @@
+-CFLAGS=-std=c++17 -static
+-LDLIBS=-lopenblas -lpthread 
++CXXFLAGS=-DUSE_MKL -I${MKLROOT}/include -std=c++17 -Wall -O3 -ipo -xHost -fopenmp -I${ADVISOR_2018_DIR}/include
++LDLIBS=-mkl -fopenmp -L${ADVISOR_2018_DIR}/lib64 -littnotify
++
++clean:
++	rm -f main
++
++compile: main
+ 
+ run: main
+ 	./main  FP32 32 3 224 3 32 1 10
+diff --git a/benchmarks/conv_gemm/main.cpp b/benchmarks/conv_gemm/main.cpp
+index d9aac80..b78a300 100644
+--- a/benchmarks/conv_gemm/main.cpp
++++ b/benchmarks/conv_gemm/main.cpp
+@@ -1,9 +1,19 @@
+ #include <iostream>
+ #include <chrono>
++#ifdef USE_MKL
++#include <mkl_cblas.h>
++#else
+ #include <cblas.h>
++#endif
+ #include "args.hpp"
+ using namespace std::chrono; 
+ 
++#include <ittnotify.h>
++#include <signal.h>
++#include <stdlib.h>
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
++
+ template<typename precision>
+ void get_matrices(size_t &cnt_rows_A_rows_C,
+                   size_t &cnt_cols_A_rows_B,
+@@ -25,6 +35,8 @@ void get_matrices(size_t &cnt_rows_A_rows_C,
+ 
+ int main(int argc, char * argv[])
+ {
++double mkrts, mkrte; // my kernel run-time
++struct timespec mkrtsclock;
+     std::cerr << "starting\n";
+     Options options = parse_args(argc, argv);
+     //int cnt_channels = 3;
+@@ -77,6 +89,8 @@ int main(int argc, char * argv[])
+     }    
+     std::cerr << "done\n";
+     auto start = high_resolution_clock::now(); 
++clock_gettime(CLOCK_MONOTONIC, &mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);
++STARTSDE(1,0);
+     for (size_t i=0; i<options.iterations; i++)
+     {
+         if (precision == "FP32")
+@@ -99,6 +113,9 @@ int main(int argc, char * argv[])
+             throw "madamada";
+         }
+     }
++STOPSDE(1,0);
++clock_gettime(CLOCK_MONOTONIC, &mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);
++printf("Walltime of the main kernel: %.6lf sec\n", mkrte - mkrts);
+     std::cerr << "GEMM size: " << m << " " << n << " " << k << std::endl;
+     auto stop = high_resolution_clock::now();
+     std::chrono::duration<double> seconds = (stop - start); 
+-- 
+1.8.3.1
+
