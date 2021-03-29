@@ -28,8 +28,8 @@ BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
-BOPTS          = -Kfast -O3 -march=native -funroll-loops -ffast-math -ftree-vectorize
-BLINK          = -Bstatic
+BOPTS          = -Kfast -O3 -fopenmp -march=native -funroll-loops
+BLINK          = -Bstatic -lm
 %else
 %error wrong or unsupported COMP variable specified
 %endif
@@ -59,19 +59,20 @@ CC             = icc
 CXX            = icpc
 %elif '%{COMP}' eq 'fuji'
 sw_compiler    = FUJITSU Software Technical Computing Suite
-FC             = frt
-CC             = fcc
-CXX            = FCC
+FC             = frtpx
+CC             = fccpx
+CXX            = FCCpx
 %endif
 FOPTIMIZE      = \${BOPTS}
 COPTIMIZE      = \${BOPTS}
 CXXOPTIMIZE    = \${BOPTS}
-LDOPT          = \${BLINK}
-PASS1_LDOPT    = \${BLINK}
+OS_LIBS        = \${BLINK}
 
 350.md=default=default=default:
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'gnu'
 FPORTABILITY   = -ffree-form -fno-range-check
+%elif '%{COMP}' eq 'fuji'
+FPORTABILITY   = -Free
 %else
 FPORTABILITY   = -free
 %endif
@@ -120,9 +121,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	if [[ "`hostname -s`" = *"peach"* ]]; then
 		module load FujitsuCompiler/202007
-		alias fcc=fccpx
-		alias FCC=FCCpx
-		alias frt=frtpx
+		#alias fcc=fccpx
+		#alias FCC=FCCpx
+		#alias frt=frtpx	# XXX: not working
 	else
 		echo "check fugaku later"; exit 1
 	fi
@@ -132,6 +133,7 @@ else
 fi
 
 BM="SPEC_OMP"
+dump_omp_config $ROOTDIR/$BM/config/nedo.cfg; exit
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	if [ ! -f $ROOTDIR/dep/omp2012-1.1.iso ]; then
 		echo -e "ERR: cannot find omp2012-1.1.iso under dep/; please fix it!"
@@ -161,7 +163,11 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gnu --define RESDIR=0 gross"
 	elif [[ "$1" = *"fuji"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fuji --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define RESDIR=0 gross"
+		if [[ "`hostname -s`" = *"peach"* ]]; then
+			bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define RESDIR=0 gross ^bt331 ^swim"	#XXX: peach fccpx doesnt support mcmodel
+		else
+			bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define RESDIR=0 gross"
+		fi
 	fi
 	# check that most/all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
