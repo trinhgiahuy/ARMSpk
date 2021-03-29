@@ -2,8 +2,8 @@
 
 export APPDIR="./SPEC_CPU"
 #options test->train->ref; 'ref' run for >7min which is too much for gem5
-export BINARY="600.perlbench_s|intel|train"
-a="602.gcc_s|intel|train
+export BINARY="600.perlbench_s|intel|train
+602.gcc_s|intel|train
 605.mcf_s|intel|train
 620.omnetpp_s|intel|train
 623.xalancbmk_s|intel|train
