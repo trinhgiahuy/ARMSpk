@@ -248,7 +248,7 @@ index 6547527..3cd6d58 100644
 +#define MPI_Errhandler void*
 +#define MPI_ERRORS_RETURN NULL
 +#define MPI_ERRORS_ARE_FATAL NULL
-+#define MPI_REQUEST_NULL NULL 
++#define MPI_REQUEST_NULL NULL
 +#define MPI_COMM_SELF MPI_COMM_WORLD
 +int MPI_Comm_set_errhandler(MPI_Comm comm, MPI_Errhandler errhandler);
 +double MPI_Wtick();
