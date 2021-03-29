@@ -39,8 +39,8 @@ for BENCH in $BINARY; do
 			# in case the RESDIR stuff fails
 			mkdir -p $LOGDIR/${BM}_${NumMPI}_${NumOMP}_sde/extra
 			find . -name 'dcfg-out.*' -exec mv {} $LOGDIR/${BM}_${NumMPI}_${NumOMP}_sde/extra \;
-			REPORT="`find $ROOTDIR/$APPDIR/result -type f -name '*.log' | tail -1`"
-			cat $REPORT >> $LOG 2>&1
+			REPORT="`find $ROOTDIR/$APPDIR/result -type f -name '*.log' | sort -g | tail -1`"
+			if ! grep '^Success:' $LOG > /dev/null 2>&1 ; then echo "=== error report ===" >> $LOG 2>&1; cat $REPORT >> $LOG 2>&1; fi
 		fi
 	done
 done
