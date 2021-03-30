@@ -23,7 +23,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 # ============================ CoMD ===========================================
 source conf/comd.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/comd/conf${1}.log"
+LOG="$ROOTDIR/log/`hostname -s`/gem5run/comd/conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
