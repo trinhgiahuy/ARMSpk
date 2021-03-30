@@ -95,11 +95,11 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		#ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a   # fix broken linker
-		sed -i -e 's/^CC =.*/CC = fccpx/' -e 's/^FC =.*/FC = frtpx/' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/-ipo -xHost -mcmodel=large -shared-intel//g' -e "s#-L\${ADVISOR.*##g" -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#-O3.*#-O3 -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#-lstdc++#-lfjc++ -lfjc++abi -lfjdemgl#g" ./make_setting
-		sed -i -e 's/^LD =.*/LD = frtpx/g' -e "s#-lmaprof_f.*#-lmaprof_f -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic#g" ./Makefile
+		sed -i -e 's/^CC =.*/CC = fccpx/' -e 's/^FC =.*/FC = frtpx/' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/-ipo -xHost -mcmodel=large -shared-intel//g' -e "s#-L\${ADVISOR.*##g" -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#-O3.*#-O3 -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#-lstdc++##g" ./make_setting
+		sed -i -e 's/^LD =.*/LD = frtpx/g' -e "s#-lmaprof_f.*#-lmaprof_f -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic -lfjc++ -lfjc++abi -lfjdemgl#g" ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
-		sed -i -e '/use mpi/d' -e "/use makemesh/a \  implicit none\n  include 'mpif.h'" ./ffb_mini_main.F90
+		sed -i -e '/use mpi/d' -e "/use makemesh/a \  include 'mpif.h'" ./ffb_mini_main.F90
 		#gem5 doesn't like get_command_argument so switch to getarg
 		sed -i -e 's/command_argument_count/iargc/g' ./ffb_mini_main.F90
 		sed -i -e 's/get_command_argument.*/getarg(i, arg)\n  stat = 0/g' ./ffb_mini_main.F90
