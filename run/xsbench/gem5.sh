@@ -26,7 +26,7 @@ LOG="$ROOTDIR/log/`hostname -s`/gem5run/xsbench/conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT
-for BEST in 1; do
+for BEST in $BESTCONF; do
 	NumMPI=1
 	if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
 	echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt

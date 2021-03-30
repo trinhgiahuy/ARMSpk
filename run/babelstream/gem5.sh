@@ -26,7 +26,7 @@ DEFLOG="$ROOTDIR/log/`hostname -s`/gem5run/babelstream"
 mkdir -p $DEFLOG
 cd $APPDIR
 DEFINPUT=$INPUT
-for BEST in 1; do
+for BEST in $BESTCONF; do
 	for BINARY in $BINARYS; do
 		NumMPI=1
 		if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi

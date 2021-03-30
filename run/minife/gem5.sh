@@ -25,7 +25,7 @@ source conf/minife.sh
 LOG="$ROOTDIR/log/`hostname -s`/gem5run/minife/conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
-for BEST in 1; do
+for BEST in $BESTCONF; do
 	for BINARY in $BBINARY; do
 		NumMPI=1
 		if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
