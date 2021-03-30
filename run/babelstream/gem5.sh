@@ -23,7 +23,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 # ============================ BabelStream ====================================
 source conf/babelstream.sh
 DEFLOG="$ROOTDIR/log/`hostname -s`/gem5run/babelstream"
-mkdir -p `dirname $DEFLOG`
+mkdir -p $DEFLOG
 cd $APPDIR
 DEFINPUT=$INPUT
 for BEST in 1; do
