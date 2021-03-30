@@ -28,7 +28,7 @@ BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
-BOPTS          = -Kfast -O3 -fopenmp -march=native -funroll-loops
+BOPTS          = -Kfast,eval_concurrent,openmp -O3 -march=armv8.3-a+sve -funroll-loops
 BLINK          = -Bstatic -lm
 %else
 %error wrong or unsupported COMP variable specified
@@ -98,6 +98,11 @@ PASS1_LDOPT    = -shared-intel
 
 367.imagick=default=default=default:
 CPORTABILITY   = -std=c99
+
+372.smithwa=default=default=default:
+%if '%{COMP}' eq 'fuji'
+CPORTABILITY   = -fsigned-char
+%endif
 EOF
 }
 

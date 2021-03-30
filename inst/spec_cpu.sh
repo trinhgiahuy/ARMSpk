@@ -58,11 +58,10 @@ default:
    LDCXXFLAGS           = -static -static-intel -qopenmp-link=static
    LDFFLAGS             = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
-   CC                   = fcc -m64 -std=c11
-   CXX                  = FCC -m64
-   FC                   = frt -m64
-   OPT_ROOT             = -Kfast -O3 -march=native -funroll-loops -ffast-math -ftree-vectorize
-   EXTRA_FOPTIMIZE      = -nostandard-realloc-lhs
+   CC                   = fccpx -m64 -std=c11
+   CXX                  = FCCpx -m64
+   FC                   = frtpx -m64
+   OPT_ROOT             = -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -funroll-loops
    LDCFLAGS             = -Bstatic
    LDCXXFLAGS           = -Bstatic
    LDFFLAGS             = -Bstatic
@@ -84,7 +83,7 @@ fpspeed:
    EXTRA_OPTIMIZE       = -qopenmp -DSPEC_OPENMP
 %else
 intspeed:
-   EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP
+   EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing -Knofp_relaxed
 
 fpspeed:
    EXTRA_OPTIMIZE       = -fopenmp -DSPEC_OPENMP
@@ -103,8 +102,11 @@ intspeed,fpspeed:
 
 521.wrf_r,621.wrf_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'gnu'
    FPORTABILITY         = -fconvert=big-endian
+%elif '%{COMP}' eq 'fuji'
+   FPORTABILITY         = -fconvert=big-endian
+   LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
    FPORTABILITY         = -convert big_endian
 %endif
@@ -117,13 +119,24 @@ intspeed,fpspeed:
 
 527.cam4_r,627.cam4_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
+%if '%{COMP}' eq 'fuji'
+   LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
+%endif
 
 628.pop2_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'gnu'
    FPORTABILITY         = -fconvert=big-endian
+%elif '%{COMP}' eq 'fuji'
+   FPORTABILITY         = -fconvert=big-endian
+   LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
    FPORTABILITY         = -convert big_endian -assume byterecl
+%endif
+
+648.exchange2_s:
+%if '%{COMP}' eq 'fuji'
+   LDOUT_EXTRA_OPTIONS  = -lfj90i -lfj90fmt_sve -lfj90f -lfj90i -lfjsrcinfo
 %endif
 EOF
 }
@@ -148,9 +161,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	if [[ "`hostname -s`" = *"peach"* ]]; then
 		module load FujitsuCompiler/202007
-		alias fcc=fccpx
-		alias FCC=FCCpx
-		alias frt=frtpx
+		#alias fcc=fccpx
+		#alias FCC=FCCpx
+		#alias frt=frtpx	# XXX: not working
 	else
 		echo "check fugaku later"; exit 1
 	fi
@@ -160,6 +173,7 @@ else
 fi
 
 BM="SPEC_CPU"
+dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg; exit
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
         if [ ! -f $ROOTDIR/dep/cpu2017-1.1.0.iso ]; then
                 echo -e "ERR: cannot find cpu2017-1.1.0.iso under dep/; please fix it!"
