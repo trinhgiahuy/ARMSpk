@@ -102,7 +102,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ffb_mini_main.F90
 		#gem5 doesn't like get_command_argument so switch to getarg
 		sed -i -e 's/command_argument_count/iargc/g' ./ffb_mini_main.F90
-		sed -i '0,/  call get_command_argument/s//  call getarg(i, val)\n  return\n&/' ./ffb_mini_main.F90
+		sed -i -e 's/get_command_argument.*/getarg(i, val)\n  stat = 0/g' ./ffb_mini_main.F90
 	fi
 	make
 	cd $ROOTDIR
