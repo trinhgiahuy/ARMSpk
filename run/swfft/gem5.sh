@@ -31,7 +31,7 @@ for BEST in 1; do
 	echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
 	# test if Decomposition is valid
 	INSIZE="`echo $INPUT | awk '{print $2}'`"
-	`dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
+	#XXX: always true for 1==$NumMPI: `dirname $BINARY`/CheckDecomposition $INSIZE $INSIZE $INSIZE $NumMPI > /dev/null 2>&1
 	if ! [ "x$?" = "x0" ]; then
 		echo "INVALID Decomposition: $BINARY $INPUT" >> $LOG 2>&1
 		continue
