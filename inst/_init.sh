@@ -282,35 +282,39 @@ if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0; spack load python
-	wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
-	tar xzf scons-1.3.1.tar.gz; cd scons-1.3.1
-	if ! which python3 >/dev/null 2>&1; then
-		if ! [ `python -V 2>&1 | cut -d'.' -f2` -ge 7 ]; then
-			wget https://www.python.org/ftp/python/2.7/Python-2.7.tar.bz2
-			tar xjf Python-2.7.tar.bz2
-			cd Python-2.7
-			./configure --prefix=$ROOTDIR/dep/$BM/py27
-			make -j; make install
-			export PATH=$ROOTDIR/dep/$BM/py27/bin:$PATH
-			export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM/py27/lib:$LD_LIBRARY_PATH
-			export SPACK_PYTHON=`which python2.7`
+	if ! [[ "`hostname -s`" = *"peach"* ]]; then
+		if ! which python3 >/dev/null 2>&1; then
+			if ! [ `python -V 2>&1 | cut -d'.' -f2` -ge 7 ]; then
+				wget https://www.python.org/ftp/python/2.7/Python-2.7.tar.bz2
+				tar xjf Python-2.7.tar.bz2
+				cd Python-2.7
+				./configure --prefix=$ROOTDIR/dep/$BM/py27
+				make -j; make install
+				export PATH=$ROOTDIR/dep/$BM/py27/bin:$PATH
+				export LD_LIBRARY_PATH=$ROOTDIR/dep/$BM/py27/lib:$LD_LIBRARY_PATH
+				export SPACK_PYTHON=`which python2.7`
+				cd -
+			fi
+			wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
+			tar xzf scons-1.3.1.tar.gz
+			cd scons-1.3.1
+			python2 setup.py install
 			cd -
+		else
+			python3 -m pip install --user --upgrade scons==3.1.2
 		fi
-		wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
-		tar xzf scons-1.3.1.tar.gz; cd scons-1.3.1
-		python2 setup.py install
-		cd -
-	else
-		python3 -m pip install --user --upgrade scons==3.1.2
 	fi
 	sed -i -e "s#PREFIX=/opt/riken_simulator#PREFIX=$ROOTDIR/dep/$BM#g" ./util/gem5-o3
 	sed -i "369,372s:^:#:" ./SConstruct
 	sed -i -e 's/ exit(/ sys.exit(/g' ./util/cpt_upgrader.py
 	sed -i -e 's/if NO_FALLOCATE.*/if NO_FALLOCATE==0/' ./src/sim/syscall_emul.cc
+	sed -i 's/typedef uint64_t SnoopMask;/typedef unsigned __int128 SnoopMask;/' ./src/mem/snoop_filter.hh
+	sed -i '38 i std::ostream& operator<<(std::ostream& d, const unsigned __int128 v);' ./src/base/cprintf_formats.hh
+	sed -i '41 i ostream& operator<<(ostream& d, const unsigned __int128 v) { d << "128int Hi:" << (void*)v << ";Lo:" << (void*)(v >> 64); return d;}' ./src/base/cprintf.cc
 	if ! which python3 >/dev/null 2>&1; then
-		echo "" | scons build/ARM/gem5.opt -j 16
+		echo "" | scons build/ARM/gem5.opt -j $(nproc)
 	else
-		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` scons build/ARM/gem5.opt -j 16
+		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` scons build/ARM/gem5.opt -j $(nproc)
 	fi
 fi
 cd $ROOTDIR
