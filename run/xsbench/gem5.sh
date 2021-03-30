@@ -5,7 +5,7 @@ cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 ulimit -s unlimited
-ulimit -n 8192; ulimit -u 8192
+ulimit -n 4096
 
 export HOSTNAME="kiev0" # we don't care where gem runs
 GEM5="$ROOTDIR/dep/gem5_riken/build/ARM/gem5.opt"
@@ -32,7 +32,7 @@ for BEST in 1; do
 	echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
 	INPUT="`echo $DEFINPUT | sed -e \"s/OMPNT/$NumOMP/\"`"
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF\"" >> $LOG 2>&1
+	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
 	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 done
 cd $ROOTDIR
