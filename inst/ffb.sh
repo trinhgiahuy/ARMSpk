@@ -99,7 +99,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		sed -i -e 's/^LD =.*/LD = FCCpx/g' -e "s#-lmaprof_f.*#-lmaprof_f -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic#g" ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
-		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ffb_mini_main.F90
+		sed -i -e '/use mpi/d' -e "/use makemesh/a \  include 'mpif.h'" ./ffb_mini_main.F90
 		#gem5 doesn't like get_command_argument so switch to getarg
 		sed -i -e 's/command_argument_count/iargc/g' ./ffb_mini_main.F90
 		sed -i -e 's/get_command_argument.*/getarg(i, val)\n  stat = 0/g' ./ffb_mini_main.F90
