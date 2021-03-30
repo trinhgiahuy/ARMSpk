@@ -21,7 +21,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 
 # ============================ XSBench ========================================
 source conf/xsbench.sh
-LOG="$ROOTDIR/log/`hostname -s`/gem5run/xsbench.log"
+LOG="$ROOTDIR/log/`hostname -s`/gem5run/xsbench_conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 DEFINPUT=$INPUT
