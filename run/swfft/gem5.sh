@@ -7,7 +7,8 @@ source $ROOTDIR/conf/host.cfg
 ulimit -s unlimited
 ulimit -n 4096
 
-GEM5="$ROOTDIR/dep/gem5_riken/build/ARM/gem5.opt $ROOTDIR/dep/gem5_riken/configs/example/se.py"
+GEM5="$ROOTDIR/dep/gem5_riken/build/ARM/gem5.opt"
+GEM5SE="$ROOTDIR/dep/gem5_riken/configs/example/se.py"
 
 if [ $1 -eq 1 ]; then
 	ARCHCONF="--cpu-type=O3_ARM_PostK_3 --caches --l2_size=16MB --mem_bus_width=64 --mem_resp_width=128 --mem-size=32GB"    # traditional
@@ -20,7 +21,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 
 # ============================ SWFFFT =========================================
 source conf/swfft.sh
-LOG="$ROOTDIR/log/`hostname -s`/gem5run/swfft_conf${1}.log"
+LOG="$ROOTDIR/log/`hostname -s`/gem5run/swfft/conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in 1; do
@@ -35,7 +36,7 @@ for BEST in 1; do
 		continue
 	fi
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF\"" >> $LOG 2>&1
-	$PIN $GEM5 -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 done
 cd $ROOTDIR
