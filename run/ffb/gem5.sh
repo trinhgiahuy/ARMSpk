@@ -40,9 +40,9 @@ for BEST in $BESTCONF; do
 	DCZ=`echo "($FLOAT+0.5)/1" | bc`
 	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	mkdir ./tmp; sleep 1; cd ./tmp
+	mkdir ./tmp${1}; sleep 1; cd ./tmp${1}
 	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c ../$BINARY -o \"$INPUT\" -n $NumOMP -e ../omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
 	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c ../$BINARY -o "$INPUT" -n $NumOMP -e ../omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
-	cd ../; rm -rf ./tmp; sleep 1
+	cd ../; rm -rf ./tmp${1}; sleep 1
 done
 cd $ROOTDIR
