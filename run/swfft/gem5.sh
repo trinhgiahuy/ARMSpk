@@ -7,7 +7,7 @@ source $ROOTDIR/conf/host.cfg
 ulimit -s unlimited
 ulimit -n 4096
 
-export XEONHOST="kiev" # we don't care where gem runs
+export HOSTNAME="kiev0" # we don't care where gem runs
 GEM5="$ROOTDIR/dep/gem5_riken/build/ARM/gem5.opt"
 GEM5SE="$ROOTDIR/dep/gem5_riken/configs/example/se.py"
 
