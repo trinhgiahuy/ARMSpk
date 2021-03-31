@@ -27,7 +27,7 @@ mkdir -p $DEFLOG
 cd $APPDIR
 DEFINPUT=$INPUT
 for BEST in $BESTCONF; do
-	for BINARY in $BINARYS; do
+	for BMconf in $BINARYS; do
 		NumMPI=1
 		NumOMP=1	#XXX: no OMP in PolyBench: if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
 		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
