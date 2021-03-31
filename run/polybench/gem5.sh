@@ -25,7 +25,6 @@ source conf/polybench.sh
 DEFLOG="$ROOTDIR/log/`hostname -s`/gem5run/polybench"
 mkdir -p $DEFLOG
 cd $APPDIR
-DEFINPUT=$INPUT
 for BEST in $BESTCONF; do
 	for BMconf in $BINARYS; do
 		NumMPI=1
