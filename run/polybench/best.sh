@@ -12,7 +12,7 @@ ulimit -n 4096
 #spack load gcc@8.4.0
 ### all static, no need for compilers and envs
 
-if which numactl >/dev/null 2>&1; then PIN="numactl -l -C 1"; else PIN=""; fi
+if which numactl >/dev/null 2>&1; then PIN="numactl -l -C 7"; else PIN=""; fi
 
 # ============================ PolyBench ====================================
 source conf/polybench.sh
@@ -25,12 +25,11 @@ for BEST in $BESTCONF; do
 		NumOMP=1
 		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
 		BName="`basename $BINARY`"
-		LOG="${DEFLOG}/${BName}/conf${1}.log"
-		mkdir -p `dirname $LOG`
-		echo "$PIN OMP_NUM_THREADS=$NumOMP $BINARY $INPUT" >> $LOG 2>&1
+		LOG="${DEFLOG}/${BName}.log"
+		echo "OMP_NUM_THREADS=$NumOMP timeout --kill-after=30s $MAXTIME $PIN $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsBEST`; do
 			START="`date +%s.%N`"
-			timeout --kill-after=30s $MAXTIME $PIN OMP_NUM_THREADS=$NumOMP $BINARY $INPUT >> $LOG 2>&1
+			OMP_NUM_THREADS=$NumOMP timeout --kill-after=30s $MAXTIME $PIN $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
