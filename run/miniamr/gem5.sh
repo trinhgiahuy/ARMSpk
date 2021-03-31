@@ -23,7 +23,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 # ============================ miniAMR ========================================
 source conf/miniamr.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/`hostname -s`/gem5run/miniamr.log"
+LOG="$ROOTDIR/log/`hostname -s`/gem5run/miniamr/conf${1}.log"
 mkdir -p `dirname $LOG`
 cd $APPDIR
 for BEST in $BESTCONF; do
