@@ -29,9 +29,9 @@ for BEST in $BESTCONF; do
 	for BMconf in $BINARYS; do
 		NumMPI=1
 		NumOMP=1	#XXX: no OMP in PolyBench: if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
-		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
 		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
 		BName="`basename $BINARY`"
+		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./${BName}-omp${NumOMP}.txt
 		LOG="${DEFLOG}/${BName}/conf${1}.log"
 		mkdir -p `dirname $LOG`
 		echo "$GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./${BName}-omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
