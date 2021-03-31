@@ -4,42 +4,39 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
+#source $ROOTDIR/conf/intel.cfg
+#source $INTEL_PACKAGE intel64 > /dev/null 2>&1
 ulimit -s unlimited
 ulimit -n 4096
-source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-spack load openmpi@3.1.6%intel@19.0.1.144
-MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
-NumCORES=$((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2`))
+#source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+#spack load gcc@8.4.0
+### all static, no need for compilers and envs
 
-# ============================ BabelStream ====================================
-source conf/babelstream.sh
-DEFLOG="$ROOTDIR/log/`hostname -s`/bestrun/babelstream"
-mkdir -p `dirname $DEFLOG`
+if which numactl >/dev/null 2>&1; then PIN="numactl -l -C 1"; else PIN=""; fi
+
+# ============================ PolyBench ====================================
+source conf/polybench.sh
+DEFLOG="$ROOTDIR/log/`hostname -s`/bestrun/polybench"
+mkdir -p $DEFLOG
 cd $APPDIR
-DEFINPUT=$INPUT
 for BEST in $BESTCONF; do
-	for BINARY in $BINARYS; do
+	for BMconf in $BINARYS; do
 		NumMPI=1
-		NumOMP=$BEST
-		S="`echo $BINARY | cut -d '_' -f2`"
-		BINARY="`echo $BINARY | cut -d '_' -f1`"
-		LOG="${DEFLOG}${S}gb.log"
-		S=$((S*1024*1024*1024/8))
-		INPUT="`echo $DEFINPUT | sed -e \"s/SIZE/$S/\"`"
-		echo "mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+		NumOMP=1
+		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
+		BName="`basename $BINARY`"
+		LOG="${DEFLOG}/${BName}/conf${1}.log"
+		mkdir -p `dirname $LOG`
+		echo "$PIN OMP_NUM_THREADS=$NumOMP $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsBEST`; do
 			START="`date +%s.%N`"
-			timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+			timeout --kill-after=30s $MAXTIME $PIN OMP_NUM_THREADS=$NumOMP $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 		done
+		BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
+		echo "Best $BName run: $BEST"
 	done
 done
-echo "Best BabelStream run:"
-BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
-grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
-echo ""
 cd $ROOTDIR
