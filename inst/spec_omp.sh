@@ -27,7 +27,7 @@ submit         = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
-submit         = ulimit -n 4096; ulimit -s unlimited; \$command
+submit         = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
 BOPTS          = -Kfast,eval_concurrent,openmp -O3 -march=armv8.3-a+sve -funroll-loops
 BLINK          = -Bstatic -lm
 %else

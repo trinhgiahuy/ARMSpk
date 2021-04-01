@@ -35,6 +35,8 @@ default:
 intspeed,fpspeed:
 %if '%{COMP}' eq 'sde'
    submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
+%elif '%{COMP}' eq 'fuji'
+   submit               = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
 %else
    submit               = ulimit -n 4096; ulimit -s unlimited; \$command
 %endif
