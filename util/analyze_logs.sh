@@ -21,7 +21,7 @@ SUBBM=("polybench" "spec_cpu" "spec_omp")
 #LARGE=("comd" "miniamr" "minife" "mvmc" "nekbone" "ntchem" "sw4lite" "swfft")
 
 BM=$1
-ACTION=$2	# -1=only gen. asm.b, 0=all, 1=use previous asm.b 2=analyze logs
+ACTION=$2	# 0=preprocess (and 1+2);   1=use previous asm.b (and 2);   2=analyze logs only
 SELRANK=$3	# only a specific rank
 
 if [ -z "${BM}" ] || [ -z "${ACTION}" ]; then echo 'ERR: missing parameter'; exit 1; fi
@@ -33,37 +33,29 @@ else
 	D="`find -L ${ROOTDIR}/log/*/profrun -type d -name ${BM}`"
 fi
 
-if [ ${ACTION} -le -1 ]; then
+if [ ${ACTION} -le 0 ]; then
+	started=0
 	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
 		if [ -f ${BDATA%'.dcfg.json.bz2'}.asm.b ]; then continue; fi
 		$ROOTDIR/util/parse_basic_blocks.py \
 			-j ${BDATA} \
 			-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
-			-s ${BDATA%'.dcfg.json.bz2'}.asm.b --only_store \
-			>> ${BDATA%'.dcfg.json.bz2'}.log 2>&1 &
-	done
-	wait
-	exit
-fi
-
-if [ ${ACTION} -le 0 ]; then
-	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
-		$ROOTDIR/util/parse_basic_blocks.py \
-			-j ${BDATA} \
-			-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
 			-s ${BDATA%'.dcfg.json.bz2'}.asm.b \
 			>> ${BDATA%'.dcfg.json.bz2'}.log 2>&1 &
+		started=$(($started + 1)); if [ $started -eq 10 ]; then wait; started=0; fi
 	done
 	wait
 fi
 
 if [ ${ACTION} -le 1 ]; then
+	started=0
 	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
 		$ROOTDIR/util/parse_basic_blocks.py \
 			-j ${BDATA} \
 			-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
 			-l ${BDATA%'.dcfg.json.bz2'}.asm.b \
 			>> ${BDATA%'.dcfg.json.bz2'}.log 2>&1 &
+		started=$(($started + 1)); if [ $started -eq 10 ]; then wait; started=0; fi
 	done
 	wait
 fi
@@ -71,7 +63,7 @@ fi
 if [ ${ACTION} -le 2 ]; then
 	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
 		echo ${BDATA%'.dcfg.json.bz2'}.log
-		/bin/grep '^Total\|Converted' ${BDATA%'.dcfg.json.bz2'}.log
-		echo 'MAX:' `/bin/grep 'Converted' ${BDATA%'.dcfg.json.bz2'}.log | cut -d'/' -f4 | sort -r -g | head -1`
+		/bin/grep 'Total \|Converted ' ${BDATA%'.dcfg.json.bz2'}.log
+		echo 'MAX:' `/bin/grep 'Converted ' ${BDATA%'.dcfg.json.bz2'}.log | cut -d'/' -f4 | sort -r -g | head -1`
 	done
 fi
