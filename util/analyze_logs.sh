@@ -35,6 +35,7 @@ fi
 
 if [ ${ACTION} -le -1 ]; then
 	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
+		if [ -f ${BDATA%'.dcfg.json.bz2'}.asm.b ]; then continue; fi
 		$ROOTDIR/util/parse_basic_blocks.py \
 			-j ${BDATA} \
 			-b ${BDATA%'.dcfg.json.bz2'}.bb.txt.bz2 \
