@@ -46,7 +46,7 @@ COMMAND="\$@"; BINARY="\`echo \$COMMAND | cut -d' ' -f1\`"; INPUT="\`echo \$COMM
 $GEM5 -d ${LOG}_stat $GEM5SE -c \$BINARY -o "\$INPUT" -n $NumOMP -e `dirname $LOG`/omp${NumOMP}.txt $ARCHCONF
 EOF
 	echo "=== gem5 run for $BENCH ===" >> $LOG 2>&1
-	bash -c "source ./shrc; $SPECCMD --iterations=1 --size=$SIZE --threads=$NumOMP --define COMP=$COMP --define RESDIR=${LOG}_stat >> $LOG 2>&1 &
+	bash -c "source ./shrc; $SPECCMD --iterations=1 --size=$SIZE --threads=$NumOMP --define COMP=$COMP --define RESDIR=${LOG}_stat $BM" >> $LOG 2>&1 &
 done
 wait
 cd $ROOTDIR
