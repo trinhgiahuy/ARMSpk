@@ -48,10 +48,14 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-static"
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,assume=memory_bandwidth"
 	elif [[ "$1" = *"fuji"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Bstatic"
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Bstatic -Kfast,assume=memory_bandwidth"
 	fi
 	cd $ROOTDIR
 fi

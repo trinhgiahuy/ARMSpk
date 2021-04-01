@@ -54,7 +54,7 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/^CC =.*/CC = mpifccpx/g' -e 's/-ipo -xHost//g' ./Makefile.include
+		sed -i -e 's/^CC =.*/CC = mpifccpx/g' -e 's/-ipo -xHost/-Kfast/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
