@@ -7,7 +7,7 @@
 /MODYLAS/
 /SPEC_CPU/
 /SPEC_OMP/
-/polyPench/
+/polybench/
 /dep/*.iso
 /dep/REVOCAP_Refiner-1.1.01.tgz
 /dep/modylas-mini-1.0.0.tar.gz
