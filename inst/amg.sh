@@ -53,6 +53,11 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 		sed -i -e 's/-ipo -xHost/-march=native -static/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/^CC =.*/CC = fccpx/g' -e 's/-ipo -xHost/-Bstatic/g' ./Makefile.include
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
+		sed -i -e 's/-lm -Bstatic/-Bstatic -lm/g' ./Makefile.include
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/define HYPRE_MPI_INT MPI_LONG_LONG.*/define HYPRE_MPI_INT MPI_LONG_LONG_INT/g' ./HYPRE.h
 		sed -i -e 's/^CC =.*/CC = fccpx/g' -e 's/ -DTIMER_USE_MPI//g' -e 's/-ipo -xHost/-DHYPRE_SEQUENTIAL=1 -Bstatic/g' ./Makefile.include
