@@ -33,11 +33,11 @@ for BEST in $BESTCONF; do
 		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
 		S="`echo $BINARY | cut -d '_' -f2`"
 		BINARY="`echo $BINARY | cut -d '_' -f1`"
-		LOG="${DEFLOG}/conf${1}.${S}gb.log"
+		LOG="${DEFLOG}/conf${1}.${S}gb.log"; mkdir -p ${LOG}_stat
 		S=$((S*1024*1024*1024/8))
 		INPUT="`echo $DEFINPUT | sed -e \"s/SIZE/$S/\"`"
-		echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-		$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+		echo "$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+		$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 	done
 done
 cd $ROOTDIR

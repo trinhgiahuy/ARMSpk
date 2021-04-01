@@ -32,10 +32,9 @@ for BEST in $BESTCONF; do
 		BINARY="`echo ${BMconf} | tr '|' '_'`"
 		BName="`basename $(echo ${BMconf} | cut -d'|' -f1)`"
 		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./${BName}-omp${NumOMP}.txt
-		LOG="${DEFLOG}/${BName}/conf${1}.log"
-		mkdir -p `dirname $LOG`
-		echo "$GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./${BName}-omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-		$GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./${BName}-omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1 &
+		LOG="${DEFLOG}/${BName}/conf${1}.log"; mkdir -p ${LOG}_stat
+		echo "$GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./${BName}-omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+		$GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./${BName}-omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1 &
 	done
 	wait
 done

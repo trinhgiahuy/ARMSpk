@@ -24,7 +24,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 source conf/hpcg.sh
 DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/`hostname -s`/gem5run/hpcg/conf${1}.log"
-mkdir -p `dirname $LOG`
+mkdir -p ${LOG}_stat
 cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI=1
@@ -50,8 +50,8 @@ for BEST in $BESTCONF; do
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
 	INPUT="`echo $DEFINPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+	echo "$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+	$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 	cat hpcg_log_* >> $LOG 2>&1
 	cat n*.yaml >> $LOG 2>&1
 	rm -f hpcg_log_* n*.yaml

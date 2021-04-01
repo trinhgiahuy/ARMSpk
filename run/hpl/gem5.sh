@@ -23,7 +23,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 # ============================ HPL ============================================
 source conf/hpl.sh
 LOG="$ROOTDIR/log/`hostname -s`/gem5run/hpl/conf${1}.log"
-mkdir -p `dirname $LOG`
+mkdir -p ${LOG}_stat
 cd $APPDIR
 if [ ! -f ./HPL.dat.bak ]; then cp ./HPL.dat ./HPL.dat.bak; fi
 for BEST in $BESTCONF; do
@@ -35,8 +35,8 @@ for BEST in $BESTCONF; do
 	#MPIQ="`echo $BEST | cut -d '|' -f4`"
 	sed -e "s/PNS/$HPLNS/" -e "s/PNB/$HPLNB/" -e "s/PPP/$MPIP/" -e "s/PPQ/$MPIQ/" ./HPL.dat.bak > ./HPL.dat
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+	echo "$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+	$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 	cat ./HPL.out >> $LOG 2>&1; rm ./HPL.out
 done
 cd $ROOTDIR

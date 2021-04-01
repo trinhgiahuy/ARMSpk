@@ -24,7 +24,7 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 source conf/miniamr.sh
 DEFINPUT=$INPUT
 LOG="$ROOTDIR/log/`hostname -s`/gem5run/miniamr/conf${1}.log"
-mkdir -p `dirname $LOG`
+mkdir -p ${LOG}_stat
 cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI=1
@@ -36,7 +36,7 @@ for BEST in $BESTCONF; do
 	#Z="`echo $BEST | cut -d '|' -f5`"
 	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+	echo "$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+	$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 done
 cd $ROOTDIR

@@ -23,14 +23,14 @@ if [ -n $2 ] && which numactl >/dev/null 2>&1; then PIN="numactl -C $2"; else PI
 # ============================ Laghos =========================================
 source conf/laghos.sh
 LOG="$ROOTDIR/log/`hostname -s`/gem5run/laghos/conf${1}.log"
-mkdir -p `dirname $LOG`
+mkdir -p ${LOG}_stat
 cd $APPDIR
 for BEST in $BESTCONF; do
 	NumMPI=1
 	if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
 	echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./omp${NumOMP}.txt
 	echo "=== gem5 run ===" >> $LOG 2>&1
-	echo "$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
-	$PIN $GEM5 -d `dirname $LOG` $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
+	echo "$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o \"$INPUT\" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF" >> $LOG 2>&1
+	$PIN $GEM5 -d ${LOG}_stat $GEM5SE -c $BINARY -o "$INPUT" -n $NumOMP -e ./omp${NumOMP}.txt $ARCHCONF >> $LOG 2>&1
 done
 cd $ROOTDIR
