@@ -1798,9 +1798,6 @@ def main():
                             help='backup objdump data to file to postprocess' +
                             ' on a different computer or get speedup locally',
                             type=str, metavar='<output file>', default=None,)
-    arg_parser.add_argument('--only_store', dest='__only_store_objdump__',
-                            help='backup objdump data only and then exit',
-                            action='store_true', default=False)
     arg_parser.add_argument('-a', '--cpu_arch', dest='__cpu_arch__',
                             help='change CPU architecture which should be' +
                             ' simulated [default: native]',
@@ -1819,9 +1816,6 @@ def main():
 
     sde_data = {'BasicBlocks': {}}
     parse_SDE_JSON(args, sde_data)
-    if args.get('__store_objdump__') is not None and \
-            args.get('__only_store_objdump__'):
-        exit(0)
     parse_SDE_BB(args, sde_data['BasicBlocks'])
 
     data, mapper = convert_sde_data_to_something_usable(sde_data)
