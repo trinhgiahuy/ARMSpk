@@ -24,7 +24,7 @@ mkdir -p $LOGDIR
 cd $APPDIR
 for BENCH in $BINARY; do
 	BM="`echo $BENCH | cut -d '|' -f1`"
-	COMP="`echo $BENCH | cut -d '|' -f2`"
+	COMP="sde"      #"`echo $BENCH | cut -d '|' -f2`"
 	SIZE="`echo $BENCH | cut -d '|' -f3`"
 	LOG="$LOGDIR/${BM}.log"
 	NumMPI=1
@@ -33,7 +33,7 @@ for BENCH in $BINARY; do
 			echo "=== sde run for $BENCH ===" >> $LOG 2>&1
 			mkdir -p $LOGDIR/${BM}_${NumMPI}_${NumOMP}_sde
 			START="`date +%s.%N`"
-			bash -c "export PATH=$SDEPATH:$PATH; source ./shrc; $SPECCMD --iterations=1 --size=$SIZE --threads=$NumOMP --define COMP=sde --define RESDIR=$LOGDIR/${BM}_${NumMPI}_${NumOMP}_sde $BM" >> $LOG 2>&1
+			bash -c "export PATH=$SDEPATH:$PATH; source ./shrc; $SPECCMD --iterations=1 --size=$SIZE --threads=$NumOMP --define COMP=$COMP --define RESDIR=$LOGDIR/${BM}_${NumMPI}_${NumOMP}_sde $BM" >> $LOG 2>&1
 			ENDED="`date +%s.%N`"
 			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 			# in case the RESDIR stuff fails
