@@ -43,7 +43,7 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 		BName="`echo ${BMconf} | cut -d '|' -f1`"
 		DSize="`echo ${BMconf} | cut -d '|' -f2`"
 		rm -f `basename ${BM}`
-		${COMPILE} -I`dirname ${BName}` utilities/polybench.c ${BName}.c -D${DSize}_DATASET -DPOLYBENCH_TIME -o ${BName} ${LINK}
+		${COMPILE} -I`dirname ${BName}` utilities/polybench.c ${BName}.c -D${DSize}_DATASET -DPOLYBENCH_TIME -o ${BName}_${DSize} ${LINK}
 	done
 	find $ROOTDIR/$BM/ -executable -type f -exec echo {} \; -exec ldd {} \;
 	cd $ROOTDIR

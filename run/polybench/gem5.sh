@@ -29,8 +29,8 @@ for BEST in $BESTCONF; do
 	for BMconf in $BINARYS; do
 		NumMPI=1
 		NumOMP=1	#XXX: no OMP in PolyBench: if [ $1 -eq 1 ]; then NumOMP="20"; elif [ $1 -eq 2 ]; then NumOMP="32"; fi
-		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
-		BName="`basename $BINARY`"
+		BINARY="`echo ${BMconf} | tr '|' '_'`"
+		BName="`basename $(echo ${BMconf} | cut -d'|' -f1)`"
 		echo -e "OMP_NUM_THREADS=$NumOMP\nOMP_NUM_PARALELL=$NumOMP\nFLIB_FASTOMP=FALSE\nFLIB_CNTL_BARRIER_ERR=FALSE" > ./${BName}-omp${NumOMP}.txt
 		LOG="${DEFLOG}/${BName}/conf${1}.log"
 		mkdir -p `dirname $LOG`

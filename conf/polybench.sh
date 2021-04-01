@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#Pre-defined Problem Sizes; PolyBench/C 4.0 comes with 5 pre-defined problem sizes.
+#The problem sizes are primarily derived from thememory requirements such that
+#different levels of the memory hierarchy are exercised.
+#- MINI: Less than 16KB of memory.  The problem may fit within the L1 (last level) cache.
+#- SMALL: Around 128KB of memory.  The problem should not fit within the L1 cache, but may fit L2.
+#- MEDIUM: Around 1MB of memory.  The problem should not fit within the L2 cache, but may fit L3.
+#- LARGE: Around 25MB of memory.  The problem should not fit within the L3 cache.
+#- EXTRALARGE: Around 120MB of memory.
+
 export APPDIR="./polybench"
 export BINARYS="datamining/correlation/correlation|LARGE
 datamining/covariance/covariance|LARGE
@@ -30,7 +39,7 @@ stencils/fdtd-2d/fdtd-2d|LARGE
 stencils/heat-3d/heat-3d|LARGE
 stencils/jacobi-1d/jacobi-1d|LARGE
 stencils/jacobi-2d/jacobi-2d|LARGE
-stencils/seidel-2d/seidel-2d|MEDIUM"
+stencils/seidel-2d/seidel-2d|LARGE"
 export INPUT=""
 export NumRunsTEST=1
 export NumRunsBEST=10

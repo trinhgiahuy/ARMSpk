@@ -23,8 +23,8 @@ for BEST in $BESTCONF; do
 	for BMconf in $BINARYS; do
 		NumMPI=1
 		NumOMP=1
-		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
-		BName="`basename $BINARY`"
+		BINARY="`echo ${BMconf} | tr '|' '_'`"
+		BName="`basename $(echo ${BMconf} | cut -d'|' -f1)`"
 		LOG="${DEFLOG}/${BName}.log"
 		echo "OMP_NUM_THREADS=$NumOMP timeout --kill-after=30s $MAXTIME $PIN $BINARY $INPUT" >> $LOG 2>&1
 		for i in `seq 1 $NumRunsBEST`; do
