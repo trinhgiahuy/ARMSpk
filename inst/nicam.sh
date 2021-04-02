@@ -29,6 +29,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	sleep 0
 elif [[ "$1" = *"fuji"* ]]; then
 	echo "no point, because this one needs MPI"; exit 1
 fi
@@ -45,10 +47,14 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 		sed -i -e 's/mpiifort/mpif90/' -e 's/mpiicc/mpicc/' -e 's/-shared-intel/-static -static-intel -qopenmp-link=static/g' -e 's/^LFLAGS = /LFLAGS = -static -static-intel -qopenmp-link=static /' ../sysdep/Makedef.Linux64-intel-impi
 		export NICAM_SYS=Linux64-intel-impi
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
 		sed -i -e 's/-O3/-O3 -march=native/g' -e 's/ -pedantic-errors//' -e 's/std=f2003/std=f2008/' -e 's/^LFLAGS = /LFLAGS = -static /' ../sysdep/Makedef.Linux64-gnu-openmpi
 		export NICAM_SYS=Linux64-gnu-openmpi
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+		export NICAM_SYS=FX10
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	make ENABLE_OPENMP=1

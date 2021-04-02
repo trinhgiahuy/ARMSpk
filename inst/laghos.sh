@@ -29,6 +29,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	echo "does not compile on login node"; exit 1
 elif [[ "$1" = *"fuji"* ]]; then
 	module load FujitsuCompiler/202007
 else
@@ -44,15 +46,16 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f ./hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then
-		wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz
+		if ! [ -f hypre-2.10.0b.tar.gz ]; then wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz; fi
 		tar xzf hypre-2.10.0b.tar.gz
 		cd ./hypre-2.10.0b/src
 		if [ -z $1 ]; then
 			./configure --disable-fortran -with-openmp CC=mpicc CFLAGS="-O3 -ipo -xHost" CXX=mpicxx CXXFLAGS="-O3 -ipo -xHost" F77=mpif77 FFLAGS="-O3 -ipo -xHost"
 		elif [[ "$1" = *"gnu"* ]]; then
 			./configure --disable-fortran -with-openmp CC=mpicc CFLAGS="-O3 -march=native" CXX=mpicxx CXXFLAGS="-O3 -march=native" F77=mpif77 FFLAGS="-O3 -march=native"
-		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-			./configure --disable-fortran -with-openmp CC=mpifccpx CFLAGS="-O3 -Kfast" CXX=mpiFCCpx CXXFLAGS="-O3 -Kfast" F77=mpifrt FFLAGS="-O3 -Kfast"
+		elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
+			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
+			./configure --disable-fortran -with-openmp CC=mpifcc CFLAGS="-O3 -Kfast" CXX=mpiFCC CXXFLAGS="-O3 -Kfast" F77=mpifrt FFLAGS="-O3 -Kfast"
 		elif [[ "$1" = *"fuji"* ]]; then
 			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu --disable-fortran -with-openmp --without-MPI CC=fccpx CFLAGS="-O3" CXX=FCCpx CXXFLAGS="-O3" F77=frtpx FFLAGS="-O3"
 		fi
@@ -61,15 +64,15 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		cd $ROOTDIR/$BM/
 	fi
 	if [ ! -f ./metis-4.0.3/graphchk ]; then
-		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
+		if ! [ -f metis-4.0.3.tar.gz ]; then wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz; fi
 		tar xzf metis-4.0.3.tar.gz
 		cd ./metis-4.0.3/
 		if [ -z $1 ]; then
 			sed -i -e 's/CC = cc/CC = icc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -ipo -xHost/g' ./Makefile.in
 		elif [[ "$1" = *"gnu"* ]]; then
 			sed -i -e 's/CC = cc/CC = gcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -march=native/g' ./Makefile.in
-		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-			sed -i -e 's/CC = cc/CC = fccpx/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -march=armv8.3-a+sve/g' ./Makefile.in
+		elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
+			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -march=armv8.3-a+sve/g' ./Makefile.in
 		elif [[ "$1" = *"fuji"* ]]; then
 			sed -i -e 's/CC = cc/CC = fccpx/g' ./Makefile.in
 		fi
@@ -83,15 +86,15 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-mfem*.patch; fi
 		if [[ "$1" = *"gnu"* ]]; then
 			sed -i -e 's/icpc/g++/g' -e 's/-ipo -xHost/-march=native/g' ./config/defaults.mk
-		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-			sed -i -e 's/icpc/FCCpx/g' -e 's/-ipo -xHost/-Kfast/g' ./config/defaults.mk
+		elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
+			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Kfast/g' ./config/defaults.mk
 		elif [[ "$1" = *"fuji"* ]]; then
 			sed -i -e 's/icpc/FCCpx/g' -e 's/-ipo -xHost//g' ./config/defaults.mk
 		fi
 		if [ -z $1 ] || [[ "$1" = *"gnu"* ]]; then
 			make config MFEM_USE_MPI=YES MPICXX=mpicxx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
-		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-			make config MFEM_USE_MPI=YES MPICXX=mpiFCCpx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
+		elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
+			make config MFEM_USE_MPI=YES MPICXX=mpiFCC MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
 		elif [[ "$1" = *"fuji"* ]]; then
 			make config CMAKE_CXX_COMPILER=FCCpx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
 		fi
@@ -104,9 +107,10 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' -e 's/-ipo -xHost/-march=native/g' -e 's/ -lirc -lsvml//g' ./makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/-ipo -xHost/-Kfast/g' -e 's/ -lirc -lsvml//g' ./makefile
-		???
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		make
 	elif [[ "$1" = *"fuji"* ]]; then
 		cd serial/
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -Bstatic#g' -e 's/$(LAGHOS_LIBS) $(LDFLAGS)/$(LDFLAGS) $(LAGHOS_LIBS)/g' -e 's/-ipo -xHost//g' -e 's/ -lirc -lsvml//g' ./makefile

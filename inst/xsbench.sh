@@ -49,6 +49,9 @@ if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/= intel/= gnu/' -e 's/-flto/-flto -march=native/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifccpx/' -e 's/-flto/-Kfast/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lm#g' ./Makefile
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/^MPI.*= yes/MPI = no/' -e 's/= intel/= gnu/' -e 's/CC = gcc/CC = fccpx/' -e 's/-flto//' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify# -Bstatic -lm#g' ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done

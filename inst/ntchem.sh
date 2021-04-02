@@ -30,6 +30,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	sleep 0
 elif [[ "$1" = *"fuji"* ]]; then
 	echo "ERR: cannot use this one either, because peach's outdated SSL2 has no dpotrf_ and other fn"; exit 1
 	module load FujitsuCompiler/202007
@@ -57,6 +59,12 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e 's/int /long /' $FILE; done
 		sed -i -e 's/integer(C_INT)/integer(kind=8)/' ./src/mp2/mp2_main_mpiomp.f90
 		sed -i -e '/CHARACTER(/d' -e '/INTEGER :: MLeng/a\      CHARACTER(LEN=MLeng) :: Chara' ./src/util_lib/util_transchar.f90
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
+		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
+		cp platforms/config_mine.K config_mine
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e 's/int /long /' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2
 		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
@@ -69,8 +77,10 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 	TOP_DIR=`pwd`
 	./config_mine
 	mkdir -p $ROOTDIR/$BM/bin
-	if ! [[ "$1" = *"fuji"* ]]; then
+	if [ -z $1 ] || [[ "$1" = *"gnu"* ]]; then
 		make CC=mpicc CXX=mpicxx F77C=mpif77 F90C=mpif90
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		make CC=mpifccpx CXX=mpiFCCpx F77C=mpifrtpx F90C=mpifrtpx
 	else
 		make CC=fccpx CXX=FCCpx F77C=frtpx F90C=frtpx LD=FCCpx F90FLAGS="-I$ROOTDIR/dep/mpistub/include/mpistub"
 	fi
