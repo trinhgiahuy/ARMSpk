@@ -61,6 +61,9 @@ if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		../configure MPI_GCC_OMP
 		sed -i -e 's/-O3/-O3 -march=native -static/g' ./setup/Make.MPI_GCC_OMP
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		../configure MPI_GCC_OMP
+		sed -i -e 's/^CXX .*=.*/CXX = mpiFCCpx/g' -e 's/-O3/-O3 -Kfast/g' ./setup/Make.MPI_GCC_OMP
 	elif [[ "$1" = *"fuji"* ]]; then
 		../configure MPI_GCC_OMP
 		sed -i -e 's/^CXX .*=.*/CXX = FCCpx/g' -e 's/^HPCG_OPTS .*=.*/HPCG_OPTS = -DHPCG_NO_MPI/g' -e 's/-O3/-O3 -Bstatic/g' ./setup/Make.MPI_GCC_OMP
