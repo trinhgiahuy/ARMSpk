@@ -21,7 +21,7 @@ SUBBM=("polybench" "spec_cpu" "spec_omp")
 #LARGE=("comd" "miniamr" "minife" "mvmc" "nekbone" "ntchem" "sw4lite" "swfft")
 
 BM=$1
-ACTION=$2	# 0=preprocess (and 1+2);   1=use previous asm.b (and 2);   2=analyze logs only
+ACTION=$2	# -1=preprocess only;  0=preprocess (and 1+2);   1=use previous asm.b (and 2);   2=analyze logs only
 SELRANK=$3	# only a specific rank
 
 if [ -z "${BM}" ] || [ -z "${ACTION}" ]; then echo 'ERR: missing parameter'; exit 1; fi
@@ -45,6 +45,7 @@ if [ ${ACTION} -le 0 ]; then
 		started=$(($started + 1)); if [ $started -eq 10 ]; then wait; started=0; fi
 	done
 	wait
+	if [ ${ACTION} -le -1 ]; then exit; fi
 fi
 
 if [ ${ACTION} -le 1 ]; then
