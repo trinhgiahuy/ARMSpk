@@ -48,6 +48,9 @@ if [ ! -f $ROOTDIR/$BM/bin/Linux_Intel64/xhpl ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/mpiicc/mpicc/' -e 's/-ipo -xHost/-march=native -m64 -static/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/libmkl_intel_thread.a/libmkl_gnu_thread.a/g' -e 's/-lpthread/-lgomp -lpthread -lm/g' -e "s#\$(HOME)/hpl#$ROOTDIR/$BM#g" -e 's/ -ansi-alias -i-static//g' -e 's/ -nocompchk//g' -e 's/ -mt_mpi//g' ./Make.Linux_Intel64
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/mpiicc/mpifccpx/' -e 's/-ipo -xHost/-Kfast/g' -e 's/ -z noexecstack -z relro -z now//g' -e 's/ -Wall//g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e "s#\$(HOME)/hpl#$ROOTDIR/$BM#g" -e 's/ -ansi-alias -i-static//g' -e 's/ -nocompchk//g' -e 's/ -mt_mpi//g' -e 's/ -I$(LAinc)//g' -e "s# \$(LAlib)# -SSL2BLAMP#g" ./Make.Linux_Intel64
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64			# new Fj version lacks ssl2
 		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
