@@ -37,7 +37,7 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		COMPILE="fccpx -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -I./utilities"
 		LINK=""
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		COMPILE="fccpx -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -I./utilities"
 		LINK="-Bstatic -lm"

@@ -64,7 +64,7 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e 's/int /long /' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2
 		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
