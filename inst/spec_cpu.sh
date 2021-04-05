@@ -39,7 +39,11 @@ intspeed,fpspeed:
 %if '%{COMP}' eq 'sde'
    submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
 %elif '%{COMP}' eq 'fuji'
+%if '%{HOST}' eq 'peach'
    submit               = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
+%else
+   submit               ulimit -s unlimited; \$command
+%endif
 %else
    submit               = ulimit -n 4096; ulimit -s unlimited; \$command
 %endif
@@ -63,6 +67,7 @@ default:
    LDCXXFLAGS           = -static -static-intel -qopenmp-link=static
    LDFFLAGS             = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
+%if '%{HOST}' eq 'peach'
    CC                   = fccpx -m64 -std=c11
    CXX                  = FCCpx -m64
    FC                   = frtpx -m64
@@ -70,6 +75,12 @@ default:
    LDCFLAGS             = -Bstatic
    LDCXXFLAGS           = -Bstatic
    LDFFLAGS             = -Bstatic
+%else
+   CC                   = fcc -m64 -std=c11
+   CXX                  = FCC -m64
+   FC                   = frt -m64
+   OPT_ROOT             = -Nclang -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -funroll-loops
+%endif
 %else
 %error wrong or unsupported COMP variable specified
 %endif
@@ -163,39 +174,43 @@ if [ -z $1 ]; then
 elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	echo "does not compile on login node"; exit 1
 elif [[ "$1" = *"fuji"* ]]; then
-	if [[ "`hostname -s`" = *"peach"* ]]; then
-		module load FujitsuCompiler/202007
-		#alias fcc=fccpx
-		#alias FCC=FCCpx
-		#alias frt=frtpx	# XXX: not working
-	else
-		echo "check fugaku later"; exit 1
-	fi
+	if [[ "`hostname -s`" = *"peach"* ]]; then module load FujitsuCompiler/202007; fi
 else
 	echo 'wrong compiler'
 	exit 1
 fi
 
 BM="SPEC_CPU"
-dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg; exit
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
-        if [ ! -f $ROOTDIR/dep/cpu2017-1.1.0.iso ]; then
-                echo -e "ERR: cannot find cpu2017-1.1.0.iso under dep/; please fix it!"
-                exit 1
-        fi
-        cd $ROOTDIR/dep/
-        mkdir -p /tmp/mnt_$BM
-        fuseiso ./cpu2017-1.1.0.iso /tmp/mnt_$BM
-        cd /tmp/mnt_$BM/
-        mkdir -p $ROOTDIR/$BM/
-	if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
-		./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
+	mkdir -p $ROOTDIR/$BM/
+	if [ ! -f $ROOTDIR/dep/mnt_$BM/shrc ]; then
+		if [ ! -f $ROOTDIR/dep/cpu2017-1.1.0.iso ]; then
+			echo -e "ERR: cannot find cpu2017-1.1.0.iso under dep/; please fix it!"
+			exit 1
+		fi
+		cd $ROOTDIR/dep/
+		mkdir -p /tmp/mnt_$BM
+		fuseiso ./cpu2017-1.1.0.iso /tmp/mnt_$BM
+		cd /tmp/mnt_$BM/
+		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
+		else
+			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
+		fi
+		cd -
+		fusermount -u /tmp/mnt_$BM
 	else
-	        ./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
+		cd $ROOTDIR/dep/mnt_$BM
+		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
+		else
+			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
+		fi
+		cd -
 	fi
-        cd -
-        fusermount -u /tmp/mnt_$BM
         cd $ROOTDIR/$BM/
         #patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
         dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg
@@ -208,8 +223,8 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed"
 	elif [[ "$1" = *"fuji"* ]]; then
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fuji --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fuji --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 intspeed fpspeed intrate fprate"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 intspeed fpspeed"
 	fi
 	# check that all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
