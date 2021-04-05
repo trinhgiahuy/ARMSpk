@@ -30,7 +30,7 @@ for BENCH in $BINARY; do
 		bash -c "source ./shrc; timeout --kill-after=30s $MAXTIME $SPECCMD --iterations=$NumRunsBEST --size=$SIZE --threads=$NumOMP --define COMP=$COMP --define RESDIR=0 $BM" >> $LOG 2>&1
 		ENDED="`date +%s.%N`"
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
-		REPORT="`find $ROOTDIR/$APPDIR/result -type f -name '*.log' | tail -1`"
+		REPORT="`find $ROOTDIR/$APPDIR/result -type f -name '*.log' | sort -g | tail -1`"
 		cat $REPORT >> $LOG 2>&1
 		/bin/grep 'Run Reported' $REPORT >> $LOG 2>&1
 		echo "Best $BENCH run: " "`/bin/grep 'Reported' $REPORT | awk -F'Reported:[[:blank:]]+' '{print $2}' | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1`"
