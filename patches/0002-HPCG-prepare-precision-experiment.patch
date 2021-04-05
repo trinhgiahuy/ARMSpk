@@ -1,0 +1,57 @@
+From 8cfd1652ac28d7eaa11cb09736ce4269397daeda Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Mon, 5 Apr 2021 11:31:50 +0900
+Subject: [PATCH] HPCG: prepare precision experiment
+
+---
+ bin/hpcg.dat | 2 +-
+ src/main.cpp | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/bin/hpcg.dat b/bin/hpcg.dat
+index 0e4508e..e3a2a12 100644
+--- a/bin/hpcg.dat
++++ b/bin/hpcg.dat
+@@ -1,4 +1,4 @@
+ HPCG benchmark input file
+ Sandia National Laboratories; University of Tennessee, Knoxville
+-104 104 104
++192 192 192
+ 60
+diff --git a/src/main.cpp b/src/main.cpp
+index 8ff7961..dfceac8 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -61,6 +61,12 @@ using std::endl;
+ #include "TestSymmetry.hpp"
+ #include "TestNorms.hpp"
+ 
++#include <ittnotify.h>
++#include <signal.h>
++#include <stdlib.h>
++#define STARTSDE(go,rank) {if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1); __itt_resume(); __SSC_MARK(0x111);}
++#define STOPSDE(go,rank) {__SSC_MARK(0x222); __itt_pause(); if(go && 0==rank && getenv("PCMPID")) kill(atoi(getenv("PCMPID")),SIGUSR1);}
++
+ /*!
+   Main driver program: Construct synthetic problem, run V&V tests, compute benchmark parameters, run benchmark, report results.
+ 
+@@ -331,6 +337,7 @@ int main(int argc, char * argv[]) {
+   testnorms_data.samples = numberOfCgSets;
+   testnorms_data.values = new double[numberOfCgSets];
+ 
++STARTSDE(1,rank);
+   for (int i=0; i< numberOfCgSets; ++i) {
+     ZeroVector(x); // Zero out x
+     ierr = CG( A, data, b, x, optMaxIters, optTolerance, niters, normr, normr0, &times[0], true);
+@@ -338,6 +345,8 @@ int main(int argc, char * argv[]) {
+     if (rank==0) HPCG_fout << "Call [" << i << "] Scaled Residual [" << normr/normr0 << "]" << endl;
+     testnorms_data.values[i] = normr/normr0; // Record scaled residual from this run
+   }
++STOPSDE(1,rank);
++if (rank==0) printf("Walltime of the main kernel: %.6lf sec\n", times[0]);
+ 
+   // Compute difference between known exact solution and computed solution
+   // All processors are needed here.
+-- 
+1.8.3.1
+
