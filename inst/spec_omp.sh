@@ -13,6 +13,9 @@ verbose        = 99
 env_vars       = 1
 makeflags      = -j 32
 ext            = %{COMP}
+%if '%{COMP}' eq 'fuji'
+check_md5      = 0
+%endif
 
 %if '%{COMP}' eq 'gnu'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
@@ -176,5 +179,6 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	fi
 	# check that most/all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
+	if [[ "$1" = *"fuji"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_OMP/benchspec/OMP2012/*/build/ and SPEC_OMP/benchspec/OMP2012/*/exe/ to server which runs gem"; fi
         cd $ROOTDIR
 fi

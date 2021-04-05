@@ -17,6 +17,9 @@ default:
    reportable           = 0
    tune                 = peak
    label                = %{COMP}
+%if '%{COMP}' eq 'fuji'
+   verify_binaries      = no
+%endif
 
    preENV_OMP_STACKSIZE=256M
    preENV_OMP_DYNAMIC=false
@@ -210,5 +213,6 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	fi
 	# check that all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
+	if [[ "$1" = *"fuji"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_CPU/benchspec/CPU/*/build/ and SPEC_CPU/benchspec/CPU/*/exe/ to server which runs gem"; fi
         cd $ROOTDIR
 fi
