@@ -29,6 +29,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	sleep 0
 elif [[ "$1" = *"fuji"* ]]; then
 	module load FujitsuCompiler/202007
 	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
@@ -45,7 +47,7 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f $ROOTDIR/$BM/fftw/bin/fftw-wisdom ]; then
-		wget http://fftw.org/fftw-3.3.4.tar.gz
+		if [ ! -f fftw-3.3.4.tar.gz ]; then wget http://fftw.org/fftw-3.3.4.tar.gz; fi
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
 		if [ -z $1 ]; then
@@ -58,6 +60,10 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 		elif [[ "$1" = *"gnu"* ]]; then
 			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=gcc
 			make -j CFLAGS="-O3 -march=native"
+		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
+				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fccpx
+			make -j CFLAGS="-O3 -Kfast"
 		elif [[ "$1" = *"fuji"* ]]; then
 			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
 				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fccpx
@@ -74,6 +80,10 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile.openmp
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/?= mpicc/?= mpifccpx/g' -e 's/?= mpicxx/?= mpiFCCpx/g' -e 's/?= mpif90/?= mpifrtpx/g' -e 's/-ipo -xHost/-Kfast/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
+		sed -i -e 's/-ipo -xHost/-Kfast/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./GNUmakefile.openmp
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/?= mpicc/?= fccpx/g' -e 's/?= mpicxx/?= FCCpx/g' -e 's/?= mpif90/?= frtpx/g' -e 's/-ipo -xHost//g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= -lfjc++ -lfjc++abi -lfjdemgl/g' -e "s# -lm# -L$ROOTDIR/$BM -Bstatic -lm#g" ./GNUmakefile
 		sed -i -e 's/-ipo -xHost//g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s# -lm# -L$ROOTDIR/$BM -Bstatic -lm#g" ./GNUmakefile.openmp

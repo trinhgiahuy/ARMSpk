@@ -51,6 +51,10 @@ if [ ! -f $ROOTDIR/$BM/mkl/src/miniFE.x ]; then
 		elif [[ "$1" = *"gnu"* ]]; then
 			sed -i -e 's/mpiicpc/mpicxx/' -e 's/-ipo -xHost/-march=native/g' -e 's/-ipo -xMIC-AVX512/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -static#g' -e 's# -mkl # -m64 -I$(MKLROOT)/include #g' ./Makefile
 			for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+			if [[ "$SUB" = *"mkl"* ]] || [[ "$SUB" = *"knl"* ]]; then continue; fi
+			sed -i -e 's/mpicxx/mpiFCCpx/g' -e 's/mpicc/mpifccpx/g' -e 's/-ipo -xHost/-Kfast/g' -e 's/-ipo -xMIC-AVX512//g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+			for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		elif [[ "$1" = *"fuji"* ]]; then
 			if [[ "$SUB" = *"mkl"* ]] || [[ "$SUB" = *"knl"* ]]; then continue; fi
 			sed -i -e 's/mpicxx/FCCpx/g' -e 's/mpicc/fccpx/g' -e 's/-DHAVE_MPI/-DHAVE_NO_MPI/g' -e 's/-ipo -xHost//g' -e 's/-ipo -xMIC-AVX512//g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify#-Bstatic#g' ./Makefile

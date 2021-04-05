@@ -30,6 +30,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	sleep 0
 elif [[ "$1" = *"fuji"* ]]; then
 	echo "ERR: cannot use this one either, because peach's outdated SSL2 has no dgetrf_ and other fn"; exit 1
 	module load FujitsuCompiler/202007
@@ -41,7 +43,7 @@ fi
 
 BM="SW4lite"
 VERSION="5ab8063ecdc94bdb59a5e65396c85bd54f9e0916"
-if [[ $HOSTNAME = *"${XEONHOST}"* ]] || [[ $HOSTNAME = *"peach"* ]]; then
+if [[ $HOSTNAME = *"${XEONHOST}"* ]] || [[ $HOSTNAME = *"peach"* ]] || [[ "`hostname -s`" = *"fn01"* ]]; then
 	HHOST="${XEONHOST}"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	HHOST="${IKNLHOST}"
@@ -59,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_${HHOST}/sw4lite ]; then
 	sed -i -e "s/^HOSTNAME := /HOSTNAME := ${HHOST} #/g" ./Makefile
 	sed -i -e "s/quadknl/${HHOST}/g" ./Makefile
 	sed -i -e "s#/opt/intel/compilers_and_libraries_2017/linux#`dirname $MKLROOT`#g"  ./Makefile
-	if [[ $HOSTNAME = *"${XEONHOST}"* ]] || [[ $HOSTNAME = *"peach"* ]]; then
+	if [[ $HOSTNAME = *"${XEONHOST}"* ]] || [[ $HOSTNAME = *"peach"* ]] || [[ "`hostname -s`" = *"fn01"* ]]; then
 		sed -i -e "s/-xmic-avx512/#NOKNL-xmic-avx512/g" ./Makefile
 	fi
 	if [ -z $1 ]; then
@@ -67,6 +69,9 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_${HHOST}/sw4lite ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/mpifort/mpif90/' -e 's/mpiifort/mpif90/' -e 's/mpiicpc/mpicxx/' -e 's/= icc/= gcc/' -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e 's#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_sequential.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgfortran -lquadmath -lpthread -lm -ldl -static#' ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/mpifort/mpifrtpx/' -e 's/mpiifort/mpifrtpx/' -e 's/mpiicpc/mpiFCCpx/' -e 's/= icc/= mpifccpx/' -e 's/-ipo -xHost/-Kfast/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -SSL2BLAMP#g" ./Makefile
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2
 		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker

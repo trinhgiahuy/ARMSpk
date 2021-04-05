@@ -29,6 +29,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_CXX=g++
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	sleep 0
 elif [[ "$1" = *"fuji"* ]]; then
 	echo "ERR: won't work either thanks to amazing compiler"; exit 1	# "ccs_qcd_solver_bench_class.F90", line 19: Evaluation of arithmetic constant expression resulted in an out-of-range value.
 	module load FujitsuCompiler/202007
@@ -37,6 +39,7 @@ else
 	echo 'wrong compiler'
 	exit 1
 fi
+
 
 source $ROOTDIR/conf/qcd.sh
 
@@ -55,6 +58,9 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		TYPE=gfortran
 		sed -i -e 's/-march=core2 -msse3/-march=native -fno-inline-small-functions/' -e 's/LDFLAGS = /LDFLAGS = -static /' ./make.${TYPE}.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		TYPE=fx10
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		TYPE=fx10
 		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic#g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
@@ -73,7 +79,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 			make MAKE_INC=make.${TYPE}.inc CLASS=2 PX=${PX} PY=${PY} PZ=${PZ}
 			mv $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2 $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ}
 		fi
-		if [[ "$1" = *"fuji"* ]]; then break; fi
+		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"fn01"* ]]; then break; fi
 	done
 	unset TYPE
 	cd $ROOTDIR
