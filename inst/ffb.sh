@@ -99,7 +99,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl/-Kvisimpact,ocl -Kfast/g' ./make_setting
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/^CC =.*/CC = fccpx/' -e 's/^FC =.*/FC = frtpx/' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/-ipo -xHost -mcmodel=large -shared-intel//g' -e "s#-L\${ADVISOR.*##g" -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#-O3.*#-O3 -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#-lstdc++##g" ./make_setting
 		sed -i -e 's/^LD =.*/LD = frtpx/g' -e "s#-lmaprof_f.*#-lmaprof_f -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic -lfjc++ -lfjc++abi -lfjdemgl#g" ./Makefile

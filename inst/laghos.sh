@@ -106,7 +106,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		make
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/-ipo -xHost/-Kfast/g' -e 's/ -lirc -lsvml//g' ./makefile
-		???
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		cd serial/
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -Bstatic#g' -e 's/$(LAGHOS_LIBS) $(LDFLAGS)/$(LDFLAGS) $(LAGHOS_LIBS)/g' -e 's/-ipo -xHost//g' -e 's/ -lirc -lsvml//g' ./makefile

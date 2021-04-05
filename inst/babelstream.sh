@@ -49,7 +49,7 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-static"
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,assume=memory_bandwidth"
 	elif [[ "$1" = *"fuji"* ]]; then

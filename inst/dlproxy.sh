@@ -59,7 +59,7 @@ if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-m64 -I$(dirname `which fccpx`)/../include#g" -e 's#-I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		sed -i -e "s#-mkl#-SSL2BLAMP#g" ./Makefile
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		make CC=fccpx CXX=FCCpx compile
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64
