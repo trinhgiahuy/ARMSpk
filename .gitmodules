@@ -97,9 +97,6 @@
 [submodule "dep/gem5_riken"]
 	path = dep/gem5_riken
 	url = https://github.com/RIKEN-RCCS/riken_simulator.git
-[submodule "conv_gemm"]
-	path = conv_gemm
-	url = https://gitlab.com/undertherain/buildcontainers.git
 [submodule "DLproxy"]
 	path = DLproxy
 	url = https://gitlab.com/undertherain/buildcontainers.git
