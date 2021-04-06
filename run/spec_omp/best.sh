@@ -21,7 +21,7 @@ mkdir -p $LOGDIR
 cd $APPDIR
 for BENCH in $BINARY; do
 	BM="`echo $BENCH | cut -d '|' -f1`"
-	COMP="`echo $BENCH | cut -d '|' -f2`"
+	if [ -z $1 ]; then  COMP="`echo $BENCH | cut -d '|' -f2`"; else COMP=$1; fi
 	SIZE="`echo $BENCH | cut -d '|' -f3`"
 	LOG="$LOGDIR/${BM}.log"
 	for NumOMP in $BESTCONF; do
