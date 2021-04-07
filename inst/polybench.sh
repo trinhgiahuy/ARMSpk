@@ -15,6 +15,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	spack load gcc@8.4.0
 elif [[ "$1" = *"fuji"* ]]; then
 	module load FujitsuCompiler/201903
+elif [[ "$1" = *"arm"* ]]; then
+	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
+	#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
 fi
 
 BM="polybench"
@@ -42,6 +45,11 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 		COMPILE="fccpx -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -I./utilities"
 		LINK="-Bstatic -lm"
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"arm"* ]]; then
+		COMPILE="armclang -mcpu=a64fx -march=armv8.2-a+sve -Ofast -ffast-math -flto -I./utilities"
+		#COMPILE="gcc -mcpu=native -march=armv8.2-a+sve -O3 -I./utilities"
+		LINK="-lm"
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#d    efine __SSC_MARK(hex)/' $FILE; done
 	fi
 	for BMconf in ${BINARYS}; do
 		BName="`echo ${BMconf} | cut -d '|' -f1`"
