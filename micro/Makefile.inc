@@ -1,0 +1,20 @@
+CC=fccpx
+CXX=FCCpx
+FC=frtpx
+COMMON=common/src/report.o
+LDLIBS=-Kopenmp -Bstatic
+
+FFLAGS=-Icommon/include -DDISABLE_VALIDATION $(FOPTIMIZE) -Bstatic
+CFLAGS=-Icommon/include -DDISABLE_VALIDATION $(COPTIMIZE) -Bstatic
+CXXFLAGS=-Icommon/include -DDISABLE_VALIDATION $(COPTIMIZE) -Bstatic
+
+%.o : %.F90
+	$(FC) -c $(FFLAGS) $< -o $@
+
+%.o : %.f90
+	$(FC) -c $(FFLAGS) $< -o $@
+
+OBJFILE=
+
+# main: $(OBJFILE) $(COMMON)
+#	$(FC) $^ $(LDLIBS) -o $@
