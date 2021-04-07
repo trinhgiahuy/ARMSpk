@@ -49,7 +49,7 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 		COMPILE="armclang -mcpu=a64fx -march=armv8.2-a+sve -Ofast -ffast-math -flto -I./utilities"
 		#COMPILE="gcc -mcpu=native -march=armv8.2-a+sve -O3 -I./utilities"
 		LINK="-lm"
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#d    efine __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	for BMconf in ${BINARYS}; do
 		BName="`echo ${BMconf} | cut -d '|' -f1`"
