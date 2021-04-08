@@ -7,6 +7,7 @@ export OMP_NUM_PARALELL=$NTHREADS
 export OMP_PROC_BIND=close
 export FLIB_FASTOMP=FALSE
 export FLIB_CNTL_BARRIER_ERR=FALSE
+export KMP_AFFINITY=granularity=fine,compact,1,0
 
 find -mindepth 2 -executable  -type f | sort | while read BIN; do
 	if lscpu | grep 'sve' >/dev/null 2>&1; then
@@ -23,6 +24,7 @@ find -mindepth 2 -executable  -type f | sort | while read BIN; do
 	echo -n $(basename $(dirname $BIN))
 	rm -f ${BIN}.log
 	for x in `seq 1 10`; do
+		if [[ "$BIN" = *"19.Adventure.region2.tune161011.armtest-M24.170727"* ]] && [ $NTHREADS -gt 24 ]; then continue; fi
 		$PIN $BIN >> ${BIN}.log 2>&1
 	done
 	if /bin/grep '^Walltime' ${BIN}.log >/dev/null 2>&1; then

@@ -9,7 +9,9 @@
 /SPEC_OMP/
 /polybench/
 /micro/src/*
+/fs2020/
 /dep/*.iso
+/dep/fs2020*.zip
 /dep/REVOCAP_Refiner-1.1.01.tgz
 /dep/modylas-mini-1.0.0.tar.gz
 /dep/silo-4.10.2.tar.gz
