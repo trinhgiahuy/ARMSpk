@@ -23,7 +23,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 48|1
 			 96|1"
 	export BESTCONF="24|1"
-	export SCALCONF="24|42 32|32 128|8"
+	export SCALCONF="24|42 81|12" #partitioning is complex and with 311 only 3, 24, 81, ... (3*(x^3), x=1,2,3,...) are valid ###32|32 128|8"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF="1|64 1|128 1|192 1|256
