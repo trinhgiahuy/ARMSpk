@@ -64,7 +64,7 @@ if [ ! -f $ROOTDIR/$BM/14.streamlike_pattern1/main ]; then
 	if ! [ -f $ROOTDIR/$BM/option.list ]; then
 		unzip -d $ROOTDIR/$BM/ $ROOTDIR/dep/fs2020_microkernel_tmp.zip && f=($ROOTDIR/$BM/*) && mv $ROOTDIR/$BM/*/* $ROOTDIR/$BM/ && rmdir "${f[@]}"
 	fi
-	patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+	patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
 	cat <<EOF > Makefile.inc
 DEF00=
 DEF01=

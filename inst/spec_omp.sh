@@ -160,7 +160,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
         cd -
         fusermount -u /tmp/mnt_$BM
         cd $ROOTDIR/$BM/
-        #patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+        #patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
         dump_omp_config $ROOTDIR/$BM/config/nedo.cfg
 	if [ -z $1 ]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 gross"

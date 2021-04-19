@@ -27,8 +27,8 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 	cd $ROOTDIR/$BM/
 	if [ ! -f ./polybench-c-4.2.1-beta.tar.gz ]; then wget https://downloads.sourceforge.net/project/polybench/polybench-c-4.2.1-beta.tar.gz; fi
 	tar xzf ./polybench-c-4.2.1-beta.tar.gz -C $ROOTDIR/$BM --strip-components 1
-	if patch --dry-run -s -f -p1 < $ROOTDIR/patches/0001-polybench-c-4.2.1-beta.patch; then
-		patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+	if patch --dry-run -s -f -p1 < $ROOTDIR/patches/*1-${BM}*.patch; then
+		patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
 	fi
 	if [ -z $1 ]; then
 		COMPILE="icc -O3 -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include -I./utilities"
