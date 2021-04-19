@@ -115,11 +115,13 @@ EOF
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -O3 -march=native -static/g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/-Bstatic//g' Makefile.inc
+		sed -i -e 's/CC=.*/CC=fcc/g' -e 's/CXX=.*/CXX=FCC/g' -e 's/FC=.*/FC=frt/g' -e 's/-Bstatic//g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/-Bstatic//g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"arm"* ]]; then
 		sed -i -e 's/CC=.*/CC=armclang/g' -e 's/CXX=.*/CXX=armclang++/g' -e 's/FC=.*/FC=armflang/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -mcpu=a64fx -march=armv8.2-a+sve -Ofast -ffast-math -flto/g' Makefile.inc
