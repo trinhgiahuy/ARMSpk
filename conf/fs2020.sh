@@ -1,15 +1,6 @@
 #!/bin/bash
 
-#Pre-defined Problem Sizes; PolyBench/C 4.0 comes with 5 pre-defined problem sizes.
-#The problem sizes are primarily derived from thememory requirements such that
-#different levels of the memory hierarchy are exercised.
-#- MINI: Less than 16KB of memory.  The problem may fit within the L1 (last level) cache.
-#- SMALL: Around 128KB of memory.  The problem should not fit within the L1 cache, but may fit L2.
-#- MEDIUM: Around 1MB of memory.  The problem should not fit within the L2 cache, but may fit L3.
-#- LARGE: Around 25MB of memory.  The problem should not fit within the L3 cache.
-#- EXTRALARGE: Around 120MB of memory.
-
-export APPDIR="./FS2020"
+export APPDIR="./fs2020"
 export BINARYS="01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main
 02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test
 03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1
@@ -35,7 +26,7 @@ export BINARYS="01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main
 export INPUT=""
 export NumRunsTEST=1
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="2m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"

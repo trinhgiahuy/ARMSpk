@@ -1,6 +1,6 @@
 diff -Nur fs2020.old/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main.c fs2020/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main.c
 --- fs2020.old/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main.c	2017-02-22 20:22:26.000000000 +0900
-+++ fs2020/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main.c	2021-04-19 17:55:12.672036080 +0900
++++ fs2020/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main.c	2021-04-19 19:37:15.946468046 +0900
 @@ -5,6 +5,13 @@
  #include <unistd.h>
  
@@ -39,7 +39,7 @@ diff -Nur fs2020.old/01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316
  
 diff -Nur fs2020.old/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c fs2020/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c
 --- fs2020.old/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c	2017-03-07 17:18:12.000000000 +0900
-+++ fs2020/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c	2021-04-19 17:55:12.747035773 +0900
++++ fs2020/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c	2021-04-19 19:37:16.103467381 +0900
 @@ -3,6 +3,13 @@
  #include <math.h>
  #include <omp.h>
@@ -80,35 +80,34 @@ diff -Nur fs2020.old/02.gravity-512.simple.0.N2048_seq_b1_prolog.170316/test.c f
  /*
 diff -Nur fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90 fs2020/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90
 --- fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90	2017-09-20 18:54:22.000000000 +0900
-+++ fs2020/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90	2021-04-19 17:55:12.839035396 +0900
-@@ -1,7 +1,22 @@
- #include "profiler.h"
- program nonbond_kernel
++++ fs2020/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90	2021-04-19 19:40:59.304524066 +0900
+@@ -10,6 +10,21 @@
+ contains
  
-+  use, intrinsic :: iso_c_binding
-   implicit none
-+  interface
-+  integer(C_INT) function SSC_MARK_START ( i,j ) bind ( c )
-+  use, intrinsic :: iso_c_binding
-+  integer(C_INT), value :: i,j
-+  !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
-+  end function
-+  integer(C_INT) function SSC_MARK_STOP ( i,j ) bind ( c )
-+  use, intrinsic :: iso_c_binding
-+  integer(C_INT),value :: i,j
-+  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
-+  end function
-+  end interface
-+  real :: mkrts, mkrte
-+  integer(C_INT) :: sscfake = 1
+   subroutine kernel
++    use, intrinsic :: iso_c_binding
++    interface
++    integer(C_INT) function SSC_MARK_START ( i,j ) bind ( c )
++    use, intrinsic :: iso_c_binding
++    integer(C_INT), value :: i,j
++    !!!DEC$ ATTRIBUTES C:: SSC_MARK_START
++    end function
++    integer(C_INT) function SSC_MARK_STOP ( i,j ) bind ( c )
++    use, intrinsic :: iso_c_binding
++    integer(C_INT),value :: i,j
++    !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
++    end function
++    end interface
++    double precision :: mkrts, mkrte, omp_get_wtime
++    integer(C_INT) :: sscfake = 1
  
-   call kernel
- 
+     ! local variables
+     real(4)                  :: dij1,dij2,dij3, rij2
 @@ -68,6 +83,8 @@
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
      PROF_START("Nonb15F")
  
@@ -118,16 +117,16 @@ diff -Nur fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/kernel_June_1.F90 fs2
      PROF_STOP("Nonb15F")
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
      Val=0.0d0
      do k=1,256
 diff -Nur fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/ssc.c fs2020/03.kernel_June1_Single_Tune_Full_pr64/ssc.c
 --- fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/03.kernel_June1_Single_Tune_Full_pr64/ssc.c	2021-04-19 17:55:12.930035023 +0900
++++ fs2020/03.kernel_June1_Single_Tune_Full_pr64/ssc.c	2021-04-19 19:37:16.519465621 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -145,7 +144,7 @@ diff -Nur fs2020.old/03.kernel_June1_Single_Tune_Full_pr64/ssc.c fs2020/03.kerne
 +}
 diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/kernel_july.f90 fs2020/04.kernel_July_Single_c_m1_rvl/kernel_july.f90
 --- fs2020.old/04.kernel_July_Single_c_m1_rvl/kernel_july.f90	2017-08-22 20:05:04.000000000 +0900
-+++ fs2020/04.kernel_July_Single_c_m1_rvl/kernel_july.f90	2021-04-19 17:55:12.981034814 +0900
++++ fs2020/04.kernel_July_Single_c_m1_rvl/kernel_july.f90	2021-04-19 19:40:59.388523711 +0900
 @@ -1,6 +1,20 @@
  #include "profiler.h"
  program nonbond_kernel
@@ -171,7 +170,7 @@ diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/kernel_july.f90 fs2020/04.ke
      integer,          pointer,contiguous :: natom(:,:), nb15_cell(:,:), nb15_list(:,:,:)
      integer,          pointer,contiguous :: virial_check(:,:,:)
      integer(1),       pointer,contiguous :: exclusion_mask1(:,:,:,:), exclusion_mask(:,:,:,:)
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
  
      call set_pointer( cell_pairlist, nb15_cell, nb15_list, atmcls,    &
@@ -180,7 +179,7 @@ diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/kernel_july.f90 fs2020/04.ke
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
      PROF_START("Nonb15F")
   
@@ -190,16 +189,16 @@ diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/kernel_july.f90 fs2020/04.ke
      PROF_STOP("Nonb15F")
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
      val=0.0d0
      do k = 1,256
 diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/ssc.c fs2020/04.kernel_July_Single_c_m1_rvl/ssc.c
 --- fs2020.old/04.kernel_July_Single_c_m1_rvl/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/04.kernel_July_Single_c_m1_rvl/ssc.c	2021-04-19 17:55:13.122034236 +0900
++++ fs2020/04.kernel_July_Single_c_m1_rvl/ssc.c	2021-04-19 19:37:16.721464767 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -217,7 +216,7 @@ diff -Nur fs2020.old/04.kernel_July_Single_c_m1_rvl/ssc.c fs2020/04.kernel_July_
 +}
 diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_june.F90 fs2020/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_june.F90
 --- fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_june.F90	2017-08-31 16:13:44.000000000 +0900
-+++ fs2020/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_june.F90	2021-04-19 17:55:13.190033957 +0900
++++ fs2020/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_june.F90	2021-04-19 19:40:59.522523146 +0900
 @@ -26,8 +26,22 @@
  program nonbond_kernel
  
@@ -237,7 +236,7 @@ diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_j
 +  !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
 +  end function
 +  end interface
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
  
    integer  :: step, nthread, MaxAtom, ncell
@@ -246,7 +245,7 @@ diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_j
      common /cb12/ cc_coord_pbc_z
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
  
    call readset_parameters(gparam)
@@ -256,16 +255,16 @@ diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/kernel_pairlist_j
  
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
  stop
  
 diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/ssc.c fs2020/05.PairList_June_Single_simu2_c_rvl_align/ssc.c
 --- fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/05.PairList_June_Single_simu2_c_rvl_align/ssc.c	2021-04-19 17:55:13.305033485 +0900
++++ fs2020/05.PairList_June_Single_simu2_c_rvl_align/ssc.c	2021-04-19 19:37:16.936463858 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -283,7 +282,7 @@ diff -Nur fs2020.old/05.PairList_June_Single_simu2_c_rvl_align/ssc.c fs2020/05.P
 +}
 diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.f90 fs2020/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.f90
 --- fs2020.old/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.f90	2017-08-04 09:23:42.000000000 +0900
-+++ fs2020/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.f90	2021-04-19 17:55:13.387033149 +0900
++++ fs2020/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.f90	2021-04-19 19:40:59.664522546 +0900
 @@ -1,6 +1,20 @@
  #include "profiler.h"
  program nonbond_kernel
@@ -309,7 +308,7 @@ diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.
      integer, pointer,contiguous :: num_nb15_calc1(:,:), num_nb15_calc(:,:)
      integer, pointer,contiguous :: nb15_calc_list1(:,:), nb15_calc_list(:,:)
      integer(1),pointer,contiguous :: exclusion_mask(:,:,:,:)
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
  
      call set_pointer( natom, cell_pairlist, cell_move, coord, trans1, &
@@ -318,7 +317,7 @@ diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
      PROF_START("PairList_July")
  
@@ -328,16 +327,16 @@ diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/kernel_pairlist_july.
      PROF_STOP("Nonb15F")
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
      val=0.d0
      do j=1,3000
        do i=1,200
 diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/ssc.c fs2020/06.PairList_July_Single_tune_20170901/ssc.c
 --- fs2020.old/06.PairList_July_Single_tune_20170901/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/06.PairList_July_Single_tune_20170901/ssc.c	2021-04-19 17:55:13.495032707 +0900
++++ fs2020/06.PairList_July_Single_tune_20170901/ssc.c	2021-04-19 19:37:17.120463080 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -355,7 +354,7 @@ diff -Nur fs2020.old/06.PairList_July_Single_tune_20170901/ssc.c fs2020/06.PairL
 +}
 diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_divdamp_ijsplit_tune03.f90 fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_divdamp_ijsplit_tune03.f90
 --- fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_divdamp_ijsplit_tune03.f90	2017-04-20 14:10:00.000000000 +0900
-+++ fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_divdamp_ijsplit_tune03.f90	2021-04-19 17:55:13.546032498 +0900
++++ fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_divdamp_ijsplit_tune03.f90	2021-04-19 19:40:59.784522040 +0900
 @@ -540,8 +540,23 @@
         VMTR_RGAMH,       &
         VMTR_RGSQRTH,     &
@@ -375,7 +374,7 @@ diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_div
 +    end function
 +    end interface
      integer :: i
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      !fj<
  
@@ -384,7 +383,7 @@ diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_div
  #endif
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  #ifdef USE_TIMER
      call gettod(t_all_0)
@@ -394,16 +393,16 @@ diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/postK_nicam_div
  #endif
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  #ifdef USE_TIMER
      write(*,*)"t_kernel ",t_kernel
      write(*,*)"t_all ",t_all
 diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c
 --- fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c	2021-04-19 17:55:13.645032092 +0900
++++ fs2020/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c	2021-04-19 19:37:17.327462204 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -421,7 +420,7 @@ diff -Nur fs2020.old/08.NICAM.divdamp.r4_collapsed.tune01.170420/ssc.c fs2020/08
 +}
 diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nicam_diffusion.f90 fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nicam_diffusion.f90
 --- fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nicam_diffusion.f90	2017-02-20 09:51:12.000000000 +0900
-+++ fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nicam_diffusion.f90	2021-04-19 17:55:13.713031813 +0900
++++ fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nicam_diffusion.f90	2021-04-19 19:40:59.879521639 +0900
 @@ -394,7 +394,22 @@
      use mod_oprt, only : &
          OPRT_snap_read, &
@@ -440,7 +439,7 @@ diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nica
 +    !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
 +    end function
 +    end interface
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      integer :: i
      !fj>
@@ -449,7 +448,7 @@ diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nica
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  
      call OPRT_snap_read( scl, scl_pl, kh, kh_pl, mfact )
@@ -459,16 +458,16 @@ diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/postK_nica
  
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
  #ifdef OUTPUTCHECK
      do l=1, ADM_lall
 diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c
 --- fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c	2021-04-19 17:55:13.803031444 +0900
++++ fs2020/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c	2021-04-19 19:37:17.545461282 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -486,7 +485,7 @@ diff -Nur fs2020.old/09.NICAM.diffusion.tune_r4.asis_opttune01.170220/ssc.c fs20
 +}
 diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/main.f90 fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/main.f90
 --- fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/main.f90	2017-03-29 15:04:28.000000000 +0900
-+++ fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/main.f90	2021-04-19 17:55:13.863031198 +0900
++++ fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/main.f90	2021-04-19 19:40:59.979521217 +0900
 @@ -22,8 +22,22 @@
      use mod_adm, only: AI=>ADM_AI, AJ=>ADM_AJ, K0=>ADM_KNONE
      use mod_grd, only: XDIR=>GRD_XDIR, YDIR=>GRD_YDIR, ZDIR=>GRD_ZDIR,GRD_xr_ij
@@ -506,7 +505,7 @@ diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.1
 +    !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
 +    end function
 +    end interface
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      integer :: i
  
@@ -515,7 +514,7 @@ diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.1
  #endif
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  #ifdef USE_TIMER
      call gettod(t_all_0)
@@ -525,16 +524,16 @@ diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.1
  #endif
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE 
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake 
  #ifdef USE_TIMER
      write(*,*)"t_kernel ",t_kernel
      write(*,*)"t_all ",t_all
 diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/ssc.c fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/ssc.c
 --- fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/ssc.c	2021-04-19 17:55:13.937030895 +0900
++++ fs2020/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.170418/ssc.c	2021-04-19 19:37:19.294453883 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -552,7 +551,7 @@ diff -Nur fs2020.old/10.NICAM.Horizontal_Adv_flux.r4_collapsed.tune03_kpara.30.1
 +}
 diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.f90 fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.f90
 --- fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.f90	2017-04-07 19:44:18.000000000 +0900
-+++ fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.f90	2021-04-19 17:55:13.996030653 +0900
++++ fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.f90	2021-04-19 19:41:00.062520866 +0900
 @@ -24,7 +24,22 @@
         ADM_lall,    &
         ADM_lall_pl, &
@@ -571,7 +570,7 @@ diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.
 +    !!!DEC$ ATTRIBUTES C:: SSC_MARK_STOP
 +    end function
 +    end interface
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      integer :: i
  
@@ -580,7 +579,7 @@ diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  #ifdef USE_TIMER
      call gettod(t_all_0)
@@ -590,16 +589,16 @@ diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/main.
  #endif
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE 
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake 
  #ifdef USE_TIMER
      write(*,*)"t_kernel ",t_kernel
      write(*,*)"t_all ",t_all
 diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c
 --- fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c	2021-04-19 17:55:14.087030280 +0900
++++ fs2020/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c	2021-04-19 19:37:19.686452224 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -617,7 +616,7 @@ diff -Nur fs2020.old/11.NICAM.Horizontal_Adv_limiter.tune_r4.tune01.170407/ssc.c
 +}
 diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/main.f90 fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/main.f90
 --- fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/main.f90	2016-08-31 20:13:26.000000000 +0900
-+++ fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/main.f90	2021-04-19 17:55:14.163029969 +0900
++++ fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/main.f90	2021-04-19 19:41:00.162520444 +0900
 @@ -1,7 +1,6 @@
  #include "profiler.h"
  
@@ -645,7 +644,7 @@ diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902
 +    !SSC_MARK_STOP
 +    end function
 +    end interface
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      integer :: i
  
@@ -654,7 +653,7 @@ diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902
  
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  #ifdef USE_TIMER
      call gettod(t_all_0)
@@ -664,16 +663,16 @@ diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902
  #endif
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  #ifdef USE_TIMER
      write(*,*)"t_kernel ",t_kernel
      write(*,*)"t_all ",t_all
 diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/ssc.c fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/ssc.c
 --- fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/ssc.c	2021-04-19 17:55:14.259029576 +0900
++++ fs2020/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902/ssc.c	2021-04-19 19:37:20.245449860 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -691,7 +690,7 @@ diff -Nur fs2020.old/12.NICAM.Vertical_Adv_limiter.tune_r4.asis_opttune01.160902
 +}
 diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90 fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90
 --- fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90	2016-09-06 13:36:30.000000000 +0900
-+++ fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90	2021-04-19 17:56:31.182722333 +0900
++++ fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90	2021-04-19 19:41:00.298519870 +0900
 @@ -23,8 +23,23 @@
      use mod_vmtr
      use mod_vi
@@ -712,7 +711,7 @@ diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90 fs2020
 +    !SSC_MARK_STOP
 +    end function
 +    end interface
-+    real :: mkrts, mkrte
++    double precision :: mkrts, mkrte, omp_get_wtime
 +    integer(C_INT) :: sscfake = 1
      integer :: i
      real(RP) rhogw_pl (ADM_gall_pl,ADM_kall,ADM_lall_pl)
@@ -721,7 +720,7 @@ diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90 fs2020
  #endif
      PROF_INIT
      PROF_START_ALL
-+    call cpu_time(mkrts)
++    mkrts = omp_get_wtime()
 +    sscfake = SSC_MARK_START(1,0)
  #ifdef USE_TIMER
      call gettod(t_all_0)
@@ -731,16 +730,16 @@ diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/main.f90 fs2020
  #endif
      PROF_STOP_ALL
 +    sscfake = SSC_MARK_STOP(1,0)
-+    call cpu_time(mkrte)
++    mkrte = omp_get_wtime()
      PROF_FINALIZE
-+    write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++    write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  #ifdef USE_TIMER
      write(*,*)"t_kernel ",t_kernel
      write(*,*)"t_all ",t_all
 diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c
 --- fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c	2021-04-19 17:55:14.405028977 +0900
++++ fs2020/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c	2021-04-19 19:37:20.853447288 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -758,7 +757,7 @@ diff -Nur fs2020.old/13.NICAM.vi_rhow_solver.tune_r4.asis.160902/ssc.c fs2020/13
 +}
 diff -Nur fs2020.old/14.streamlike_pattern1/main.f90 fs2020/14.streamlike_pattern1/main.f90
 --- fs2020.old/14.streamlike_pattern1/main.f90	2017-04-09 14:49:52.000000000 +0900
-+++ fs2020/14.streamlike_pattern1/main.f90	2021-04-19 17:55:14.447028805 +0900
++++ fs2020/14.streamlike_pattern1/main.f90	2021-04-19 19:41:00.451519224 +0900
 @@ -17,7 +17,23 @@
       streamlike_pattern2, &
       streamlike_pattern3
@@ -778,7 +777,7 @@ diff -Nur fs2020.old/14.streamlike_pattern1/main.f90 fs2020/14.streamlike_patter
 +  !SSC_MARK_STOP
 +  end function
 +  end interface
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
  
    real(RP),dimension(16900,96,1) :: metrics
@@ -787,7 +786,7 @@ diff -Nur fs2020.old/14.streamlike_pattern1/main.f90 fs2020/14.streamlike_patter
  
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
    PROF_START(1)
  !  do iteration = 1, SET_iteration ! 100 times
@@ -797,16 +796,16 @@ diff -Nur fs2020.old/14.streamlike_pattern1/main.f90 fs2020/14.streamlike_patter
    PROF_STOP(1)
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
    stop
  end program commonkernel_streamlike
 diff -Nur fs2020.old/14.streamlike_pattern1/ssc.c fs2020/14.streamlike_pattern1/ssc.c
 --- fs2020.old/14.streamlike_pattern1/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/14.streamlike_pattern1/ssc.c	2021-04-19 17:55:14.530028465 +0900
++++ fs2020/14.streamlike_pattern1/ssc.c	2021-04-19 19:37:21.345445207 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -824,7 +823,7 @@ diff -Nur fs2020.old/14.streamlike_pattern1/ssc.c fs2020/14.streamlike_pattern1/
 +}
 diff -Nur fs2020.old/15.streamlike_pattern2/main.f90 fs2020/15.streamlike_pattern2/main.f90
 --- fs2020.old/15.streamlike_pattern2/main.f90	2017-04-09 14:54:04.000000000 +0900
-+++ fs2020/15.streamlike_pattern2/main.f90	2021-04-19 17:55:14.581028256 +0900
++++ fs2020/15.streamlike_pattern2/main.f90	2021-04-19 19:41:00.560518764 +0900
 @@ -17,7 +17,23 @@
       streamlike_pattern2, &
       streamlike_pattern3
@@ -844,7 +843,7 @@ diff -Nur fs2020.old/15.streamlike_pattern2/main.f90 fs2020/15.streamlike_patter
 +  !SSC_MARK_STOP
 +  end function
 +  end interface
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
  
    real(RP),dimension(16900,96,1) :: metrics
@@ -853,7 +852,7 @@ diff -Nur fs2020.old/15.streamlike_pattern2/main.f90 fs2020/15.streamlike_patter
  
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
    PROF_START(1)
  !  do iteration = 1, SET_iteration ! 100 times
@@ -863,16 +862,16 @@ diff -Nur fs2020.old/15.streamlike_pattern2/main.f90 fs2020/15.streamlike_patter
    PROF_STOP(1)
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
    stop
  end program commonkernel_streamlike
 diff -Nur fs2020.old/15.streamlike_pattern2/ssc.c fs2020/15.streamlike_pattern2/ssc.c
 --- fs2020.old/15.streamlike_pattern2/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/15.streamlike_pattern2/ssc.c	2021-04-19 17:55:14.688027817 +0900
++++ fs2020/15.streamlike_pattern2/ssc.c	2021-04-19 19:37:22.253441366 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -890,7 +889,7 @@ diff -Nur fs2020.old/15.streamlike_pattern2/ssc.c fs2020/15.streamlike_pattern2/
 +}
 diff -Nur fs2020.old/16.streamlike_pattern3/main.f90 fs2020/16.streamlike_pattern3/main.f90
 --- fs2020.old/16.streamlike_pattern3/main.f90	2017-04-09 14:57:26.000000000 +0900
-+++ fs2020/16.streamlike_pattern3/main.f90	2021-04-19 17:55:14.739027608 +0900
++++ fs2020/16.streamlike_pattern3/main.f90	2021-04-19 19:41:00.670518300 +0900
 @@ -17,7 +17,23 @@
       streamlike_pattern2, &
       streamlike_pattern3
@@ -910,7 +909,7 @@ diff -Nur fs2020.old/16.streamlike_pattern3/main.f90 fs2020/16.streamlike_patter
 +  !SSC_MARK_STOP
 +  end function
 +  end interface
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
  
    real(RP),dimension(16900,96,1) :: metrics
@@ -919,7 +918,7 @@ diff -Nur fs2020.old/16.streamlike_pattern3/main.f90 fs2020/16.streamlike_patter
  
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
    PROF_START(1)
  !  do iteration = 1, SET_iteration ! 100 times
@@ -929,16 +928,16 @@ diff -Nur fs2020.old/16.streamlike_pattern3/main.f90 fs2020/16.streamlike_patter
    PROF_STOP(1)
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  
    stop
  end program commonkernel_streamlike
 diff -Nur fs2020.old/16.streamlike_pattern3/ssc.c fs2020/16.streamlike_pattern3/ssc.c
 --- fs2020.old/16.streamlike_pattern3/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/16.streamlike_pattern3/ssc.c	2021-04-19 17:55:16.238021463 +0900
++++ fs2020/16.streamlike_pattern3/ssc.c	2021-04-19 19:37:22.703439462 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -956,7 +955,7 @@ diff -Nur fs2020.old/16.streamlike_pattern3/ssc.c fs2020/16.streamlike_pattern3/
 +}
 diff -Nur fs2020.old/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/adventure_kernel_region0_tune4_arm_pad-acle.c fs2020/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/adventure_kernel_region0_tune4_arm_pad-acle.c
 --- fs2020.old/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/adventure_kernel_region0_tune4_arm_pad-acle.c	2017-08-21 18:15:02.000000000 +0900
-+++ fs2020/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/adventure_kernel_region0_tune4_arm_pad-acle.c	2021-04-19 17:55:16.290021250 +0900
++++ fs2020/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/adventure_kernel_region0_tune4_arm_pad-acle.c	2021-04-19 19:37:22.963438362 +0900
 @@ -14,6 +14,13 @@
  //#include <fj_tool/fipp.h>
  //#include <fjcoll.h>
@@ -1019,7 +1018,7 @@ diff -Nur fs2020.old/17.Adventure.region0.tune4pad-acle.armtest.20170821_resize/
    for(i=0; i<SIZE; i++){
 diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c
 --- fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c	2021-04-19 17:55:16.378020889 +0900
++++ fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c	2021-04-19 19:37:23.212437309 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -1037,7 +1036,7 @@ diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/ssc.c fs
 +}
 diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_dot_product.f90 fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_dot_product.f90
 --- fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_dot_product.f90	2016-10-11 14:46:56.000000000 +0900
-+++ fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_dot_product.f90	2021-04-19 17:55:16.428020684 +0900
++++ fs2020/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_dot_product.f90	2021-04-19 19:41:00.801517747 +0900
 @@ -1,9 +1,25 @@
  #include "profiler.h"
  program main
@@ -1060,7 +1059,7 @@ diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_
    integer omp_get_thread_num
 -  implicit none
 +
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
    integer(kind=  4),parameter :: N = 393216
  !  integer(kind=  4),parameter :: M = 12
@@ -1069,7 +1068,7 @@ diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_
    !
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
  
    do j=1,M
@@ -1079,16 +1078,16 @@ diff -Nur fs2020.old/18.Adventure.region1.tune01.outputcheck.160808.M24/test_dd_
    !
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  end program main
  !
  !
 diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c
 --- fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c	2021-04-19 17:55:16.527020278 +0900
++++ fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c	2021-04-19 19:37:23.678435337 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -1106,7 +1105,7 @@ diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/ssc.c fs
 +}
 diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_dot_product.f90 fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_dot_product.f90
 --- fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_dot_product.f90	2017-07-28 14:17:14.000000000 +0900
-+++ fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_dot_product.f90	2021-04-19 17:55:16.612019930 +0900
++++ fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_dot_product.f90	2021-04-19 19:41:00.913517274 +0900
 @@ -1,6 +1,22 @@
  #include "profiler.h"
  program main
@@ -1125,7 +1124,7 @@ diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_
 +  !SSC_MARK_STOP
 +  end function
 +  end interface
-+  real :: mkrts, mkrte
++  double precision :: mkrts, mkrte, omp_get_wtime
 +  integer(C_INT) :: sscfake = 1
    integer(kind=  4),parameter :: N = 393216
    integer(kind=  4),parameter :: M = 24
@@ -1134,7 +1133,7 @@ diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_
    !
    PROF_INIT
    PROF_START_ALL
-+  call cpu_time(mkrts)
++  mkrts = omp_get_wtime()
 +  sscfake = SSC_MARK_START(1,0)
    do j=1,M
       do i=1,N
@@ -1144,16 +1143,16 @@ diff -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/test_dd_
    !
    PROF_STOP_ALL
 +  sscfake = SSC_MARK_STOP(1,0)
-+  call cpu_time(mkrte)
++  mkrte = omp_get_wtime()
    PROF_FINALIZE
-+  write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ", &
++  write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ", &
 +     &  mkrte-mkrts, " sec", sscfake
  end program main
  !
  !
 diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F
 --- fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F	2016-07-28 08:48:48.000000000 +0900
-+++ fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F	2021-04-19 17:55:16.670019692 +0900
++++ fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F	2021-04-19 19:41:01.021516818 +0900
 @@ -1,7 +1,23 @@
  #include "profiler.h"
  
@@ -1173,7 +1172,7 @@ diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F fs
 +      !SSC_MARK_STOP
 +      end function
 +      end interface
-+      real :: mkrts, mkrte
++      double precision :: mkrts, mkrte, omp_get_wtime
 +      integer(C_INT) :: sscfake = 1
  
        ! num node and element
@@ -1182,7 +1181,7 @@ diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F fs
  
        PROF_INIT
        PROF_START_ALL
-+      call cpu_time(mkrts)
++      mkrts = omp_get_wtime()
 +      sscfake = SSC_MARK_START(1,0)
  
        FXYZ = 0.0
@@ -1192,15 +1191,15 @@ diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/main.F fs
  
        PROF_STOP_ALL
 +      sscfake = SSC_MARK_STOP(1,0)
-+      call cpu_time(mkrte)
++      mkrte = omp_get_wtime()
        PROF_FINALIZE
-+      write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ",
++      write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ",
 +     +  mkrte-mkrts, " sec", sscfake
        
        END program les3x
 diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c
 --- fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c	2021-04-19 17:55:16.736019422 +0900
++++ fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c	2021-04-19 19:37:24.663431170 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -1218,7 +1217,7 @@ diff -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/ssc.c fs2
 +}
 diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f
 --- fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f	2017-04-18 07:53:18.000000000 +0900
-+++ fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f	2021-04-19 17:55:16.787019213 +0900
++++ fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f	2021-04-19 19:41:01.139516320 +0900
 @@ -1,6 +1,22 @@
  #include "profiler.h"
        program main
@@ -1237,7 +1236,7 @@ diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f fs202
 +      !SSC_MARK_STOP
 +      end function
 +      end interface
-+      real :: mkrts, mkrte
++      double precision :: mkrts, mkrte, omp_get_wtime
 +      integer(C_INT) :: sscfake = 1
  
        integer*4 :: NP, NP_ORG, NV, NZ
@@ -1246,7 +1245,7 @@ diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f fs202
  
        PROF_INIT
        PROF_START_ALL
-+      call cpu_time(mkrts)
++      mkrts = omp_get_wtime()
 +      sscfake = SSC_MARK_START(1,0)
  !fj<
  
@@ -1256,16 +1255,16 @@ diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/main.f fs202
  
        PROF_STOP_ALL
 +      sscfake = SSC_MARK_STOP(1,0)
-+      call cpu_time(mkrte)
++      mkrte = omp_get_wtime()
        PROF_FINALIZE
-+      write(*,"(A,f11.6,A,I4)") "Walltime of the main kernel: ",
++      write(*,"(A,d17.10,A,I4)") "Walltime of the main kernel: ",
 +     +  mkrte-mkrts, " sec", sscfake
  !fj<
  
        end program main
 diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c
 --- fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c	1970-01-01 09:00:00.000000000 +0900
-+++ fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c	2021-04-19 17:55:16.892018782 +0900
++++ fs2020/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c	2021-04-19 19:37:25.286428535 +0900
 @@ -0,0 +1,14 @@
 +#include <ittnotify.h>
 +#include <signal.h>
@@ -1283,7 +1282,7 @@ diff -Nur fs2020.old/21.FFB.spmmv_vec8.170330.funroll_265225.170509/ssc.c fs2020
 +}
 diff -Nur fs2020.old/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc fs2020/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc
 --- fs2020.old/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc	2017-02-14 16:59:36.000000000 +0900
-+++ fs2020/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc	2021-04-19 17:55:17.054018118 +0900
++++ fs2020/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc	2021-04-19 19:37:25.345428285 +0900
 @@ -26,6 +26,13 @@
  #include "qwsintrin.h"
  #include "report.h"
@@ -1324,7 +1323,7 @@ diff -Nur fs2020.old/22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main.cc fs2020/22.QC
  }
 diff -Nur fs2020.old/23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main.cc fs2020/23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main.cc
 --- fs2020.old/23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main.cc	2017-07-20 12:53:50.000000000 +0900
-+++ fs2020/23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main.cc	2021-04-19 17:55:17.159017688 +0900
++++ fs2020/23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main.cc	2021-04-19 19:37:25.437427896 +0900
 @@ -26,6 +26,13 @@
  #include "qwsintrin.h"
  #include "report.h"
