@@ -65,7 +65,6 @@ if [ ! -f $ROOTDIR/$BM/14.streamlike_pattern1/main ]; then
 		unzip -d $ROOTDIR/$BM/ $ROOTDIR/dep/fs2020_microkernel_tmp.zip && f=($ROOTDIR/$BM/*) && mv $ROOTDIR/$BM/*/* $ROOTDIR/$BM/ && rmdir "${f[@]}"
 	fi
 	patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
-	exit
 	cat <<EOF > Makefile.inc
 DEF00=
 DEF01=
@@ -109,8 +108,8 @@ OBJFILE=
 	\$(FC) -c \$(FFLAGS) $< -o \$@
 EOF
 	if [ -z $1 ]; then
-		sed -i -e 's/CC=.*/CC=icc/g' -e 's/CXX=.*/CXX=icpc/g' -e 's/FC=.*/FC=ifort/g' -e 's#-Kopenmp -Bstatic#-qopenmp -g -static -static-intel -L${ADVISOR_2018_DIR}/lib64 -littnotify#g' Makefile.inc
-		sed -i -e 's#$(.OPTIMIZE) -Bstatic#$(DEF00) -fpp -std=gnu99 -qopenmp -O3 -g -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include#g' Makefile.inc
+		sed -i -e 's/CC=.*/CC=icc/g' -e 's/CXX=.*/CXX=icpc/g' -e 's/FC=.*/FC=ifort/g' -e 's#-Kopenmp -Bstatic#-qopenmp -static -static-intel -L${ADVISOR_2018_DIR}/lib64 -littnotify#g' Makefile.inc
+		sed -i -e 's#$(.OPTIMIZE) -Bstatic#$(DEF00) -fpp -std=gnu99 -qopenmp -O3 -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include#g' Makefile.inc
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/CC=.*/CC=gcc/g' -e 's/CXX=.*/CXX=g++/g' -e 's/FC=.*/FC=gfortran/g' -e 's/-Kopenmp -Bstatic/-fopenmp -static/g' Makefile.inc
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -O3 -march=native -static/g' Makefile.inc
