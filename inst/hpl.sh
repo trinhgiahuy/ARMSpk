@@ -42,7 +42,7 @@ if [ ! -f $ROOTDIR/$BM/bin/Linux_Intel64/xhpl ]; then
 	cd $ROOTDIR/$BM/
 	wget http://www.netlib.org/benchmark/hpl/hpl-2.2.tar.gz
 	tar xzf ./hpl-2.2.tar.gz -C $ROOTDIR/$BM --strip-components 1
-	patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+	patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
 	if [ -z $1 ]; then
 		sed -i -e 's/mpiicc/mpicc/' -e 's/ -L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' -e "s#\$(HOME)/hpl#$ROOTDIR/$BM#g" ./Make.Linux_Intel64
 	elif [[ "$1" = *"gnu"* ]]; then

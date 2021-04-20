@@ -15,6 +15,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	spack load gcc@8.4.0
 elif [[ "$1" = *"fuji"* ]]; then
 	module load FujitsuCompiler/201903
+elif [[ "$1" = *"arm"* ]]; then
+	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
+	#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
 fi
 
 BM="polybench"
@@ -24,8 +27,8 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 	cd $ROOTDIR/$BM/
 	if [ ! -f ./polybench-c-4.2.1-beta.tar.gz ]; then wget https://downloads.sourceforge.net/project/polybench/polybench-c-4.2.1-beta.tar.gz; fi
 	tar xzf ./polybench-c-4.2.1-beta.tar.gz -C $ROOTDIR/$BM --strip-components 1
-	if patch --dry-run -s -f -p1 < $ROOTDIR/patches/0001-polybench-c-4.2.1-beta.patch; then
-		patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+	if patch --dry-run -s -f -p1 < $ROOTDIR/patches/*1-${BM}*.patch; then
+		patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
 	fi
 	if [ -z $1 ]; then
 		COMPILE="icc -O3 -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include -I./utilities"
@@ -41,6 +44,11 @@ if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
 	elif [[ "$1" = *"fuji"* ]]; then
 		COMPILE="fccpx -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -I./utilities"
 		LINK="-Bstatic -lm"
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"arm"* ]]; then
+		COMPILE="armclang -mcpu=a64fx -march=armv8.2-a+sve -Ofast -ffast-math -flto -I./utilities"
+		#COMPILE="gcc -mcpu=native -march=armv8.2-a+sve -O3 -I./utilities"
+		LINK="-lm"
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	for BMconf in ${BINARYS}; do

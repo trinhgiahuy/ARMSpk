@@ -998,7 +998,10 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
 
             if not selfloop:
                 iaca_in_file.write('\n'.join(['"%s\\n\\t"'
-                                              % instr.split('#')[0].strip()
+                                              % sub(r'rep[nz]{,2}\s+nop\s+.*',
+                                                    r'nop',
+                                                    instr.split('#')[0].strip(),
+                                                    count=0, flags=IGNORECASE)
                                               for offset, instr
                                               in blkdata[bbid]['ASM']])
                                    + '\n')

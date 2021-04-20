@@ -212,7 +212,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		cd -
 	fi
         cd $ROOTDIR/$BM/
-        #patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+        #patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
         dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg
 	if [ -z $1 ]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 intspeed fpspeed intrate fprate"

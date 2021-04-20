@@ -50,7 +50,7 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	mkdir -p $ROOTDIR/$BM/
 	tar xzf $ROOTDIR/dep/modylas-mini-1.0.0.tar.gz -C $ROOTDIR/$BM --strip-components 1
 	cd $ROOTDIR/$BM/
-	patch -p1 < $ROOTDIR/patches/*1-${BM}*.patch
+	patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
 	cd $ROOTDIR/$BM/src
 	if [ -z $1 ]; then
 		rm make_setting; ln -s make_setting.intel make_setting
