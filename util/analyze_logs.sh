@@ -62,9 +62,63 @@ if [ ${ACTION} -le 1 ]; then
 fi
 
 if [ ${ACTION} -le 2 ]; then
-	for BDATA in `find -L ${D} -name '*.dcfg.json.bz2'`; do
-		echo ${BDATA%'.dcfg.json.bz2'}.log
-		/bin/grep 'Total \|Converted ' ${BDATA%'.dcfg.json.bz2'}.log
-		echo 'MAX:' `/bin/grep 'Converted ' ${BDATA%'.dcfg.json.bz2'}.log | cut -d'/' -f4 | sort -r -g | head -1`
-	done
+	if [[ "${BM}" = "spec_"* ]]; then
+		for E in `find -L ${D} -name '*.dcfg.json.bz2' -exec dirname {} \; | sort -u`; do
+			echo ${E}
+			jobSumLLVM=0; jobSumIACA=0; jobSumOSACA=0
+			for BDATA in `find -L ${E} -name '*.dcfg.json.bz2'`; do
+				echo -n "${BDATA%'.dcfg.json.bz2'}.log  ---  "
+				for TOOL in "LLVM" "IACA" "OSACA"; do
+					subWorkLoadMax="`/bin/grep \"$TOOL: Total \" ${BDATA%'.dcfg.json.bz2'}.log | cut -d':' -f3 | tr -s ' ' | tr 'e' 'E' | sort -r -g | head -1`"
+					echo -n "$TOOL MAX: $subWorkLoadMax  "
+					if [[ "$TOOL" = "LLVM" ]] && [ ! -z $subWorkLoadMax ]; then jobSumLLVM=$(echo "$jobSumLLVM + $subWorkLoadMax" | bc -l); fi
+					if [[ "$TOOL" = "IACA" ]] && [ ! -z $subWorkLoadMax ]; then jobSumIACA=$(echo "$jobSumIACA + $subWorkLoadMax" | bc -l); fi
+					if [[ "$TOOL" = "OSACA" ]] && [ ! -z $subWorkLoadMax ]; then jobSumOSACA=$(echo "$jobSumOSACA + $subWorkLoadMax" | bc -l); fi
+				done
+				echo
+			done
+			echo -e "\nSum for the (multi-workload) job: [LLVM; IACA; OSACA] = [ $jobSumLLVM ; $jobSumIACA ; $jobSumOSACA ]\n"
+		done
+	elif [[ "${BM}" = "ngsa"* ]]; then
+		for E in `find -L ${D} -name '*.dcfg.json.bz2' -exec dirname {} \; | xargs dirname | xargs dirname | sort -u`; do
+			rankMaxLLVM=0; rankMaxIACA=0; rankMaxOSACA=0
+			for F in `find -L ${E} -name '*.dcfg.json.bz2' -exec dirname {} \; | xargs dirname | sort -u`; do
+				echo ${E}
+				jobSumLLVM=0; jobSumIACA=0; jobSumOSACA=0
+				for BDATA in `find -L ${F} -name '*.dcfg.json.bz2'`; do
+					echo -n "${BDATA%'.dcfg.json.bz2'}.log  ---  "
+					for TOOL in "LLVM" "IACA" "OSACA"; do
+						subWorkLoadMax="`/bin/grep \"$TOOL: Total \" ${BDATA%'.dcfg.json.bz2'}.log | cut -d':' -f3 | tr -s ' ' | tr 'e' 'E' | sort -r -g | head -1`"
+						echo -n "$TOOL MAX: $subWorkLoadMax  "
+						if [[ "$TOOL" = "LLVM" ]] && [ ! -z $subWorkLoadMax ]; then jobSumLLVM=$(echo "$jobSumLLVM + $subWorkLoadMax" | bc -l); fi
+						if [[ "$TOOL" = "IACA" ]] && [ ! -z $subWorkLoadMax ]; then jobSumIACA=$(echo "$jobSumIACA + $subWorkLoadMax" | bc -l); fi
+						if [[ "$TOOL" = "OSACA" ]] && [ ! -z $subWorkLoadMax ]; then jobSumOSACA=$(echo "$jobSumOSACA + $subWorkLoadMax" | bc -l); fi
+					done
+					echo
+				done
+				if (( $(echo "$jobSumLLVM > $rankMaxLLVM" |bc -l) )); then rankMaxLLVM=$jobSumLLVM; fi
+				if (( $(echo "$jobSumIACA > $rankMaxIACA" |bc -l) )); then rankMaxIACA=$jobSumIACA; fi
+				if (( $(echo "$jobSumOSACA > $rankMaxOSACA" |bc -l) )); then rankMaxOSACA=$jobSumOSACA; fi
+			done
+			echo -e "\nMax for the (multi-rank/worload) job: [LLVM; IACA; OSACA] = [ $rankMaxLLVM ; $rankMaxIACA ; $rankMaxOSACA ]\n"
+		done
+	else
+		for E in `find -L ${D} -name '*.dcfg.json.bz2' -exec dirname {} \; | sort -u`; do
+			echo ${E}
+			jobMaxLLVM=0; jobMaxIACA=0; jobMaxOSACA=0
+			for BDATA in `find -L ${E} -name '*.dcfg.json.bz2'`; do
+				echo -n "${BDATA%'.dcfg.json.bz2'}.log  ---  "
+				for TOOL in "LLVM" "IACA" "OSACA"; do
+					#/bin/grep "$TOOL: Total CPU cycles on" ${BDATA%'.dcfg.json.bz2'}.log
+					rankMax="`/bin/grep \"$TOOL: Total \" ${BDATA%'.dcfg.json.bz2'}.log | cut -d':' -f3 | tr -s ' ' | tr 'e' 'E' | sort -r -g | head -1`"
+					echo -n "$TOOL MAX: $rankMax  "
+					if [[ "$TOOL" = "LLVM" ]] && [ ! -z $rankMax ] && (( $(echo "$rankMax > $jobMaxLLVM" |bc -l) )); then jobMaxLLVM=$rankMax; fi
+					if [[ "$TOOL" = "IACA" ]] && [ ! -z $rankMax ] && (( $(echo "$rankMax > $jobMaxIACA" |bc -l) )); then jobMaxIACA=$rankMax; fi
+					if [[ "$TOOL" = "OSACA" ]] && [ ! -z $rankMax ] && (( $(echo "$rankMax > $jobMaxOSACA" |bc -l) )); then jobMaxOSACA=$rankMax; fi
+				done
+				echo
+			done
+			echo -e "\nMax for the (multi-rank) job: [LLVM; IACA; OSACA] = [ $jobMaxLLVM ; $jobMaxIACA ; $jobMaxOSACA ]\n"
+		done
+	fi
 fi
