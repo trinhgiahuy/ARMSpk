@@ -321,7 +321,7 @@ cd $ROOTDIR
 
 echo -e '\nInit OSACA'
 BM="OSACA"
-VERSION="768a90de103755fa995c9f4e23e1f498e763aff2"
+VERSION="v0.4.1"
 cd $ROOTDIR/dep/$BM/
 if [[ "`git branch`" = *"master"* ]]; then
 	git checkout -b precision ${VERSION}

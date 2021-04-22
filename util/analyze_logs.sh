@@ -14,8 +14,8 @@ IACADIR=$ROOTDIR/dep/iaca-lin64
 export PATH=$IACADIR:$PATH; export IACAINCL=$IACADIR
 if [ ! -x "`which iaca 2>/dev/null`" ]; then echo "ERROR: IACA missing, please download from Intel iaca-version-v3.0-lin64.zip and unzip in ./dep folder"; exit; fi;
 
-ALL=("amg" "babelstream2gb" "babelstream14gb" "comd" "ffvc" "ffb" "hpcg" "hpl" "laghos" "macsio" "miniamr" "minife" "minitri" "modylas" "mvmc" "nekbone" "ngsa" "nicam" "ntchem" "qcd" "sw4lite" "swfft" "xsbench" "dlproxy" "polybench" "spec_cpu" "spec_omp")
-SUBBM=("polybench" "spec_cpu" "spec_omp")
+ALL=("amg" "babelstream2gb" "babelstream14gb" "comd" "ffvc" "ffb" "hpcg" "hpl" "laghos" "macsio" "miniamr" "minife" "minitri" "modylas" "mvmc" "nekbone" "ngsa" "nicam" "ntchem" "qcd" "sw4lite" "swfft" "xsbench" "dlproxy" "polybench" "spec_cpu" "spec_omp" "fs2020")
+SUBBM=("polybench" "spec_cpu" "spec_omp" "fs2020")
 #SMALL=("babelstream2gb" "babelstream14gb" "hpcg" "macsio" "minitri" "qcd" "xsbench" "dlproxy")
 #MEDIUM=("amg" "ffvc" "ffb" "hpl" "laghos" "modylas" "ngsa" "nicam")
 #LARGE=("comd" "miniamr" "minife" "mvmc" "nekbone" "ntchem" "sw4lite" "swfft")
