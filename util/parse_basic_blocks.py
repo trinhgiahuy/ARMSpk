@@ -136,6 +136,10 @@ def _get_OBJDUMP_ASSEMBLY(sde_files=None):
                 # llvm hates: `jg,pt ...`, check llvm-objdump to replace
                 fn_asm_in = sub(r'^jg,pt\s+', r'jg ', fn_asm_in,
                                 count=0, flags=IGNORECASE)
+                # llvm hates: `fldenv ...`, which sends llvm-mca into a
+                # lifelock, so instead of load we store and hope it's similar
+                fn_asm_in = sub(r'fldenv\s+', r'frstor ', fn_asm_in,
+                                count=0, flags=IGNORECASE)
                 # compiler doesnt like `data16 data16 ... <op>`
                 for x in [16, 32]:
                     fn_asm_in = sub(r'^(data%s\s){2,}' % x, r'data%s ' % x,
@@ -886,6 +890,7 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, blkdata=None,
     oparser = osaca.create_parser()
     oargs = oparser.parse_args(['--arch', ARCHS[arch],
                                 '--ignore-unknown', '--verbose',
+                                '--lcd-timeout', '60',
                                 path.realpath(__file__)])
     osaca.check_arguments(oargs, oparser)
     osaca_res_line = compile(r'^[\d\s\.]+$')
@@ -911,12 +916,15 @@ def simulate_cycles_with_OSACA(keep=False, arch=None, blkdata=None,
             osaca_in_file.write('# OSACA-BEGIN\n');
 
             if not selfloop:
-                osaca_in_file.write('\n'.join([instr
-                                               for offset, instr
+                osaca_in_file.write('\n'.join([sub(r'jmpq\s+\*%ds:', r'jmpq *', # osaca parser currently fails for 'jmpq *%ds:0x...'
+                                                   instr,
+                                                   count=0, flags=IGNORECASE)
+                                               for _, instr
                                                in blkdata[bbid]['ASM']])
                                     + '\n')
-            osaca_in_file.write('\n'.join([instr
-                                           for offset, instr
+            osaca_in_file.write('\n'.join([sub(r'jmpq\s+\*%ds:', r'jmpq *',
+                                               instr, count=0, flags=IGNORECASE)
+                                           for _, instr
                                            in blkdata[sink_bbid]['ASM']])
                                 + '\n')
 
@@ -998,18 +1006,21 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
 
             if not selfloop:
                 iaca_in_file.write('\n'.join(['"%s\\n\\t"'
-                                              % sub(r'rep[nz]{,2}\s+nop\s+.*',
+                                              % sub(r'rep[nz]{,2}\s+nop\s+.*',  # Error: invalid instruction `nop' after `repz'
                                                     r'nop',
                                                     instr.split('#')[0].strip(),
                                                     count=0, flags=IGNORECASE)
-                                              for offset, instr
+                                              for _, instr
                                               in blkdata[bbid]['ASM']])
                                    + '\n')
                 num_instr_in_input += len(blkdata[bbid]['ASM'])
 
             iaca_in_file.write('\n'.join(['"%s\\n\\t"'
-                                          % instr.split('#')[0].strip()
-                                          for offset, instr
+                                          % sub(r'rep[nz]{,2}\s+nop\s+.*',      # Error: invalid instruction `nop' after `repz'
+                                                r'nop',
+                                                instr.split('#')[0].strip(),
+                                                count=0, flags=IGNORECASE)
+                                          for _, instr
                                           in blkdata[sink_bbid]['ASM']])
                                + '\n')
             num_instr_in_input += len(blkdata[sink_bbid]['ASM'])
@@ -1029,7 +1040,9 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
                  iaca_in_fn], stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.stdout.decode(), p.stderr.decode()
         if 0 != p.returncode:
-            print('\nstdout: ', stdout, '\nstderr: ', stderr)
+            print('ERR in gcc compile:\nstdout: ', stdout,
+                  '\nstderr: ', stderr, '  for input (%s):\n```\n%s\n```\n'
+                  % (iaca_in_fn, iaca_in_fn.read()))
             continue
 
         # check block throughput with Intel's analysis tool
@@ -1040,7 +1053,9 @@ def simulate_cycles_with_IACA(keep=False, arch=None, blkdata=None,
                 '%s.o' % iaca_in_fn], stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.stdout.decode(), p.stderr.decode()
         if 0 != p.returncode:
-            print('\nstdout: ', stdout, '\nstderr: ', stderr)
+            print('ERR in iaca:\nstdout: ', stdout, '\nstderr: ', stderr,
+                  '  for input (%s):\n```\n%s\n```\n'
+                  % (iaca_in_fn, iaca_in_fn.read()))
             continue
 
         if selfloop or twoblockloop:
@@ -1279,12 +1294,10 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None,
             with open(mca_in_fn, 'w') as mca_in_file:
                 if not selfloop:
                     mca_in_file.write('\n'.join([instr
-                                                 for offset, instr
-                                                 in bdata['ASM']])
+                                                 for _, instr in bdata['ASM']])
                                       + '\n')
                 mca_in_file.write('\n'.join([instr
-                                             for offset, instr
-                                             in sink_bdata['ASM']])
+                                             for _, instr in sink_bdata['ASM']])
                                   + '\n')
 
             # mtriple: see http://clang.llvm.org/docs/CrossCompilation.html
@@ -1309,7 +1322,9 @@ def simulate_cycles_with_LLVM_MCA(blockdata=None, mapper=None, arch=None,
                          ' correctly modeled. Assume a latency of 100cy.\n',
                          r'', stderr, count=0, flags=IGNORECASE)
             if len(stderr):
-                print(stderr)
+                print('ERR in llvm-mca:\nstderr: ', stderr,
+                      '  for input (%s):\n```\n%s\n```\n'
+                      % (mca_in_fn, mca_in_fn.read()))
 
             num_instr, num_cycles, timeline_data = 0, 0, []
             for line in p.stdout.decode().splitlines():
