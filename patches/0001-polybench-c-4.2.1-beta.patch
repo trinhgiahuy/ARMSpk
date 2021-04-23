@@ -1,7 +1,23 @@
-diff -Nur polybench-c-4.2.1-beta/utilities/polybench.c polybench-c-4.2.1-beta-exp/utilities/polybench.c
---- polybench-c-4.2.1-beta/utilities/polybench.c	2016-05-20 18:30:49.000000000 +0900
-+++ polybench-c-4.2.1-beta-exp/utilities/polybench.c	2021-01-19 13:22:25.991996409 +0900
-@@ -365,6 +365,7 @@
+diff -Nur polybench.old/utilities/polybench.c polybench/utilities/polybench.c
+--- polybench.old/utilities/polybench.c	2016-05-20 18:30:49.000000000 +0900
++++ polybench/utilities/polybench.c	2021-04-23 18:55:25.632136730 +0900
+@@ -83,12 +83,9 @@
+ double rtclock()
+ {
+ #if defined(POLYBENCH_TIME) || defined(POLYBENCH_GFLOPS)
+-    struct timeval Tp;
+-    int stat;
+-    stat = gettimeofday (&Tp, NULL);
+-    if (stat != 0)
+-      printf ("Error return from gettimeofday: %d", stat);
+-    return (Tp.tv_sec + Tp.tv_usec * 1.0e-6);
++    struct timespec mkrtsclock;
++    clock_gettime(CLOCK_MONOTONIC, &mkrtsclock);
++    return (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);
+ #else
+     return 0;
+ #endif
+@@ -365,6 +362,7 @@
  {
    polybench_prepare_instruments ();
  #ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
@@ -9,7 +25,7 @@ diff -Nur polybench-c-4.2.1-beta/utilities/polybench.c polybench-c-4.2.1-beta-ex
    polybench_t_start = rtclock ();
  #else
    polybench_c_start = rdtsc ();
-@@ -376,6 +377,7 @@
+@@ -376,6 +374,7 @@
  {
  #ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
    polybench_t_end = rtclock ();
@@ -17,18 +33,18 @@ diff -Nur polybench-c-4.2.1-beta/utilities/polybench.c polybench-c-4.2.1-beta-ex
  #else
    polybench_c_end = rdtsc ();
  #endif
-@@ -399,7 +401,7 @@
+@@ -399,7 +398,7 @@
  		 (double)(polybench_t_end - polybench_t_start)) / 1000000000);
  #else
  # ifndef POLYBENCH_CYCLE_ACCURATE_TIMER
 -      printf ("%0.6f\n", polybench_t_end - polybench_t_start);
-+      printf ("Walltime of the main kernel: %0.6f sec\n", polybench_t_end - polybench_t_start);
++      printf ("Walltime of the main kernel: %0.15lf sec\n", polybench_t_end - polybench_t_start);
  # else
        printf ("%Ld\n", polybench_c_end - polybench_c_start);
  # endif
-diff -Nur polybench-c-4.2.1-beta/utilities/polybench.h polybench-c-4.2.1-beta-exp/utilities/polybench.h
---- polybench-c-4.2.1-beta/utilities/polybench.h	2016-05-20 18:30:49.000000000 +0900
-+++ polybench-c-4.2.1-beta-exp/utilities/polybench.h	2021-01-19 13:19:29.504716262 +0900
+diff -Nur polybench.old/utilities/polybench.h polybench/utilities/polybench.h
+--- polybench.old/utilities/polybench.h	2016-05-20 18:30:49.000000000 +0900
++++ polybench/utilities/polybench.h	2021-04-23 18:51:45.796047743 +0900
 @@ -217,6 +217,11 @@
  extern void polybench_timer_stop();
  extern void polybench_timer_print();
