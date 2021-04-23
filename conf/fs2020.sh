@@ -34,7 +34,8 @@ export RUNVTUNE="no"
 if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 	# on "normal" Xeon
 	export TESTCONF="1 12 24 36 48"
-	export BESTCONF="1 12 24 36 48"
+	export BESTCONF="12"
+	export SCALCONF="???"
 elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 	# on one of the Phi (knl)
 	export TESTCONF=""
