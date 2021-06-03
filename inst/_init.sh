@@ -327,7 +327,7 @@ if [ ! -f $ROOTDIR/dep/$BM/bin/sst-info ]; then
 	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall_11dot0dot0_SeriesAdditionalExternalComponents/#intel-pin-tool-317-98314
 	wget https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
 	tar xzf pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
-	export PIN_HOME=`pwd`/pin-3.17-98314-g0c048d619-gcc-linux
+	export PIN_HOME=$ROOTDIR/dep/$BM/pin-3.17-98314-g0c048d619-gcc-linux
 	export INTEL_PIN_DIRECTORY=$PIN_HOME
 	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall10dot1dot0SeriesDetailedBuildInstructions/
 	# 'master' is the latest STABLE versions of SST
