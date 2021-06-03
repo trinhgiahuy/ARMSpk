@@ -19,7 +19,7 @@ sleep 10
 
 echo -e '\nInstalling known dependencies'
 if [[ -f /etc/redhat-release ]];then
-	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep perf glibc-static libstdc++-static ncurses-static
+	sudo yum -y install cmake autoconf automake libtool cpupowerutils gcc libstdc++ gcc-c++ gcc-gfortran bzip2 patch zlib-devel ncurses-devel kernel-devel bc gawk coreutils grep perf glibc-static libstdc++-static ncurses-static libtool-ltdl-devel
 	# vim screen
 	# for Intel Parallel XE: gtk2 gtk3 pango xorg-x11-server-Xorg
 else
@@ -315,6 +315,63 @@ if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
 		echo "" | scons build/ARM/gem5.opt -j $(nproc)
 	else
 		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` scons build/ARM/gem5.opt -j $(nproc)
+	fi
+fi
+cd $ROOTDIR
+
+BM="sst"
+if [ ! -f $ROOTDIR/dep/$BM/bin/sst-info ]; then
+	cd $ROOTDIR/dep/$BM
+	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
+	spack load gcc@8.4.0 ; spack load cmake@3.17.3
+	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall_11dot0dot0_SeriesAdditionalExternalComponents/#intel-pin-tool-317-98314
+	wget https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
+	tar xzf pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
+	export PIN_HOME=`pwd`/pin-3.17-98314-g0c048d619-gcc-linux
+	export INTEL_PIN_DIRECTORY=$PIN_HOME
+	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall10dot1dot0SeriesDetailedBuildInstructions/
+	# 'master' is the latest STABLE versions of SST
+	#git clone -b master https://github.com/sstsimulator/sst-core.git
+	#git clone -b master https://github.com/sstsimulator/sst-elements.git
+	#git clone -b master https://github.com/sstsimulator/sst-macro.git
+	#git clone -b master https://github.com/sstsimulator/sst-tools.git
+	#git clone -b v10.1.0_Final https://github.com/sstsimulator/sst-external-element.git
+	#git clone -b master https://github.com/sstsimulator/sst-tutorials
+	#git clone -b 1.0.0 https://github.com/umd-memsys/DRAMsim3.git
+	for SUB in sst-core sst-elements sst-macro sst-tools sst-external-element sst-tutorials DRAMsim3; do
+		cd $ROOTDIR/dep/$BM/$SUB
+		git apply --check $ROOTDIR/patches/*1-${SUB}*.patch
+		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${SUB}*.patch; fi
+	done
+	#
+	cd $ROOTDIR/dep/$BM/DRAMsim3
+	export DRAMSIM3_HOME=$ROOTDIR/dep/$BM/DRAMsim3
+	mkdir -p build; cd build; cmake ..; make -j
+	#
+	cd $ROOTDIR/dep/$BM/sst-core
+	export SST_CORE_HOME=$ROOTDIR/dep/$BM
+	export SST_CORE_ROOT=$ROOTDIR/dep/$BM/sst-core
+	./autogen.sh
+	./configure --prefix=$SST_CORE_HOME --disable-mpi
+	make all -j V=1 && make install
+	export PATH=$SST_CORE_HOME/bin:$PATH
+	#
+	cd $ROOTDIR/dep/$BM/sst-elements
+	export SST_ELEMENTS_HOME=$ROOTDIR/dep/$BM
+	export SST_ELEMENTS_ROOT=$ROOTDIR/dep/$BM/sst-elements
+	./autogen.sh
+	./configure --prefix=$SST_ELEMENTS_HOME --with-sst-core=$SST_CORE_HOME --with-pin=$PIN_HOME --with-dramsim3=$DRAMSIM3_HOME
+	make all -j V=1 && make install
+	cd $ROOTDIR/dep/$BM/sst-external-element/src
+	make
+	# for loading
+	export SST_CORE_HOME=$ROOTDIR/dep/$BM
+	export PATH=$SST_CORE_HOME/bin:$PATH
+	export LD_LIBRARY_PATH=$SST_CORE_HOME/lib:$LD_LIBRARY_PATH
+	if ! which sst-info >/dev/null 2>&1; then
+		echo "ERR: something went wrong in SST install"
+	else
+		echo "INFO: check if we have all we need: http://sst-simulator.org/SSTPages/SSTBuildAndInstall10dot1dot0SeriesDetailedBuildInstructions/#configuration-selection-for-internal-elements-and-optionalrequired-external-components"
 	fi
 fi
 cd $ROOTDIR

@@ -17,4 +17,10 @@
 /dep/silo-4.10.2.tar.gz
 /dep/silo-4.10.2/
 /dep/iaca-lin64/
+/dep/sst/bin/
+/dep/sst/etc/
+/dep/sst/include/
+/dep/sst/lib/
+/dep/sst/libexec/
+/dep/sst/pin*
 /log/

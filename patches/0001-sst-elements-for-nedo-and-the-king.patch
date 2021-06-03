@@ -1,0 +1,120 @@
+From 72f133b469d4072c6abe5d3b1cf3ebafe52c1826 Mon Sep 17 00:00:00 2001
+From: Jens Domke <domke.j.aa@m.titech.ac.jp>
+Date: Thu, 3 Jun 2021 15:09:53 +0900
+Subject: [PATCH] sst-elements: for nedo and the king
+
+---
+ src/sst/elements/ariel/frontend/pin3/fesimple.cc | 66 ++++++++++++++++++++----
+ 1 file changed, 56 insertions(+), 10 deletions(-)
+
+diff --git a/src/sst/elements/ariel/frontend/pin3/fesimple.cc b/src/sst/elements/ariel/frontend/pin3/fesimple.cc
+index cc9cde5..6dca9e9 100644
+--- a/src/sst/elements/ariel/frontend/pin3/fesimple.cc
++++ b/src/sst/elements/ariel/frontend/pin3/fesimple.cc
+@@ -131,6 +131,7 @@ struct timeval offset_tv;
+ #if !defined(__APPLE__)
+ struct timespec offset_tp_mono;
+ struct timespec offset_tp_real;
++int mapped_clockgettime(clockid_t clock, struct timespec *tp);
+ #endif
+ 
+ /****************************************************************/
+@@ -445,6 +446,22 @@ VOID WriteInstructionReadOnly(THREADID thr, ADDRINT* readAddr, UINT32 readSize,
+ 
+ }
+ 
++VOID WriteInstructionMultiReadOnly(THREADID thr, PIN_MULTI_MEM_ACCESS_INFO* aInfo,
++            ADDRINT ip, UINT32 instClass, UINT32 simdOpWidth)
++{
++
++    if(enable_output) {
++        if(thr < core_count) {
++            WriteStartInstructionMarker(thr, ip);
++            for (UINT32 i = 0; i < aInfo->numberOfMemops; i++)
++                WriteInstructionRead( &(aInfo->memop[i].memoryAddress), aInfo->memop[i].bytesAccessed,
++                                      thr, ip, instClass, simdOpWidth );
++            WriteEndInstructionMarker(thr, ip);
++        }
++    }
++
++}
++
+ VOID WriteNoOp(THREADID thr, ADDRINT ip)
+ {
+     if(enable_output) {
+@@ -553,14 +570,25 @@ VOID InstrumentInstruction(INS ins, VOID *v)
+                 IARG_UINT32, simdOpWidth,
+                 IARG_END);
+     } else if( INS_IsMemoryRead(ins) ) {
+-        INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)
+-                WriteInstructionReadOnly,
+-                IARG_THREAD_ID,
+-                IARG_MEMORYREAD_EA, IARG_UINT32, INS_MemoryReadSize(ins),
+-                IARG_INST_PTR,
+-                IARG_UINT32, instClass,
+-                IARG_UINT32, simdOpWidth,
+-                IARG_END);
++        if(INS_hasKnownMemorySize(ins)) {
++            INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)
++                    WriteInstructionReadOnly,
++                    IARG_THREAD_ID,
++                    IARG_MEMORYREAD_EA, IARG_UINT32, INS_MemoryReadSize(ins),
++                    IARG_INST_PTR,
++                    IARG_UINT32, instClass,
++                    IARG_UINT32, simdOpWidth,
++                    IARG_END);
++        } else {
++            INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)
++                    WriteInstructionMultiReadOnly,
++                    IARG_THREAD_ID,
++                    IARG_MULTI_MEMORYACCESS_EA,
++                    IARG_INST_PTR,
++                    IARG_UINT32, instClass,
++                    IARG_UINT32, simdOpWidth,
++                    IARG_END);
++        }
+     } else if( INS_IsMemoryWrite(ins) ) {
+         INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)
+                 WriteInstructionWriteOnly,
+@@ -639,11 +667,16 @@ void mapped_ariel_enable()
+     /* ENABLE */
+     enable_output = true;
+ 
++    // don't wanna calc time from cycles and make mistakes, so lets get it here
++    struct timespec mkrtsclock;
++    assert(0 == mapped_clockgettime(CLOCK_MONOTONIC, &mkrtsclock));
++    double mkrtsclock_now = mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001;
++
+     /* UNLOCK */
+     PIN_ReleaseLock(&mainLock);
+ 
+-    fprintf(stderr, "ARIEL: Enabling memory and instruction tracing from program control at simulated Ariel cycle %" PRIu64 ".\n",
+-            tunnel->getCycles());
++    fprintf(stderr, "ARIEL: Enabling memory and instruction tracing from program control at simulated Ariel cycle %" PRIu64 " or time stamp (in s): %0.15lf\n",
++            tunnel->getCycles(), mkrtsclock_now);
+     fflush(stdout);
+     fflush(stderr);
+ }
+@@ -743,6 +776,19 @@ void mapped_ariel_fence(void *virtualAddress)
+     ADDRINT ip = IARG_INST_PTR;
+ 
+     WriteFenceInstructionMarker(thr, ip);
++
++    if (StartupMode.Value() != 1 && enable_output) {
++        // don't wanna calc time from cycles and make mistakes, so lets get it here
++        struct timespec mkrtsclock;
++        assert(0 == mapped_clockgettime(CLOCK_MONOTONIC, &mkrtsclock));
++        double mkrtsclock_now = mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001;
++
++        enable_output = false;
++        fprintf(stderr, "ARIEL: Disabling memory and instruction tracing from program control at simulated Ariel cycle %" PRIu64 " or time stamp (in s): %0.15lf\n",
++                tunnel->getCycles(), mkrtsclock_now);
++        fflush(stdout);
++        fflush(stderr);
++    }
+ }
+ 
+ int ariel_mlm_memcpy(void* dest, void* source, size_t size) {
+-- 
+1.8.3.1
+

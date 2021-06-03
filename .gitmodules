@@ -100,3 +100,24 @@
 [submodule "DLproxy"]
 	path = DLproxy
 	url = https://gitlab.com/undertherain/buildcontainers.git
+[submodule "dep/sst/sst-core"]
+	path = dep/sst/sst-core
+	url = https://github.com/sstsimulator/sst-core.git
+[submodule "dep/sst/sst-elements"]
+	path = dep/sst/sst-elements
+	url = https://github.com/sstsimulator/sst-elements.git
+[submodule "dep/sst/sst-macro"]
+	path = dep/sst/sst-macro
+	url = https://github.com/sstsimulator/sst-macro.git
+[submodule "dep/sst/sst-tools"]
+	path = dep/sst/sst-tools
+	url = https://github.com/sstsimulator/sst-tools.git
+[submodule "dep/sst/sst-tutorials"]
+	path = dep/sst/sst-tutorials
+	url = https://github.com/sstsimulator/sst-tutorials
+[submodule "dep/sst/DRAMsim3"]
+	path = dep/sst/DRAMsim3
+	url = https://github.com/umd-memsys/DRAMsim3.git
+[submodule "dep/sst/sst-external-element"]
+	path = dep/sst/sst-external-element
+	url = https://github.com/sstsimulator/sst-external-element.git
