@@ -63,7 +63,7 @@ if [ ! -f $ROOTDIR/$BM/test/nek_mgrid/nekbone ]; then
 		sed -i -e 's/-ipo -xHost/-CcdRR8 -Cpp -Fixed -O3 -Kfast -KA64FX -KSVE -KARMV8_3_A -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's# -mkl-static##g' -e "s# -mkl# -SSL2BLAMP#g" $ROOTDIR/$BM/src/makefile.template
 		sed -i -e 's/gfortran/frt/g' -e 's/-fdefault-real-8 -x f77-cpp-input/-CcdRR8 -Cpp -Fixed -O3 -Kfast -KA64FX -KSVE -KARMV8_3_A -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' $ROOTDIR/$BM/src/makenek.inc
 		sed -i -e 's/^CC=.*/CC=mpifcc/g' -e 's/^F77=.*/F77=mpifrt/g' -e 's/-ipo -xHost/-CcdRR8 -Cpp -Fixed -O3 -Kfast -KA64FX -KSVE -KARMV8_3_A -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' -e 's# -mkl-static##g' -e "s# -mkl# -SSL2BLAMP#g" ./makenek
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		for FILE in `/usr/bin/grep 'log2(' -r ../../ | cut -d':' -f1 | sort -u`; do sed -i -e 's/log2(/log2XXX(/g' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2

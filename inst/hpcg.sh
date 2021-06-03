@@ -66,7 +66,7 @@ if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		../configure MPI_GCC_OMP
 		sed -i -e 's/^CXX .*=.*/CXX = mpiFCCpx/g' -e 's/-O3/-O3 -Kfast/g' ./setup/Make.MPI_GCC_OMP
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		../configure MPI_GCC_OMP
 		sed -i -e 's/^CXX .*=.*/CXX = FCCpx/g' -e 's/^HPCG_OPTS .*=.*/HPCG_OPTS = -DHPCG_NO_MPI/g' -e 's/-O3/-O3 -Bstatic/g' ./setup/Make.MPI_GCC_OMP

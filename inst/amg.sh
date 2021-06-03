@@ -56,7 +56,7 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/^CC =.*/CC = mpifccpx/g' -e 's/-ipo -xHost/-Kfast/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/define HYPRE_MPI_INT MPI_LONG_LONG.*/define HYPRE_MPI_INT MPI_LONG_LONG_INT/g' ./HYPRE.h
 		sed -i -e 's/^CC =.*/CC = fccpx/g' -e 's/ -DTIMER_USE_MPI//g' -e 's/-ipo -xHost/-DHYPRE_SEQUENTIAL=1 -Bstatic/g' ./Makefile.include

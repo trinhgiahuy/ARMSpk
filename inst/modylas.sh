@@ -61,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -e 's/^FC =.*/FC = frtpx/g' -e "s#^CC =.*#CC = fccpx -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#mfunc=2#mfunc=2 -O3 -march=native -I$ROOTDIR/dep/mpistub/include/mpistub\nLIBS += -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic#g" ./make_setting

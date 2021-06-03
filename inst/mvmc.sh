@@ -61,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"fuji"* ]]; then
 		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64
 		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a
