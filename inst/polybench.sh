@@ -22,7 +22,7 @@ fi
 
 BM="polybench"
 source $ROOTDIR/conf/${BM}.sh
-if [ ! -f $ROOTDIR/$BM/linear-algebra/blas/gemm/gemm ]; then
+if ! [ $(find $ROOTDIR/$BM/linear-algebra/blas/gemm -executable -type f | wc -l) -ge 1 ]; then
 	mkdir -p $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/
 	if [ ! -f ./polybench-c-4.2.1-beta.tar.gz ]; then wget https://downloads.sourceforge.net/project/polybench/polybench-c-4.2.1-beta.tar.gz; fi
