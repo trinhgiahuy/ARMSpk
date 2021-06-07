@@ -1180,7 +1180,6 @@ diff --color -Nur fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/
    end do
    !
  !  write(6,'(e30.20)') real(vector_o(1),kind=8)
-Binary files fs2020.old/19.Adventure.region2.tune161011.armtest-M24.170727/.test_dd_dot_product.f90.swp and fs2020/19.Adventure.region2.tune161011.armtest-M24.170727/.test_dd_dot_product.f90.swp differ
 diff --color -Nur fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/callap_kernel2.F fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/callap_kernel2.F
 --- fs2020.old/20.FFB.callap_kernel2.nodebase_160127.asis.160805/callap_kernel2.F	2016-07-28 08:49:24.000000000 +0900
 +++ fs2020/20.FFB.callap_kernel2.nodebase_160127.asis.160805/callap_kernel2.F	2021-06-07 14:54:38.352136525 +0900
