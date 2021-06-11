@@ -45,6 +45,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0
 elif [[ "$1" = *"fuji"* ]]; then
+	sleep 0
+elif [[ "$1" = *"gem5"* ]]; then
 	module load FujitsuCompiler/201903
 elif [[ "$1" = *"arm"* ]]; then
 	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
@@ -121,7 +123,8 @@ EOF
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/-Bstatic//g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "`hostname -s`" = *"peach"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"gem5"* ]]; then
+		sed -i -e 's/-Bstatic//g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"arm"* ]]; then
 		sed -i -e 's/CC=.*/CC=armclang/g' -e 's/CXX=.*/CXX=armclang++/g' -e 's/FC=.*/FC=armflang/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
