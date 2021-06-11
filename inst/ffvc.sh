@@ -30,7 +30,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
-	module load FujitsuCompiler/202007
+	sleep 0
+elif [[ "$1" = *"gem5"* ]]; then
+	#module load FujitsuCompiler/202007
 	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
 else
 	echo 'wrong compiler'
@@ -59,11 +61,9 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
-	elif [[ "$1" = *"fuji"* ]]; then
-		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
+	elif [[ "$1" = *"gem5"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
-		sed -i -e "s#\$(LIBS).*#\$(LIBS) -L$ROOTDIR/$BM -Bstatic#g" ./FFV/Makefile
+		sed -i -e 's/Kfast/Kfast,nolargepage/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	fi
