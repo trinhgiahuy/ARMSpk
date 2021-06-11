@@ -8,7 +8,7 @@ function do_dir {
 	cat ../Makefile.inc >> Makefile
 
 	local OBJFILES="$(find . -maxdepth 1 -iname '*.[cCsSfF]' -or -iname '*.f90' -or -iname '*.cc' | cut -c3-)"
-	local MAINFILE="$(/bin/grep -l -e '[^a-zA-Z]main' -i -e program ${OBJFILES})"
+	local MAINFILE="$(/bin/grep -l -e '[^a-zA-Z]main[[:space:]]*(' -i -e program ${OBJFILES})"
 	local BIN=${MAINFILE%.*}
 	local EXT=${MAINFILE##*.}
 
@@ -106,6 +106,7 @@ OBJFILE=
 
 %.o : %.f90
 	\$(FC) -c \$(FFLAGS) $< -o \$@
+
 EOF
 	if [ -z $1 ]; then
 		sed -i -e 's/CC=.*/CC=icc/g' -e 's/CXX=.*/CXX=icpc/g' -e 's/FC=.*/FC=ifort/g' -e 's#-Kopenmp -Bstatic#-qopenmp -static -static-intel -L${ADVISOR_2018_DIR}/lib64 -littnotify#g' Makefile.inc
