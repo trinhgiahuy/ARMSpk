@@ -78,9 +78,9 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		elif [[ "$1" = *"gnu"* ]]; then
 			sed -i -e 's/CC = cc/CC = gcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -march=native/g' ./Makefile.in
 		elif [[ "$1" = *"fuji"* ]]; then
-			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto/g' ./Makefile.in
+			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		elif [[ "$1" = *"gem5"* ]]; then
-			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto -ffj-no-largepage/g' ./Makefile.in
+			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto -ffj-no-largepage/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		fi
 		make
 		cd $ROOTDIR/$BM/
