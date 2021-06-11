@@ -67,11 +67,11 @@ if [ ! -f $ROOTDIR/$BM/build/bin/xhpcg ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		../configure MPI_GCC_OMP
-		sed -i -e 's/^CXX .*=.*/CXX = mpiFCCpx/g' -e 's/-O3/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' ./setup/Make.MPI_GCC_OMP
+		sed -i -e 's/^CXX .*=.*/CXX = mpiFCCpx/g' -e 's/-O3/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' -e 's/-ftree-vectorizer-verbose=0//g' ./setup/Make.MPI_GCC_OMP
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		../configure MPI_GCC_OMP
-		sed -i -e 's/^CXX .*=.*/CXX = FCCpx/g' -e 's/-O3/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' -e 's/^HPCG_OPTS .*=.*/HPCG_OPTS = -DHPCG_NO_MPI/g' ./setup/Make.MPI_GCC_OMP
+		sed -i -e 's/^CXX .*=.*/CXX = FCCpx/g' -e 's/-O3/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' -e 's/-ftree-vectorizer-verbose=0//g' -e 's/^HPCG_OPTS .*=.*/HPCG_OPTS = -DHPCG_NO_MPI/g' ./setup/Make.MPI_GCC_OMP
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	make
