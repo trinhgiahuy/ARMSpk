@@ -51,6 +51,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ ! -f ./hypre-2.10.0b/src/hypre/lib/libHYPRE.a ]; then
 		if ! [ -f ./hypre-2.10.0b.tar.gz ]; then wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.10.0b.tar.gz; fi
+		if ! [ -f ./hypre-2.10.0b.tar.gz ]; then echo "ERR: download failed"; exit 1; fi
 		tar xzf hypre-2.10.0b.tar.gz
 		cd ./hypre-2.10.0b/src
 		if [ -z $1 ]; then
@@ -59,10 +60,10 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			./configure --disable-fortran -with-openmp CC=mpicc CFLAGS="-O3 -march=native" CXX=mpicxx CXXFLAGS="-O3 -march=native" F77=mpif77 FFLAGS="-O3 -march=native"
 		elif [[ "$1" = *"fuji"* ]]; then
 			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
-			./configure --disable-fortran -with-openmp CC=mpifcc CFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" CXX=mpiFCC CXXFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" F77=mpifrt FFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto"
+			./configure --disable-fortran -with-openmp CC=mpifcc CFLAGS="-Nclang -O3 -ffj-ocl -mllvm -polly -flto" CXX=mpiFCC CXXFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" F77=mpifrt FFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
-			./configure --disable-fortran -with-openmp --without-MPI CC=fcc CFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" CXX=FCC CXXFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" F77=frt FFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto"
+			./configure --disable-fortran -with-openmp --without-MPI CC=fcc CFLAGS="-Nclang -O3 -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" CXX=FCC CXXFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" F77=frt FFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto"
 		fi
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
 		make -j
@@ -116,7 +117,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' -e 's/ -lirc -lsvml//g' ./makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		make
-	elif [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"gem5"* ]]; then
 		cd serial/
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' -e 's/$(LAGHOS_LIBS) $(LDFLAGS)/$(LDFLAGS) $(LAGHOS_LIBS)/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' -e 's/ -lirc -lsvml//g' ./makefile
 		sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' ./laghos_solver_s.hpp
