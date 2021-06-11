@@ -30,6 +30,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
+	sleep 0
+elif [[ "$1" = *"gem5"* ]]; then
 	module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
@@ -40,7 +42,7 @@ BM="DLproxy"
 VERSION="5087c437452c6cc3dbcf0bbaf40648c3155cfca9"
 if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/benchmarks/conv_gemm/
@@ -55,18 +57,16 @@ if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make CC=gcc CXX=g++ compile
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/-ipo -xHost/-Kfast/g' ./Makefile
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
-		sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-m64 -I$(dirname `which fccpx`)/../include#g" -e 's#-I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' ./Makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' ./Makefile
+		sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-m64 -I$(dirname `which fccpx`)/../include#g" -e 's#-I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify#-flto#g' ./Makefile
 		sed -i -e "s#-mkl#-SSL2BLAMP#g" ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		make CC=fccpx CXX=FCCpx compile
-	elif [[ "$1" = *"fuji"* ]]; then
-		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64
-		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a
-		sed -i -e 's/-ipo -xHost/-Bstatic -march=armv8.3-a+sve/g' ./Makefile
-		sed -i -e 's#-DUSE_MKL -I${MKLROOT}/include#-m64 -I/opt/FJT/FJTMathlibs_201903/include#g' -e 's#-I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
-		sed -i -e "s#-mkl#-L$ROOTDIR/$BM/ -L$SSL2LIB -SSL2BLAMP#g" ./Makefile
+	elif [[ "$1" = *"gem5"* ]]; then
+		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' ./Makefile
+		sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-m64 -I$(dirname `which fccpx`)/../include#g" -e 's#-I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify#-flto#g' ./Makefile
+		sed -i -e "s#-mkl#-SSL2BLAMP#g" ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make CC=fccpx CXX=FCCpx compile
 	fi
