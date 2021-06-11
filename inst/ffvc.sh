@@ -43,7 +43,7 @@ BM="FFVC"
 VERSION="890a3f9bb3a5cf358504063a1751383b7d46f86d"
 if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src

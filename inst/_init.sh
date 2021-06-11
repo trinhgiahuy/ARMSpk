@@ -255,17 +255,17 @@ BM="mpistub"
 VERSION="e3b0d504e6daba0116907589c944a3be39547057"
 cd $ROOTDIR/dep/$BM/
 if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
-	if [[ "`hostname -s`" = *"peach"* ]]; then
-		git checkout -b precision ${VERSION}
+	if [[ "`hostname -s`" = *"fn01"* ]] || [[ "`hostname -s`" = *"peach"* ]]; then
+		if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 		git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 		module load FujitsuCompiler/202007
 		rm -rf $ROOTDIR/dep/$BM/build; mkdir -p $ROOTDIR/dep/$BM/build; cd $ROOTDIR/dep/$BM/build
-		if ! CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ ; then
+		if ! CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage' ; then
 			# peach has too old cmake
 			source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 			spack install cmake@3.4.3; spack load cmake@3.4.3
-			CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/
+			CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage'
 		fi
 		make
 		make install
@@ -314,7 +314,7 @@ if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
 	if ! which python3 >/dev/null 2>&1; then
 		echo "" | scons build/ARM/gem5.opt -j $(nproc)
 	else
-		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` scons build/ARM/gem5.opt -j $(nproc)
+		echo "" | SCONS_LIB_DIR=`find $HOME/.local/lib -type d -name scons | head -1` /usr/bin/env python3 $(which scons) build/ARM/gem5.opt -j $(nproc)
 	fi
 fi
 cd $ROOTDIR
