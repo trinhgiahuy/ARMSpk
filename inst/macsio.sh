@@ -62,10 +62,10 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=gcc CFLAGS="-O2 -march=native"
 		elif [[ "$1" = *"fuji"* ]]; then
 			rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'
-			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto"
+			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2"
 		elif [[ "$1" = *"gem5"* ]]; then
 			rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'
-			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto -ffj-no-largepage"
+			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2 -Knolargepage"
 		fi
 		make
 		make install
@@ -82,10 +82,10 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 			./configure --prefix=`pwd` CC=gcc CFLAGS="-O2 -march=native" CXX=g++ CXXFLAGS="-O2 -march=native" FC=gfortran FCFLAGS="-O2 -march=native" F77=gfortran FFLAGS="-O2 -march=native"
 		elif [[ "$1" = *"fuji"* ]]; then
 			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
-			./configure --prefix=`pwd` CC=fcc CFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto" CXX=FCC CXXFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto" FC=frt FCFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto" F77=frt FFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto"
+			./configure --prefix=`pwd` CC=fcc CFLAGS="-O2" CXX=FCC CXXFLAGS="-O2" FC=frt FCFLAGS="-O2" F77=frt FFLAGS="-O2"
 		elif [[ "$1" = *"gem5"* ]]; then
 			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
-			./configure --prefix=`pwd` CC=fcc CFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto -ffj-no-largepage" CXX=FCC CXXFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto -ffj-no-largepage" FC=frt FCFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto -ffj-no-largepage" F77=frt FFLAGS="-O2 -Nclang -ffj-ocl -mllvm -polly -flto -ffj-no-largepage"
+			./configure --prefix=`pwd` CC=fcc CFLAGS="-O2 -Knolargepage" CXX=FCC CXXFLAGS="-O2 -Knolargepage" FC=frt FCFLAGS="-O2 -Knolargepage" F77=frt FFLAGS="-O2 -Knolargepage"
 		fi
 		make install
 		cd $ROOTDIR/$BM/
@@ -100,10 +100,11 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		sed -i -e "s#libjson-cwx.a #libjson-cwx.a -static #" ./macsio/CMakeFiles/macsio.dir/link.txt
 	elif [[ "$1" = *"fuji"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r .. | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-		cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=`which mpifcc` -DCMAKE_C_FLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" -DCMAKE_CXX_COMPILER=`which mpiFCC` -DCMAKE_CXX_FLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+		cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=`which mpifcc` -DCMAKE_C_FLAGS="-Kfast" -DCMAKE_CXX_COMPILER=`which mpiFCC` -DCMAKE_CXX_FLAGS="-Kfast" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
 	elif [[ "$1" = *"gem5"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r .. | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
-		cmake -DMPI_C_LIBRARIES="-lmpi" -DMPI_C_INCLUDE_PATH=$ROOTDIR/dep/mpistub/include/mpistub -DMPI_CXX_LIBRARIES="-lmpi" -DMPI_CXX_INCLUDE_PATH=$ROOTDIR/dep/mpistub/include/mpistub -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=`which fcc` -DCMAKE_C_FLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto -I$ROOTDIR/dep/mpistub/include/mpistub -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi" -DCMAKE_CXX_COMPILER=`which FCC` -DCMAKE_CXX_FLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto -I$ROOTDIR/dep/mpistub/include/mpistub -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+		cmake -DMPI_C_LIBRARIES="-lmpi" -DMPI_C_INCLUDE_PATH=$ROOTDIR/dep/mpistub/include/mpistub -DMPI_CXX_LIBRARIES="-lmpi" -DMPI_CXX_INCLUDE_PATH=$ROOTDIR/dep/mpistub/include/mpistub -DCMAKE_BUILD_TYPE=release -DCMAKE_C_COMPILER=`which fcc` -DCMAKE_C_FLAGS="-Kfast -Knolargepage -I$ROOTDIR/dep/mpistub/include/mpistub" -DCMAKE_CXX_COMPILER=`which FCC` -DCMAKE_CXX_FLAGS="-Kfast -Knolargepage -I$ROOTDIR/dep/mpistub/include/mpistub" -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi" -DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
+		sed -i -e 's/ -lmpi / /g' -e 's/libsilo.a/libsilo.a -lmpi/g' ./macsio/CMakeFiles/macsio.dir/link.txt
 	fi
 	make VERBOSE=1
 	make install
