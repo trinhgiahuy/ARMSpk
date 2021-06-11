@@ -54,7 +54,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	cd $ROOTDIR/$BM/src
 	if [ ! -f ./metis-5.1.0/bin/graphchk ]; then
-		wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+		if [ ! -f ./metis-5.1.0.tar.gz ]; then wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz; fi
 		tar xzf metis-5.1.0.tar.gz
 		cd ./metis-5.1.0/
 		if [ -z $1 ]; then
@@ -62,9 +62,13 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		elif [[ "$1" = *"gnu"* ]]; then
 			make config cc=gcc prefix=`pwd`
 		elif [[ "$1" = *"fuji"* ]]; then
-			make config cc="fccpx -Nclang -Ofast -ffj-ocl -mllvm -polly -flto" prefix=`pwd`
+			export fccpx_ENV="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto"
+			make config cc=fccpx prefix=`pwd`
+			unset fccpx_ENV
 		elif [[ "$1" = *"gem5"* ]]; then
-			make config cc="fccpx -Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" prefix=`pwd`
+			export fccpx_ENV="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto"
+			make config cc=fccpx prefix=`pwd`
+			unset fccpx_ENV
 		fi
 		make install
 		cd $ROOTDIR/$BM/src
@@ -81,7 +85,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
 			sed -i -e 's/-Kfast/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' ./MakefileConfig.in
-		elif [[ "$1" = *"fuji"* ]]; then
+		elif [[ "$1" = *"gem5"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
 			sed -i -e 's/-Kfast/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' ./MakefileConfig.in
 			sed -i -e 's/= mpi/= /g' -e "s# -lstd -lm# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lm#g" ./MakefileConfig.in
