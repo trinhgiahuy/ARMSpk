@@ -73,7 +73,8 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 	fi
 	if [ ! -f $ROOTDIR/dep/silo-4.10.2/bin/silofile ]; then
 		cd $ROOTDIR/dep/
-		if ! [ -f silo-4.10.2.tar.gz ]; then wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz; fi
+		if ! [ -f ./silo-4.10.2.tar.gz ]; then wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz; fi
+		if ! [ -f ./silo-4.10.2.tar.gz ]; then echo "ERR: download failed"; exit 1; fi
 		tar xzf silo-4.10.2.tar.gz
 		cd silo-4.10.2/
 		if [ -z $1 ]; then
