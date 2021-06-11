@@ -30,6 +30,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
+	sleep 0
+elif [[ "$1" = *"gem5"* ]]; then
 	module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
@@ -40,7 +42,7 @@ BM="BabelStream"
 VERSION="d9b089a0f94e9423b0653ca7ca533bd04c8501cb"
 if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	if [ -z $1 ]; then
@@ -51,11 +53,11 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,assume=memory_bandwidth"
-	elif [[ "$1" = *"fuji"* ]]; then
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,assume=memory_bandwidth -Nclang -ffj-ocl -mllvm -polly -flto"
+	elif [[ "$1" = *"gem5"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCCpx/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Bstatic -Kfast,assume=memory_bandwidth"
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,assume=memory_bandwidth -Nclang -ffj-nolargepage -ffj-ocl -mllvm -polly -flto"
 	fi
 	cd $ROOTDIR
 fi
