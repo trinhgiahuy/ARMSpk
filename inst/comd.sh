@@ -59,8 +59,8 @@ if [ ! -f $ROOTDIR/$BM/bin/CoMD-openmp-mpi ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -e 's/^DO_MPI =.*/DO_MPI = OFF/g' -e 's/^CC =.*/CC = fccpx/' ./Makefile
-		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' ./Makefile
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' ./Makefile
+		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly/g' ./Makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e '/.*include.*stdio\.h/i #define _POSIX_C_SOURCE 199309L' -e 's/.*include.*ittnotify\.h.*/#include <sys\/types.h>\n#include <signal.h>\n#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e '/.*include.*mpi\.h/d' $FILE; done
 	fi
 	make

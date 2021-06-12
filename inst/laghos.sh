@@ -63,7 +63,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			./configure --disable-fortran -with-openmp CC=mpifcc CFLAGS="-Nclang -O3 -ffj-ocl -mllvm -polly -flto" CXX=mpiFCC CXXFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto" F77=mpifrt FFLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			cd config/; rm -f config.guess config.sub; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess'; wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub'; cd -
-			./configure --disable-fortran -with-openmp --without-MPI CC=fcc CFLAGS="-Nclang -O3 -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" CXX=FCC CXXFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto" F77=frt FFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto"
+			./configure --disable-fortran -with-openmp --without-MPI CC=fcc CFLAGS="-Nclang -O3 -ffj-no-largepage -ffj-ocl -mllvm -polly" CXX=FCC CXXFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly" F77=frt FFLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly"
 		fi
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
 		make -j
@@ -80,7 +80,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		elif [[ "$1" = *"fuji"* ]]; then
 			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		elif [[ "$1" = *"gem5"* ]]; then
-			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -flto -ffj-no-largepage/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
+			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -Nclang -O2 -march=armv8.3-a+sve -mllvm -polly -ffj-no-largepage/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		fi
 		make
 		cd $ROOTDIR/$BM/
@@ -95,7 +95,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		elif [[ "$1" = *"fuji"* ]]; then
 			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' ./config/defaults.mk
 		elif [[ "$1" = *"gem5"* ]]; then
-			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' ./config/defaults.mk
+			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly/g' ./config/defaults.mk
 		fi
 		if [ -z $1 ] || [[ "$1" = *"gnu"* ]]; then
 			make config MFEM_USE_MPI=YES MPICXX=mpicxx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
@@ -119,7 +119,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		make
 	elif [[ "$1" = *"gem5"* ]]; then
 		cd serial/
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' -e 's/$(LAGHOS_LIBS) $(LDFLAGS)/$(LDFLAGS) $(LAGHOS_LIBS)/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto/g' -e 's/ -lirc -lsvml//g' ./makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/$(LAGHOS_LIBS) $(LDFLAGS)/$(LDFLAGS) $(LAGHOS_LIBS)/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly/g' -e 's/ -lirc -lsvml//g' ./makefile
 		sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' ./laghos_solver_s.hpp
 		make
 		cd -
