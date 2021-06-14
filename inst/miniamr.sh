@@ -31,7 +31,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_FC=gfortran
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	sleep 0
-elif [[ "$1" = *"fuji"* ]]; then
+elif [[ "$1" = *"gem5"* ]]; then
 	#module load FujitsuCompiler/202007
 	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
 else
