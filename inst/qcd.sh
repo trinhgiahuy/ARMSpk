@@ -72,12 +72,12 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		PX="`echo $TEST | cut -d '|' -f3`"
 		PY="`echo $TEST | cut -d '|' -f4`"
 		PZ="`echo $TEST | cut -d '|' -f5`"
+		if [[ "$1" = *"gem5"* ]] && [[ "$((${PX}*${PY}*${PZ}))" -ne 1 ]]; then break; fi
 		if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ} ]; then
 			make clean >> /dev/null 2>&1
 			make MAKE_INC=make.${TYPE}.inc CLASS=2 PX=${PX} PY=${PY} PZ=${PZ}
 			mv $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2 $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ}
 		fi
-		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"fn01"* ]]; then break; fi
 	done
 	unset TYPE
 	cd $ROOTDIR
