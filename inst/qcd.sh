@@ -57,9 +57,13 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i -e 's/-march=core2 -msse3/-march=native -fno-inline-small-functions/' -e 's/LDFLAGS = /LDFLAGS = -static /' ./make.${TYPE}.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		# crashing in some stupid yaml shit with fujitsu compilers
+		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
+		# crashing in some stupid yaml shit with fujitsu compilers
+		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
 		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
 		sed -i -e "s#^LIBS += -lmaprof_f#LIBS += -lmaprof_f -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./Makefile
