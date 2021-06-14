@@ -62,10 +62,17 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
+		# FJ's -SCALAPACK is hardwired to FJ's MPI, so we need a replacement
+		if ! [ -f ./scalapack-2.0.2.tgz ]; then wget http://www.netlib.org/scalapack/scalapack-2.0.2.tgz; fi
+		if ! [ -f ./scalapack-2.0.2.tgz ]; then echo "ERR: could not download scalapack"; fi
+		tar xzf scalapack-2.0.2.tgz; cd scalapack-2.0.2
+		sed -e 's/mpif90/frtpx/g' -e 's/mpicc/fccpx/g' -e "s#-O3#-Kfast -I$ROOTDIR/dep/mpistub/include/mpistub#" -e "s#^LIBS .*#LIBS = -SSL2BLAMP -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#" SLmake.inc.example > SLmake.inc
+		make lib -j $(nproc); make lib
+		cd $ROOTDIR/$BM/src
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e "s#CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
+		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e "s#CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	make intel
