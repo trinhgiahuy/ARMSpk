@@ -30,7 +30,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
-	module load FujitsuCompiler/202007
+	sleep 0
+elif [[ "$1" = *"gem5"* ]]; then
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -51,11 +53,11 @@ if [ ! -f $ROOTDIR/$BM/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 			sed -i -e 's/ icpc/ g++/g' -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
 			for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-			sed -i -e 's/ mpicxx/ mpiFCCpx/g' -e 's/ icpc/ FCCpx/g' -e 's/-ipo -xHost/-Kfast/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+			sed -i -e 's/ mpicxx/ mpiFCCpx/g' -e 's/ icpc/ FCCpx/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto#g' ./Makefile
 			for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-		elif [[ "$1" = *"fuji"* ]]; then
+		elif [[ "$1" = *"gem5"* ]]; then
 			if [[ "$SUB" = *"MPI"* ]]; then continue; fi
-			sed -i -e 's/ icpc/ FCCpx/g' -e 's/-ipo -xHost//g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -Bstatic#g' ./Makefile
+			sed -i -e 's/ icpc/ FCCpx/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 			for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		fi
 		make
