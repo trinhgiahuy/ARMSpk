@@ -61,7 +61,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		TYPE=fx10
-		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
+		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s!#LIBS = !LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort!g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
 		sed -i -e "s#\$(PFLAGS).*#\$(PFLAGS) -I$ROOTDIR/dep/mpistub/include/mpistub -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./ma_prof/src/Makefile
 		sed -i -e '/use mpi/d' ./comlib.F90
 		sed -i "0,/implicit none/s//implicit none\n  include 'mpif.h'/" ./comlib.F90
