@@ -32,9 +32,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_FC=gfortran
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	sleep 0
-elif [[ "$1" = *"fuji"* ]]; then
-	echo "ERR: cannot use this one either, because peach's outdated SSL2 has no dpotrf_ and other fn"; exit 1
-	module load FujitsuCompiler/202007
+elif [[ "$1" = *"gem5"* ]]; then
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -65,13 +64,11 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "$1" = *"fuji"* ]]; then
-		SSL2LIB=/opt/FJT/FJTMathlibs_201903/lib64					# new Fj version lacks ssl2
-		ln -s $(dirname `which fccpx`)/../lib64/libfj90rt2.a $ROOTDIR/$BM/libfj90rt.a	# fix broken linker
+	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -e "s# -lmpi_f90 -lmpi_f77# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
-		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -Bstatic#g' ./src/mp2/GNUmakefile
+		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./src/util_lib/GNUmakefile
-		sed -e "s#-SSL2BLAMP#\"-L$ROOTDIR/$BM/ -L$SSL2LIB -SSL2BLAMP\"#g" platforms/config_mine.K > config_mine
+		cp platforms/config_mine.K config_mine
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	TOP_DIR=`pwd`
@@ -81,7 +78,7 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		make CC=mpicc CXX=mpicxx F77C=mpif77 F90C=mpif90
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		make CC=mpifccpx CXX=mpiFCCpx F77C=mpifrtpx F90C=mpifrtpx
-	else
+	elif [[ "$1" = *"gem5"* ]]; then
 		make CC=fccpx CXX=FCCpx F77C=frtpx F90C=frtpx LD=FCCpx F90FLAGS="-I$ROOTDIR/dep/mpistub/include/mpistub"
 	fi
 	unset TOP_DIR
