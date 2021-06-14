@@ -39,11 +39,9 @@ intspeed,fpspeed:
 %if '%{COMP}' eq 'sde'
    submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
 %elif '%{COMP}' eq 'fuji'
-%if '%{HOST}' eq 'peach'
+   submit               = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -n 4096; ulimit -s unlimited; \$command
+%elif '%{COMP}' eq 'gem5'
    submit               = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
-%else
-   submit               ulimit -s unlimited; \$command
-%endif
 %else
    submit               = ulimit -n 4096; ulimit -s unlimited; \$command
 %endif
@@ -67,19 +65,21 @@ default:
    LDCXXFLAGS           = -static -static-intel -qopenmp-link=static
    LDFFLAGS             = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
-%if '%{HOST}' eq 'peach'
-   CC                   = fccpx -m64 -std=c11
-   CXX                  = FCCpx -m64
-   FC                   = frtpx -m64
-   OPT_ROOT             = -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -funroll-loops
-   LDCFLAGS             = -Bstatic
-   LDCXXFLAGS           = -Bstatic
-   LDFFLAGS             = -Bstatic
-%else
    CC                   = fcc -m64 -std=c11
    CXX                  = FCC -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Nclang -Kfast,eval_concurrent -O3 -march=armv8.3-a+sve -funroll-loops
+   OPT_ROOT             = -Nclang -Ofast -Kfast -mcpu=a64fx+sve -ffj-eval-concurrent -flto
+   LDCFLAGS             = -flto
+   LDCXXFLAGS           = -flto
+   LDFFLAGS             = -flto
+%elif '%{COMP}' eq 'gem5'
+   CC                   = fcc -m64 -std=c11
+   CXX                  = FCC -m64
+   FC                   = frt -m64
+   OPT_ROOT             = -Nclang -Ofast -Kfast -mcpu=a64fx+sve -ffj-eval-concurrent -Knolargepage -ffj-no-largepage
+   LDCFLAGS             = -Knolargepage -ffj-no-largepage
+   LDCXXFLAGS           = -Knolargepage -ffj-no-largepage
+   LDFFLAGS             = -Knolargepage -ffj-no-largepage
 %endif
 %else
 %error wrong or unsupported COMP variable specified
@@ -112,7 +112,7 @@ intspeed,fpspeed:
    CPORTABILITY         = -DSPEC_LINUX_X64
 
 502.gcc_r,602.gcc_s:
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
    CPORTABILITY         = -fgnu89-inline
 %endif
 
@@ -120,7 +120,7 @@ intspeed,fpspeed:
    CPORTABILITY         = -DSPEC_CASE_FLAG
 %if '%{COMP}' eq 'gnu'
    FPORTABILITY         = -fconvert=big-endian
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
@@ -135,7 +135,7 @@ intspeed,fpspeed:
 
 527.cam4_r,627.cam4_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %endif
 
@@ -143,7 +143,7 @@ intspeed,fpspeed:
    CPORTABILITY         = -DSPEC_CASE_FLAG
 %if '%{COMP}' eq 'gnu'
    FPORTABILITY         = -fconvert=big-endian
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
@@ -151,7 +151,7 @@ intspeed,fpspeed:
 %endif
 
 648.exchange2_s:
-%if '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90i -lfj90fmt_sve -lfj90f -lfj90i -lfjsrcinfo
 %endif
 EOF
@@ -177,7 +177,11 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	echo "does not compile on login node"; exit 1
 elif [[ "$1" = *"fuji"* ]]; then
-	if [[ "`hostname -s`" = *"peach"* ]]; then module load FujitsuCompiler/202007; fi
+	sleep 0
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"gem5"* ]]; then
+	echo "does not compile on login node"; exit 1
+elif [[ "$1" = *"gem5"* ]]; then
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -195,7 +199,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		mkdir -p /tmp/mnt_$BM
 		fuseiso ./cpu2017-1.1.0.iso /tmp/mnt_$BM
 		cd /tmp/mnt_$BM/
-		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
 		else
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
@@ -204,7 +208,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		fusermount -u /tmp/mnt_$BM
 	else
 		cd $ROOTDIR/dep/mnt_$BM
-		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
 		else
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
@@ -223,11 +227,14 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed"
 	elif [[ "$1" = *"fuji"* ]]; then
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fuji --define RESDIR=0 intspeed fpspeed intrate fprate"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fuji --define RESDIR=0 intspeed fpspeed"
+	elif [[ "$1" = *"gem5"* ]]; then
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 intspeed fpspeed intrate fprate"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gem5 --define RESDIR=0 intspeed fpspeed"
 	fi
 	# check that all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
-	if [[ "$1" = *"fuji"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_CPU/benchspec/CPU/*/build/ and SPEC_CPU/benchspec/CPU/*/exe/ to server which runs gem"; fi
+	if [[ "$1" = *"gem5"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_CPU/benchspec/CPU/*/build/ and SPEC_CPU/benchspec/CPU/*/exe/ to server which runs gem"; fi
         cd $ROOTDIR
 fi

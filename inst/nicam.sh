@@ -31,7 +31,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_FC=gfortran
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	sleep 0
-elif [[ "$1" = *"fuji"* ]]; then
+elif [[ "$1" = *"gem5"* ]]; then
 	echo "no point, because this one needs MPI"; exit 1
 fi
 

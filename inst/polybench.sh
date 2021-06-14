@@ -16,7 +16,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	sleep 0
 elif [[ "$1" = *"gem5"* ]]; then
-	module load FujitsuCompiler/201903
+	sleep 0; #module load FujitsuCompiler/201903
 elif [[ "$1" = *"arm"* ]]; then
 	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
 	#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
@@ -43,10 +43,10 @@ if ! [ $(find $ROOTDIR/$BM/linear-algebra/blas/gemm -executable -type f | wc -l)
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		COMPILE="fccpx -Nclang -Ofast -ffj-ocl -mllvm -polly -flto -I./utilities"
-		LINK=""
+		LINK="-flto"
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
-		COMPILE="fccpx -Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -flto -I./utilities"
+		COMPILE="fccpx -Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly -I./utilities"
 		LINK=""
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"arm"* ]]; then

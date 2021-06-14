@@ -120,8 +120,8 @@ EOF
 	elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/CC=.*/CC=fcc/g' -e 's/CXX=.*/CXX=FCC/g' -e 's/FC=.*/FC=frt/g' -e 's/-Bstatic//g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/-Bstatic//g' Makefile.inc
+	elif [[ "$1" = *"fuji"* ]]; then
+		sed -i -e 's/-Bstatic/-Klto/g' Makefile.inc
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -e 's/-Bstatic/-Knolargepage/g' Makefile.inc

@@ -32,7 +32,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	sleep 0
 elif [[ "$1" = *"gem5"* ]]; then
-	module load FujitsuCompiler/202007
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -55,7 +55,7 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 		sed -i -e 's/-ipo -xHost/-march=native -static/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"fuji"* ]]; then
 		sed -i -e 's/^CC =.*/CC = mpifccpx/g' -e 's/-ipo -xHost/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/g' ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done

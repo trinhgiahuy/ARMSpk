@@ -13,7 +13,7 @@ verbose        = 99
 env_vars       = 1
 makeflags      = -j 32
 ext            = %{COMP}
-%if '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 check_md5      = 0
 %endif
 
@@ -30,14 +30,13 @@ submit         = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
 BLINK          = -static -static-intel -qopenmp-link=static
 %elif '%{COMP}' eq 'fuji'
-%if '%{HOST}' eq 'peach'
+submit         = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -s unlimited; \$command
+BOPTS          = -Nclang -Ofast -Kfast -fopenmp -mcpu=a64fx+sve -ffj-eval-concurrent -flto
+BLINK          = -flto
+%elif '%{COMP}' eq 'gem5'
 submit         = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
-BOPTS          = -Kfast,eval_concurrent,openmp -O3 -march=armv8.3-a+sve -funroll-loops
-BLINK          = -Bstatic -lm
-%else
-submit         = ulimit -s unlimited; \$command
-BOPTS          = -Nclang -Kfast,eval_concurrent,openmp -O3 -march=armv8.3-a+sve -funroll-loops
-%endif
+BOPTS          = -Nclang -Ofast -Kfast -fopenmp -mcpu=a64fx+sve -ffj-eval-concurrent -ffj-no-largepage
+BLINK          = -ffj-no-largepage
 %else
 %error wrong or unsupported COMP variable specified
 %endif
@@ -65,17 +64,11 @@ sw_compiler    = Intel Compiler Suite
 FC             = ifort
 CC             = icc
 CXX            = icpc
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 sw_compiler    = FUJITSU Software Technical Computing Suite
-%if '%{HOST}' eq 'peach'
-FC             = frtpx
-CC             = fccpx
-CXX            = FCCpx
-%else
 FC             = frt
 CC             = fcc
 CXX            = FCC
-%endif
 %endif
 FOPTIMIZE      = \${BOPTS}
 COPTIMIZE      = \${BOPTS}
@@ -85,7 +78,7 @@ OS_LIBS        = \${BLINK}
 350.md=default=default=default:
 %if '%{COMP}' eq 'gnu'
 FPORTABILITY   = -ffree-form -fno-range-check
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 FPORTABILITY   = -Free
 %else
 FPORTABILITY   = -free
@@ -96,7 +89,7 @@ FPORTABILITY   = -free
 FPORTABILITY   = -mcmodel=medium
 LDOPT          = -shared-intel
 PASS1_LDOPT    = -shared-intel
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 FPORTABILITY   = -mcmodel=large
 %endif
 
@@ -110,7 +103,7 @@ strict_rundir_verify = 0
 FPORTABILITY   = -mcmodel=medium
 LDOPT          = -shared-intel
 PASS1_LDOPT    = -shared-intel
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 FPORTABILITY   = -mcmodel=large
 %endif
 
@@ -118,7 +111,7 @@ FPORTABILITY   = -mcmodel=large
 CPORTABILITY   = -std=c99
 
 372.smithwa=default=default=default:
-%if '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
 CPORTABILITY   = -fsigned-char
 %endif
 EOF
@@ -144,7 +137,11 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	echo "does not compile on login node"; exit 1
 elif [[ "$1" = *"fuji"* ]]; then
-	if [[ "`hostname -s`" = *"peach"* ]]; then module load FujitsuCompiler/202007; fi
+	sleep 0
+elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"gem5"* ]]; then
+	echo "does not compile on login node"; exit 1
+elif [[ "$1" = *"gem5"* ]]; then
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -162,7 +159,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		mkdir -p /tmp/mnt_$BM
 		fuseiso ./omp2012-1.1.iso /tmp/mnt_$BM
 		cd /tmp/mnt_$BM/
-		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-apm-arm64
 		else
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-suse10-amd64
@@ -171,7 +168,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		fusermount -u /tmp/mnt_$BM
 	else
 		cd $ROOTDIR/dep/mnt_$BM
-		if [[ "$1" = *"fuji"* ]] && ! [[ "`hostname -s`" = *"peach"* ]]; then
+		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
 			chmod -R +w $ROOTDIR/dep/mnt_$BM
 			for FILE in `find . -name config.guess`; do wget 'http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess' -O $FILE; done
 			FILE="tools/src/make-3.82/glob/glob.c"; sed -i -e 's@#if !defined __alloca && !defined __GNU_LIBRARY__@#if !defined __alloca@g' $FILE
@@ -203,14 +200,15 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gnu --define RESDIR=0 gross"
 	elif [[ "$1" = *"fuji"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fuji --define RESDIR=0 gross"
-		if [[ "`hostname -s`" = *"peach"* ]]; then    #XXX: peach fccpx/static doesnt support mcmodel
-			bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 gross ^bt331 ^swim"
-		else
-			bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define HOST=`hostname -s` --define RESDIR=0 gross"
-		fi
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fuji --define RESDIR=0 gross"
+	elif [[ "$1" = *"gem5"* ]]; then
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define RESDIR=0 gross"
+		#XXX: peach fccpx/static doesnt support mcmodel
+		#bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define HOST=`hostname -s` --define RESDIR=0 gross ^bt331 ^swim"
 	fi
 	# check that most/all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
-	if [[ "$1" = *"fuji"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_OMP/benchspec/OMP2012/*/build/ and SPEC_OMP/benchspec/OMP2012/*/exe/ to server which runs gem"; fi
+	if [[ "$1" = *"gem5"* ]]; then echo -e "\nWRN: if running gem5, then copy SPEC_OMP/benchspec/OMP2012/*/build/ and SPEC_OMP/benchspec/OMP2012/*/exe/ to server which runs gem"; fi
         cd $ROOTDIR
 fi
