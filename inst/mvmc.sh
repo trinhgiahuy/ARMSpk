@@ -65,7 +65,7 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e "s#CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#^LIB = # -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#g" ./Makefile_intel
+		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e "s#CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#^LIB = #LIB = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#g" ./Makefile_intel
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
 	make intel
