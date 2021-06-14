@@ -68,10 +68,12 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
+	prevPX=0; prevPY=0; prevPZ=0
 	for TEST in $TESTCONF; do
 		PX="`echo $TEST | cut -d '|' -f3`"
 		PY="`echo $TEST | cut -d '|' -f4`"
 		PZ="`echo $TEST | cut -d '|' -f5`"
+		if [ $prevPX -eq $PX ] && [ $prevPY -eq $PY ] && [ $prevPZ -eq $PZ ] ; then continue; fi
 		if [[ "$1" = *"gem5"* ]] && [[ "$((${PX}*${PY}*${PZ}))" -ne 1 ]]; then break; fi
 		if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ} ]; then
 			make clean >> /dev/null 2>&1
