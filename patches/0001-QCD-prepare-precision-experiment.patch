@@ -1,16 +1,17 @@
-From 763ff1a6c04b1111bced7042257bac64a064e193 Mon Sep 17 00:00:00 2001
+From c8ebd3d6bc99ae47dbca9073fe81e51d8f706740 Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Fri, 23 Feb 2018 15:44:02 +0900
 Subject: [PATCH] QCD: prepare precision experiment
 
 Signed-off-by: Jens Domke <domke.j.aa@m.titech.ac.jp>
 ---
- .gitignore                   |  1 +
- src/Makefile                 |  4 ++--
- src/ccs_qcd_solver_bench.F90 | 27 +++++++++++++++++++++++++++
- src/make.ifort.inc           |  7 ++++---
- src/ssc.c                    | 14 ++++++++++++++
- 5 files changed, 48 insertions(+), 5 deletions(-)
+ .gitignore                         |  1 +
+ src/Makefile                       |  4 ++--
+ src/ccs_qcd_solver_bench.F90       | 27 +++++++++++++++++++++++++++
+ src/ccs_qcd_solver_bench_class.F90 |  9 ++++++---
+ src/make.ifort.inc                 |  7 ++++---
+ src/ssc.c                          | 14 ++++++++++++++
+ 6 files changed, 54 insertions(+), 8 deletions(-)
  create mode 100644 src/ssc.c
 
 diff --git a/.gitignore b/.gitignore
@@ -97,6 +98,27 @@ index 6786209..043f9b2 100644
    call xclock(etime1,8)
    call maprof_time_stop(SEC_BICGSTAB)
    bicg_dp_flop = bicg_dp_flop + flop
+diff --git a/src/ccs_qcd_solver_bench_class.F90 b/src/ccs_qcd_solver_bench_class.F90
+index 196288d..4224d16 100644
+--- a/src/ccs_qcd_solver_bench_class.F90
++++ b/src/ccs_qcd_solver_bench_class.F90
+@@ -17,10 +17,13 @@ module ccs_qcd_solver_bench_class
+   integer(8), parameter :: NSITE=NX*NY*NZ*NTH
+ 
+   integer(8), parameter :: &
+-  flop_count_clover = 198*4*(NX1*NY1*NZ*NT+NX1*NY*NZ1*NT+NX1*NY*NZ*NT1  &
++  flop_count_clovr0 = 198*4*(NX1*NY1*NZ*NT+NX1*NY*NZ1*NT+NX1*NY*NZ*NT1  &
+  &                                        +NX*NY1*NZ1*NT+NX*NY1*NZ*NT1  &
+- &                                                      +NX*NY*NZ1*NT1) &
+- &                   +846*NX*NY*NZ*NT*6+72*NX*NY*NZ*NT*6
++ &                                                      +NX*NY*NZ1*NT1)
++  integer(8), parameter :: flop_count_clovr1 = &
++ &                              846*NX*NY*NZ*NT*6+72*NX*NY*NZ*NT*6
++  integer(8), parameter :: flop_count_clover = &
++ &                              flop_count_clovr0+flop_count_clovr1
+   integer(8), parameter :: flop_count_clover_f1f2 = (12+24)*9*2*NTH*NZ*NY*NX
+   integer(8), parameter :: flop_count_clvinv_ldl =  &
+  &                              8*CLSP/2*15*NSITE+(2*CLSP/2 + 1)*NSITE  &
 diff --git a/src/make.ifort.inc b/src/make.ifort.inc
 index 5660987..5301ce9 100644
 --- a/src/make.ifort.inc
@@ -137,5 +159,5 @@ index 0000000..e91ddbc
 +	return (rank >> 0x2);
 +}
 -- 
-1.8.3.1
+2.18.2
 
