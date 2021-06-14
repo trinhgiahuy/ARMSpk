@@ -31,8 +31,8 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_FC=gfortran
 elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 	sleep 0
-elif [[ "$1" = *"fuji"* ]]; then
-	module load FujitsuCompiler/202007
+elif [[ "$1" = *"gem5"* ]]; then
+	#module load FujitsuCompiler/202007
 	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
 else
 	echo 'wrong compiler'
@@ -62,9 +62,9 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"gem5"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -e 's/^FC =.*/FC = frtpx/g' -e "s#^CC =.*#CC = fccpx -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#mfunc=2#mfunc=2 -O3 -march=native -I$ROOTDIR/dep/mpistub/include/mpistub\nLIBS += -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -Bstatic#g" ./make_setting
+		sed -i -e 's/^FC =.*/FC = frtpx/g' -e "s#^CC =.*#CC = fccpx -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#mfunc=2#mfunc=2 -O3 -march=native -I$ROOTDIR/dep/mpistub/include/mpistub\nLIBS += -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./make_setting
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
