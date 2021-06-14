@@ -61,25 +61,24 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		TYPE=fx10
-		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s!#LIBS = !LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort!g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
+		sed -i -e 's/mpifrtpx/frtpx/g' -e 's/mpifccpx/fccpx/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kprefetch.*#-Kprefetch -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
+		sed -i -e "s#^LIBS += -lmaprof_f#LIBS += -lmaprof_f -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./Makefile
 		sed -i -e "s#\$(PFLAGS).*#\$(PFLAGS) -I$ROOTDIR/dep/mpistub/include/mpistub -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./ma_prof/src/Makefile
 		sed -i -e '/use mpi/d' ./comlib.F90
 		sed -i "0,/implicit none/s//implicit none\n  include 'mpif.h'/" ./comlib.F90
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 	fi
-	prevPX=0; prevPY=0; prevPZ=0
 	for TEST in $TESTCONF; do
 		PX="`echo $TEST | cut -d '|' -f3`"
 		PY="`echo $TEST | cut -d '|' -f4`"
 		PZ="`echo $TEST | cut -d '|' -f5`"
-		if [ $prevPX -eq $PX ] && [ $prevPY -eq $PY ] && [ $prevPZ -eq $PZ ] ; then continue; fi
-		if [[ "$1" = *"gem5"* ]] && [[ "$((${PX}*${PY}*${PZ}))" -ne 1 ]]; then break; fi
 		if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ} ]; then
 			make clean >> /dev/null 2>&1
 			make MAKE_INC=make.${TYPE}.inc CLASS=2 PX=${PX} PY=${PY} PZ=${PZ}
 			mv $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2 $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_${PX}${PY}${PZ}
 		fi
+		if [[ "$1" = *"gem5"* ]] && [ $PX -eq 1 ] && [ $PY -eq 1 ] && [ $PZ -eq 1 ]; then break; fi
 	done
 	unset TYPE
 	cd $ROOTDIR
