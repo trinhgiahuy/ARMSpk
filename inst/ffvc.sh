@@ -57,13 +57,14 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		sed -i -e 's/\$(LIBS).*/\$(LIBS) -static -l:libgfortran.a -l:libquadmath.a/g' ./FFV/Makefile
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"fuji"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
+		sed -i -e 's/simd=2,//g' -e 's/uxsimd,//g' -e 's/array_private,//g' -e 's/parallel,//g' -e 's/Kfast/Kfast,ocl,lto/g' ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -e 's/Kfast/Kfast,nolargepage/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
+		sed -i -e 's/simd=2,//g' -e 's/uxsimd,//g' -e 's/array_private,//g' -e 's/parallel,//g' -e 's/Kfast/Kfast,ocl,nolargepage/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	fi

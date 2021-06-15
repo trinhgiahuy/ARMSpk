@@ -30,8 +30,9 @@ elif [[ "$1" = *"gnu"* ]]; then
 	export OMPI_F77=gfortran
 	export OMPI_FC=gfortran
 elif [[ "$1" = *"fuji"* ]]; then
-	sleep 0
+	echo "DOES NOT compile in -Nclang mode"
 elif [[ "$1" = *"gem5"* ]]; then
+	echo "DOES NOT compile in -Nclang mode"
 	#module load FujitsuCompiler/202007
 	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
 else
@@ -82,7 +83,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 			sed -i '/#include <sstream>/a #include <stdlib.h>' ./RevocapIO/kmbHecmwIO_V3.cpp
 		elif [[ "$1" = *"gnu"* ]]; then
 			sleep 0
-		elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+		elif [[ "$1" = *"fuji"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
 		elif [[ "$1" = *"gem5"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
@@ -104,16 +105,20 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-march=native -static/g" -e 's/LIBS += -L${ADVISOR.*/LIBS += -static/' -e 's# -I${ADVISOR_2018_DIR}/include##g' ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"fuji"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl/-Kvisimpact,ocl -Kfast/g' ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
+		# crashing in some stupid yaml shit with fujitsu compilers
+		sed -i -e 's/-DPROF_MAPROF/-DNO_PROF_MAPROF/g' ./make_setting
+		sed -i '/CALL DDINIT/i \      LERR = 0' ./les3x.F
+		sed -i -e "s/ = mpi/ = /g" ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e "s#-Kvisimpact,ocl#-Kvisimpact,ocl -Kfast -Knolargepage -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
-		sed -i -e 's/^LD =.*/LD = frtpx/g' -e "s#^LDFLAGS = #LDFLAGS = -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort -lfjc++ -lfjc++abi -lfjdemgl #g" ./Makefile
+		sed -i -e "s#^LIBS += -lRcapRefiner#LIBS += -lRcapRefiner -L$ROOTDIR/$BM -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./make_setting
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		sed -i -e '/use mpi/d' -e "/use makemesh/a \  include 'mpif.h'" ./ffb_mini_main.F90

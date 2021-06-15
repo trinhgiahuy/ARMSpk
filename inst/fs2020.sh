@@ -47,7 +47,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	sleep 0
 elif [[ "$1" = *"gem5"* ]]; then
-	module load FujitsuCompiler/201903
+	sleep 0; #module load FujitsuCompiler/201903
 elif [[ "$1" = *"arm"* ]]; then
 	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
 	#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0

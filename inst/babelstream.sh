@@ -32,7 +32,7 @@ elif [[ "$1" = *"gnu"* ]]; then
 elif [[ "$1" = *"fuji"* ]]; then
 	sleep 0
 elif [[ "$1" = *"gem5"* ]]; then
-	module load FujitsuCompiler/202007
+	sleep 0; #module load FujitsuCompiler/202007
 else
 	echo 'wrong compiler'
 	exit 1
@@ -50,14 +50,14 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-static"
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"fuji"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
 		sed -i -e 's/^COMPILER_CLANG =.*/COMPILER_CLANG = FCCpx/' -e 's/-fopenmp=libomp/-fopenmp/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Nclang -Ofast -ffj-ocl -mllvm -polly -flto"
+		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Nclang -Kfast,ocl -Klto"
 	elif [[ "$1" = *"gem5"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
 		sed -i -e 's/^COMPILER_CLANG =.*/COMPILER_CLANG = FCCpx/' -e 's/-fopenmp=libomp/-fopenmp/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly"
+		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Nclang -Kfast,ocl,nolargepage"
 	fi
 	cd $ROOTDIR
 fi
