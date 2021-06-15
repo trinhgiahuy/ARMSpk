@@ -1,4 +1,4 @@
-From 07cb0eccd0b7b41f812647ef06cddda78697d517 Mon Sep 17 00:00:00 2001
+From f2c25ba30a9eaddcd138202fcad7e648c790182b Mon Sep 17 00:00:00 2001
 From: Jens Domke <domke.j.aa@m.titech.ac.jp>
 Date: Mon, 22 Mar 2021 17:07:05 +0900
 Subject: [PATCH] mpistub: prepare precision experiment
@@ -10,9 +10,9 @@ Subject: [PATCH] mpistub: prepare precision experiment
  src/main_mpif90.c   |   2 +
  src/mpi.c           | 156 +++++++++++++++++++++++++++++++++++++++++++++++++++-
  src/mpi.h           |  50 +++++++++++++++++
- src/mpi_stubs.f90   |  87 +++++++++++++++++++++++++++++
+ src/mpi_stubs.f90   |  99 +++++++++++++++++++++++++++++++--
  src/mpi_stubs_f90.h |  16 ++++++
- 8 files changed, 315 insertions(+), 4 deletions(-)
+ 8 files changed, 322 insertions(+), 9 deletions(-)
 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 6ab1e0b..0a38ab0 100644
@@ -315,10 +315,29 @@ index 6547527..b0cb252 100644
  /* ---------------------------------------------------------------------- */
  
 diff --git a/src/mpi_stubs.f90 b/src/mpi_stubs.f90
-index f1048c2..ea664a4 100644
+index f1048c2..84891ff 100644
 --- a/src/mpi_stubs.f90
 +++ b/src/mpi_stubs.f90
-@@ -2252,3 +2252,90 @@ subroutine timestring ( string )
+@@ -2023,11 +2023,13 @@ subroutine mpi_waitall ( icount, irequest, istatus, ierror )
+   integer irequest
+   integer istatus
+ 
+-  ierror = MPI_FAILURE
+-
+-  write ( *, '(a)' ) ' '
+-  write ( *, '(a)' ) 'MPI_WAITALL - Error!'
+-  write ( *, '(a)' ) '  Should not wait on message from self.'
++  !ffb needs this function
++  ierror = MPI_SUCCESS
++  !ierror = MPI_FAILURE
++  !
++  !write ( *, '(a)' ) ' '
++  !write ( *, '(a)' ) 'MPI_WAITALL - Error!'
++  !write ( *, '(a)' ) '  Should not wait on message from self.'
+ 
+   return
+ end
+@@ -2252,3 +2254,90 @@ subroutine timestring ( string )
    return
  end
  
