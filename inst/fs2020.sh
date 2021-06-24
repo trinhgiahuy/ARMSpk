@@ -33,25 +33,9 @@ function do_dir {
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-if [ -z $1 ]; then
-	source $ROOTDIR/conf/intel.cfg
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
-elif [[ "$1" = *"gnu"* ]]; then
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-elif [[ "$1" = *"fuji"* ]]; then
-	sleep 0
-elif [[ "$1" = *"gem5"* ]]; then
-	sleep 0; #module load FujitsuCompiler/201903
-elif [[ "$1" = *"arm"* ]]; then
-	module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
-	#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
-fi
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 if [ ! -f $ROOTDIR/dep/fs2020_microkernel_tmp.zip ]; then
 	echo "ERR: Cannot find fs2020_microkernel_tmp.zip; if you have them, place them in ./dep subfolder"
@@ -92,9 +76,9 @@ DEF20=
 DEF21=
 DEF22=-DRDC -DV512
 DEF23=-DRDC -DVLENS=16 -DPREFETCH -D_CHECK_SIM -DTARGET_JINV
-CC=fccpx
-CXX=FCCpx
-FC=frtpx
+CC=fcc
+CXX=FCC
+FC=frt
 COMMON=common/src/report.o
 LDLIBS=-Kopenmp -Bstatic
 
@@ -110,26 +94,26 @@ OBJFILE=
 	\$(FC) -c \$(FFLAGS) $< -o \$@
 
 EOF
-	if [ -z $1 ]; then
+	instrument_kernel "$1" $ROOTDIR/$BM/
+	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/CC=.*/CC=icc/g' -e 's/CXX=.*/CXX=icpc/g' -e 's/FC=.*/FC=ifort/g' -e 's#-Kopenmp -Bstatic#-qopenmp -static -static-intel -L${ADVISOR_2018_DIR}/lib64 -littnotify#g' Makefile.inc
 		sed -i -e 's#$(.OPTIMIZE) -Bstatic#$(DEF00) -fpp -std=gnu99 -qopenmp -O3 -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include#g' Makefile.inc
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/CC=.*/CC=gcc/g' -e 's/CXX=.*/CXX=g++/g' -e 's/FC=.*/FC=gfortran/g' -e 's/-Kopenmp -Bstatic/-fopenmp -static/g' Makefile.inc
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -O3 -march=native -static/g' Makefile.inc
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif lscpu | grep 'sve' >/dev/null 2>&1 && [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/CC=.*/CC=fcc/g' -e 's/CXX=.*/CXX=FCC/g' -e 's/FC=.*/FC=frt/g' -e 's/-Bstatic//g' Makefile.inc
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/-Bstatic/-Klto/g' Makefile.inc
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fujitrad"* ]]; then
+		sed -i -e 's/-Bstatic//g' Makefile.inc
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' Makefile.inc
 	elif [[ "$1" = *"gem5"* ]]; then
-		sed -i -e 's/-Bstatic/-Knolargepage/g' Makefile.inc
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' Makefile.inc
 	elif [[ "$1" = *"arm"* ]]; then
 		sed -i -e 's/CC=.*/CC=armclang/g' -e 's/CXX=.*/CXX=armclang++/g' -e 's/FC=.*/FC=armflang/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
-		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -mcpu=a64fx -march=armv8.2-a+sve -Ofast -ffast-math -flto/g' Makefile.inc
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
+		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -Ofast -ffast-math -fopenmp -march=armv8.2-a+sve -mcpu=a64fx -mtune=a64fx -flto/g' Makefile.inc
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's/ -V / /g' -e 's/ -v / /g' $ROOTDIR/$BM/option.list		#flang doesn'f like -V
+		sed -i -e 's/CC=.*/CC=clang/g' -e 's/CXX=.*/CXX=clang++/g' -e 's/FC=.*/FC=frt/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -fopenmp -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto/g' -e "s#-Kopenmp -Bstatic#-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" Makefile.inc
 	fi
 	for BMconf in ${BINARYS}; do
 		NR=`echo $BMconf | cut -d'.' -f1`; sed -i -e "s/(DEF..)/(DEF$NR)/g" Makefile.inc

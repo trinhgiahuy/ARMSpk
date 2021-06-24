@@ -3,24 +3,9 @@ exit 1 #ignore in this study
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-export I_MPI_CC=icc
-export I_MPI_CXX=icpc
-export I_MPI_F77=ifort
-export I_MPI_F90=ifort
-alias ar=`which xiar`
-alias ld=`which xild`
-export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
-
-source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-spack load openmpi@3.1.6%intel@19.0.1.144
-export OMPI_CC=$I_MPI_CC
-export OMPI_CXX=$I_MPI_CXX
-export OMPI_F77=$I_MPI_F77
-export OMPI_FC=$I_MPI_F90
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 spack load openjdk; spack load maven; spack load scala; spack load hadoop; spack load spark
 export HADOOP_HOME=`spack find -p | /bin/grep hadoop | cut -d' ' -f2- | tr -d ' '`
@@ -35,7 +20,7 @@ BM="HiBench"
 VERSION="v7.1.1"
 if [ ! -f $ROOTDIR/$BM/sparkbench/micro/target/sparkbench-micro-7.1.1.jar ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	# need some hack derived from https://www.themetabytes.com/2017/11/25/ld_preload-hacks/

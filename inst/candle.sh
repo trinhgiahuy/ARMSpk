@@ -3,23 +3,15 @@ exit 1 #ignore in this study
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-export I_MPI_CC=icc
-export I_MPI_CXX=icpc
-export I_MPI_F77=ifort
-export I_MPI_F90=ifort
-alias ar=`which xiar`
-alias ld=`which xild`
-export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 BM="CANDLE"
 VERSION="ea14ed86d3e612f56383c56a6cff6f77210f7412"
 if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 	curl -o Anaconda2-5.1.0-Linux-x86_64.sh https://repo.continuum.io/archive/Anaconda2-5.1.0-Linux-x86_64.sh

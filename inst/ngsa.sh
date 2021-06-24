@@ -2,34 +2,11 @@
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-if [ -z $1 ]; then
-	source $ROOTDIR/conf/intel.cfg
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	export I_MPI_CC=icc
-	export I_MPI_CXX=icpc
-	export I_MPI_F77=ifort
-	export I_MPI_F90=ifort
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load openmpi@3.1.6%intel@19.0.1.144
-	export OMPI_CC=$I_MPI_CC
-	export OMPI_CXX=$I_MPI_CXX
-	export OMPI_F77=$I_MPI_F77
-	export OMPI_FC=$I_MPI_F90
-elif [[ "$1" = *"gnu"* ]]; then
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-	spack load openmpi@3.1.6%gcc@8.4.0
-	export OMPI_CC=gcc
-	export OMPI_CXX=g++
-	export OMPI_F77=gfortran
-	export OMPI_FC=gfortran
-elif [[ "$1" = *"fuji"* ]]; then
+if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]]; then
 	echo "lol, no thanks not touching this one"; exit 1
 fi
 
@@ -37,17 +14,18 @@ BM="NGSAnalyzer"
 VERSION="694b38eed8a4c09160045895a1bf86fcb35e85a3"
 if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	instrument_kernel "$1" $ROOTDIR/$BM/
 	# bwa w/ intel breaks
-	if [ -z $1 ]; then
+	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/LDLIBS=-lm/LDLIBS=-static -static-intel -qopenmp-link=static -lm/' ./SNP_indel_caller/Makefile
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./workflow/Makefile
 		sed -i -e 's/$(CC) $(CFL/icc $(CFL/' -e 's/-lm /-static -static-intel -qopenmp-link=static -lm /g' ./bwa-0.5.9rc1_kei/Makefile
 		sed -i -e 's/ -lm / -static -static-intel -qopenmp-link=static -lm /g' -e 's/-lcurses/-lcurses -ltinfo/' ./samtools-0.1.8_kei/Makefile
 		sed -i -e 's/$@ $(OBJS)/$@ $(OBJS) -static -static-intel -qopenmp-link=static/g' ./splitSam2Contig2/Makefile
-	else
+	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/=icc/=gcc/' -e 's/-ipo -xHost/-march=native/g' -e 's/LDLIBS=-lm/LDLIBS=-static -lm/' ./SNP_indel_caller/Makefile
 		sed -i -e 's/=icc/=gcc/' -e 's/=icpc/=g++/' -e 's/-ipo -xHost/-march=native/g' ./makefile.x86_64_intel
 		sed -i -e 's/=icc/=gcc/' -e 's/=icpc/=g++/' -e 's/-ipo -xHost/-march=native -m64/g' -e 's/-lcurses/-lcurses -ltinfo/' ./samtools-0.1.8_kei/Makefile
@@ -58,7 +36,6 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 		sed -i -e 's/-lm /-static -lm /g' ./bwa-0.5.9rc1_kei/Makefile
 		for FILE in `/usr/bin/grep 'inline void bwt_2occ' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/inline void bwt_2occ/void bwt_2occ/' $FILE; done
 		for FILE in `/usr/bin/grep 'inline void bwtl_2occ' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/inline void bwtl_2occ/void bwtl_2occ/' $FILE; done
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
 	fi
 	for x in `find ./workflow -name 'workflow*.sh'`; do sed -i -e 's/MPI_LOCALRANKID/PMIX_RANK/g' $x; done
 	make -f makefile.x86_64_intel
@@ -74,8 +51,8 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 		bash $ROOTDIR/$BM/bin/download_contig.sh
 		echo "  (downloading and processing pseudo-genome data)"
 		cd $ROOTDIR/$BM/ngsa_mini_input
-		wget http://mt.r-ccs.riken.jp/hpci-miniapp/ngsa-data/ngsa-dummy.tar.gz
-		tar zxf ngsa-dummy.tar.gz
+		URL="http://mt.r-ccs.riken.jp/hpci-miniapp/ngsa-data/ngsa-dummy.tar.gz"; DEP=$(basename $URL)
+		if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
 		echo "... done"
 	fi
 	cd $ROOTDIR

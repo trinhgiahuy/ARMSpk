@@ -2,61 +2,31 @@
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-if [ -z $1 ]; then
-	source $ROOTDIR/conf/intel.cfg
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	export I_MPI_CC=icc
-	export I_MPI_CXX=icpc
-	export I_MPI_F77=ifort
-	export I_MPI_F90=ifort
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
-
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load openmpi@3.1.6%intel@19.0.1.144
-	export OMPI_CC=$I_MPI_CC
-	export OMPI_CXX=$I_MPI_CXX
-	export OMPI_F77=$I_MPI_F77
-	export OMPI_FC=$I_MPI_F90
-elif [[ "$1" = *"gnu"* ]]; then
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-	spack load openmpi@3.1.6%gcc@8.4.0
-	export OMPI_CC=gcc
-	export OMPI_CXX=g++
-	export OMPI_F77=gfortran
-	export OMPI_FC=gfortran
-elif [[ "$1" = *"fuji"* ]]; then
-	sleep 0
-elif [[ "$1" = *"gem5"* ]]; then
-	sleep 0; #module load FujitsuCompiler/202007
-else
-	echo 'wrong compiler'
-	exit 1
-fi
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 BM="XSBench"
 VERSION="4772cf0194e2ae6d6752c5cacb8cf063fbfef7d0"
 if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	instrument_kernel "$1" $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/src
-	if [ -z $1 ]; then
+	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/= intel/= gnu/' -e 's/-flto/-flto -march=native/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifccpx/' -e 's/-flto/-Nclang -Ofast -ffj-ocl -mllvm -polly -flto/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify# -flto -lm#g' ./Makefile
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fujitrad"* ]]; then
+		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Kfast,openmp,ocl,largepage/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 	elif [[ "$1" = *"gem5"* ]]; then
-		sed -i -e 's/^MPI.*= yes/MPI = no/' -e 's/= intel/= gnu/' -e 's/CC = gcc/CC = fccpx/' -e 's/-flto/-Nclang -Ofast -ffj-no-largepage -ffj-ocl -mllvm -polly/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -lm -L${ADVISOR_2018_DIR}/lib64 -littnotify# -ffj-no-largepage -lm#g' ./Makefile
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
+		sed -i -e 's/^MPI.*= yes/MPI = no/' -e 's/= intel/= gnu/' -e 's/CC = gcc/CC = fcc/' -e 's/-flto/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 	fi
 	make
 	cd $ROOTDIR

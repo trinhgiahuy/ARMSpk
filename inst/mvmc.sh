@@ -2,78 +2,47 @@
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-if [ -z $1 ]; then
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	export I_MPI_CC=icc
-	export I_MPI_CXX=icpc
-	export I_MPI_F77=ifort
-	export I_MPI_F90=ifort
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load openmpi@3.1.6%intel@19.0.1.144
-	export OMPI_CC=$I_MPI_CC
-	export OMPI_CXX=$I_MPI_CXX
-	export OMPI_F77=$I_MPI_F77
-	export OMPI_FC=$I_MPI_F90
-elif [[ "$1" = *"gnu"* ]]; then
-	source `echo $INTEL_PACKAGE | cut -d'/' -f-3`/mkl/bin/mklvars.sh intel64 > /dev/null 2>&1
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-	spack load openmpi@3.1.6%gcc@8.4.0
-	export OMPI_CC=gcc
-	export OMPI_CXX=g++
-	export OMPI_F77=gfortran
-	export OMPI_FC=gfortran
-elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-	sleep 0
-elif [[ "$1" = *"gem5"* ]]; then
-	#module load FujitsuCompiler/202007
-	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
-else
-	echo 'wrong compiler'
-	exit 1
+if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
+	echo "WRN: DOES NOT compile in -Nclang mode"
 fi
 
 BM="MVMC"
 VERSION="7c58766b180ccb1035e4c220208b64ace3c49cf2"
 if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | awk '{print $1}'`" = "x0" ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	instrument_kernel "$1" $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/src
 	for x in `/bin/grep -r 'init_by_array(' . | cut -d':' -f1 | sort -u`; do sed -i -e 's/init_by_array(/xxxinit_by_array(/' $x; done
-	if [ -z $1 ]; then
+	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/blacs_intelmpi/blacs_openmpi/' -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g" ./Makefile_intel
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' -e "s#L/usr/local/intel/composer_xe_2013/mkl#L$MKLROOT#g" -e 's/blacs_intelmpi/blacs_openmpi/' -e 's/mkl_intel_thread/mkl_gnu_thread/' -e 's/-lpthread/-lgomp -lpthread -lm -ldl/' -e 's/ -qopt-prefetch=3 -nofor-main//' -e 's/ -vec-report//' ./Makefile_intel
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ ifort/ gfortran/' -e 's/-implicitnone/-fimplicit-none/' ./pfapack/Makefile_intel
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's/ icc/ gcc/' -e 's/-no-ansi-alias//' ./sfmt/Makefile_intel
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
+	elif [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]]; then
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./Makefile_intel
 	elif [[ "$1" = *"gem5"* ]]; then
 		# FJ's -SCALAPACK is hardwired to FJ's MPI, so we need a replacement
-		if ! [ -f ./scalapack-2.0.2.tgz ]; then wget http://www.netlib.org/scalapack/scalapack-2.0.2.tgz; fi
-		if ! [ -f ./scalapack-2.0.2.tgz ]; then echo "ERR: could not download scalapack"; fi
-		tar xzf scalapack-2.0.2.tgz; cd scalapack-2.0.2
-		sed -e 's/mpif90/frtpx/g' -e 's/mpicc/fccpx/g' -e "s#-O3#-Kfast -I$ROOTDIR/dep/mpistub/include/mpistub#" -e "s#^LIBS .*#LIBS = -SSL2BLAMP -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#" SLmake.inc.example > SLmake.inc
+		URL="http://www.netlib.org/scalapack/scalapack-2.0.2.tgz"; DEP=$(basename $URL)
+		if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
+		cd scalapack-2.0.2
+		sed -e 's/mpif90/frt/g' -e 's/mpicc/fcc/g' -e "s#-O3#-Kfast,openmp,ocl,nolargepage,nolto -I$ROOTDIR/dep/mpistub/include/mpistub#" -e "s#^LIBS .*#LIBS = -SSL2BLAMP -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#" SLmake.inc.example > SLmake.inc
 		make lib -j $(nproc); make lib
 		cd $ROOTDIR/$BM/src
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		sed -i -e 's/^CC .*=.*/CC = fccpx/' -e 's/^FC .*=.*/FC = frtpx/' -e "s#CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,nolargepage,nolto/g' -e 's/ = mpi/ = /g' -e "s#^CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
 	fi
 	make intel
 	cd $ROOTDIR

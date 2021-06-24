@@ -2,91 +2,61 @@
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-if [ -z $1 ]; then
-	source $ROOTDIR/conf/intel.cfg
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	export I_MPI_CC=icc
-	export I_MPI_CXX=icpc
-	export I_MPI_F77=ifort
-	export I_MPI_F90=ifort
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
-
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load openmpi@3.1.6%intel@19.0.1.144
-	export OMPI_CC=$I_MPI_CC
-	export OMPI_CXX=$I_MPI_CXX
-	export OMPI_F77=$I_MPI_F77
-	export OMPI_FC=$I_MPI_F90
-elif [[ "$1" = *"gnu"* ]]; then
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-	spack load openmpi@3.1.6%gcc@8.4.0
-	export OMPI_CC=gcc
-	export OMPI_CXX=g++
-	export OMPI_F77=gfortran
-	export OMPI_FC=gfortran
-elif [[ "$1" = *"fuji"* ]]; then
-	sleep 0
-elif [[ "$1" = *"gem5"* ]]; then
-	export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
-else
-	echo 'wrong compiler'
-	exit 1
-fi
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 BM="SWFFT"  # fortran version is 5-10% faster in my tests
 VERSION="d0ef31454577740fbb87618cc35789b7ef838238"
 if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 	cd $ROOTDIR/$BM/
-	git checkout -b precision ${VERSION}
+	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	instrument_kernel "$1" $ROOTDIR/$BM/
 	if [ ! -f $ROOTDIR/$BM/fftw/bin/fftw-wisdom ]; then
-		if [ ! -f fftw-3.3.4.tar.gz ]; then wget http://fftw.org/fftw-3.3.4.tar.gz; fi
+		URL="http://fftw.org/fftw-3.3.4.tar.gz"; DEP=$(basename $URL)
+		if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
 		tar xzf fftw-3.3.4.tar.gz
 		cd ./fftw-3.3.4/
-		if [ -z $1 ]; then
+		if [[ "$1" = *"intel"* ]]; then
 			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
-			if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
-				make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX2 -fp-model fast=2 -no-prec-div -qoverride-limits"
-			else
-				make -j CFLAGS="-O3 -ipo -xHost -xCORE-AVX512 -fp-model fast=2 -no-prec-div -qoverride-limits"
-			fi
+			make -j CFLAGS="-O3 -ipo -xHost -fp-model fast=2 -no-prec-div -qoverride-limits"
 		elif [[ "$1" = *"gnu"* ]]; then
 			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=gcc
 			make -j CFLAGS="-O3 -march=native"
-		elif [[ "$1" = *"fuji"* ]]; then
+		elif [[ "$1" = *"fujitrad"* ]]; then
 			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
-				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fccpx
-			make -j CFLAGS="-Kfast -Klto"
+				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fcc
+			make -j CFLAGS="-Kfast,ocl,largepage,lto"
+		elif [[ "$1" = *"fujiclang"* ]]; then
+			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
+				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fcc
+			make -j CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -Kfast,ocl,largepage,lto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
-				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fccpx
-			make -j CFLAGS="-Kfast -Knolargepage"
+				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fcc
+			make -j CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -Kfast,ocl,nolargepage,nolto"
 		fi
 		make install
 		cd $ROOTDIR/$BM/
 	fi
 	export oldPATH=$PATH
 	export PATH=$ROOTDIR/$BM/fftw/bin:$oldPATH
-	if [ -z $1 ]; then
+	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/-L${ADVISOR/-lmpi_cxx -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./GNUmakefile
 	elif [[ "$1" = *"gnu"* ]]; then
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -static#g' ./GNUmakefile.openmp
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-	elif [[ "$1" = *"fuji"* ]]; then
-		sed -i -e 's/?= mpicc/?= mpifccpx/g' -e 's/?= mpicxx/?= mpiFCCpx/g' -e 's/?= mpif90/?= mpifrtpx/g' -e 's/-ipo -xHost/-Kfast -Klto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
-		sed -i -e 's/-ipo -xHost/-Kfast -Klto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./GNUmakefile.openmp
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE; done
+	elif [[ "$1" = *"fujitrad"* ]]; then
+		sed -i -e 's/?= mpicc/?= mpifcc/g' -e 's/?= mpicxx/?= mpiFCC/g' -e 's/?= mpif90/?= mpifrt/g' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
+		sed -i -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./GNUmakefile.openmp
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		sed -i -e 's/?= mpicc/?= mpifcc/g' -e 's/?= mpicxx/?= mpiFCC/g' -e 's/?= mpif90/?= mpifrt/g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
+		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./GNUmakefile.openmp
 	elif [[ "$1" = *"gem5"* ]]; then
-		sed -i -e 's/?= mpicc/?= fccpx/g' -e 's/?= mpicxx/?= FCCpx/g' -e 's/?= mpif90/?= frtpx/g' -e 's/-ipo -xHost/-Kfast -Knolargepage/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
-		sed -i -e 's/-ipo -xHost/-Kfast -Knolargepage/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./GNUmakefile.openmp
-		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' -e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' -e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE; done
+		sed -i -e 's/?= mpicc/?= fcc/g' -e 's/?= mpicxx/?= FCC/g' -e 's/?= mpif90/?= frt/g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
+		sed -i -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath -Wl,$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./GNUmakefile.openmp
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./FDistribution.f90
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./TestFDfft.f90
 	fi

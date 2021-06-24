@@ -6,7 +6,7 @@ default:
    action               = validate
    bench_post_setup     = sync
    command_add_redirect = 1
-   flagsurl1            = http://www.spec.org/cpu2017/flags/Intel-ic19.0u1-official-linux64.2019-07-09.xml
+#   flagsurl1            = http://www.spec.org/cpu2017/flags/Intel-ic19.0u1-official-linux64.2019-07-09.xml
    iterations           = 1
    line_width           = 1020
    log_line_width       = 1020
@@ -17,7 +17,7 @@ default:
    reportable           = 0
    tune                 = peak
    label                = %{COMP}
-%if '%{COMP}' eq 'fuji'
+%if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5' || '%{COMP}' eq 'llvm12'
    verify_binaries      = no
 %endif
 
@@ -38,8 +38,8 @@ default:
 intspeed,fpspeed:
 %if '%{COMP}' eq 'sde'
    submit               = ulimit -n 4096; ulimit -s unlimited; sde64 -sse-sde -disasm_att 1 -dcfg 1 -dcfg:write_bb 1 -dcfg:out_base_name %{RESDIR}/dcfg-out.wl-\${workload} -align_checker_prefetch 0 -align_correct 0 -emu_fast 1 -bdw -- \$command
-%elif '%{COMP}' eq 'fuji'
-   submit               = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -n 4096; ulimit -s unlimited; \$command
+%elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'llvm12'
+   submit               = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -s unlimited; \$command
 %elif '%{COMP}' eq 'gem5'
    submit               = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
 %else
@@ -64,23 +64,48 @@ default:
    LDCFLAGS             = -static -static-intel -qopenmp-link=static
    LDCXXFLAGS           = -static -static-intel -qopenmp-link=static
    LDFFLAGS             = -static -static-intel -qopenmp-link=static
-%elif '%{COMP}' eq 'fuji'
+%elif '%{COMP}' eq 'fujitrad'
    CC                   = fcc -m64 -std=c11
    CXX                  = FCC -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Nclang -Ofast -Kfast -mcpu=a64fx+sve -ffj-eval-concurrent -flto
-   LDCFLAGS             = -flto
-   LDCXXFLAGS           = -flto
-   LDFFLAGS             = -flto
+   OPT_ROOT             = -Kfast,ocl,eval_concurrent,largepage
+   EXTRA_FOPTIMIZE      = -Klto
+   LDCFLAGS             =
+   LDCXXFLAGS           =
+   LDFFLAGS             =
+%elif '%{COMP}' eq 'fujiclang'
+   CC                   = fcc -m64 -std=c11
+   CXX                  = FCC -m64
+   FC                   = frt -m64
+   OPT_ROOT             = -Nclang -Ofast -mcpu=a64fx+sve
+   EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,largepage,lto
+   EXTRA_COPTIMIZE      = -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+   EXTRA_CXXOPTIMIZE    = -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+   LDCFLAGS             =
+   LDCXXFLAGS           =
+   LDFFLAGS             =
 %elif '%{COMP}' eq 'gem5'
    CC                   = fcc -m64 -std=c11
    CXX                  = FCC -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Nclang -Ofast -Kfast -mcpu=a64fx+sve -ffj-eval-concurrent -Knolargepage -ffj-no-largepage
-   LDCFLAGS             = -Knolargepage -ffj-no-largepage
-   LDCXXFLAGS           = -Knolargepage -ffj-no-largepage
-   LDFFLAGS             = -Knolargepage -ffj-no-largepage
-%endif
+   OPT_ROOT             = -Nclang -Ofast -mcpu=a64fx+sve
+   EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,nolargepage,nolto
+   EXTRA_COPTIMIZE      = -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+   EXTRA_CXXOPTIMIZE    = -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+   LDCFLAGS             =
+   LDCXXFLAGS           =
+   LDFFLAGS             =
+%elif '%{COMP}' eq 'llvm12'
+   CC                   = clang -m64 -std=c11
+   CXX                  = clang++ -m64
+   FC                   = frt -m64
+   OPT_ROOT             = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx
+   EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,largepage,lto
+   EXTRA_COPTIMIZE      = -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+   EXTRA_CXXOPTIMIZE    = -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+   LDCFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
+   LDCXXFLAGS           = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
+   LDFFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
 %else
 %error wrong or unsupported COMP variable specified
 %endif
@@ -97,6 +122,12 @@ intspeed:
 
 fpspeed:
    EXTRA_OPTIMIZE       = -qopenmp -DSPEC_OPENMP
+%elif '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
+intspeed:
+   EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing
+
+fpspeed:
+   EXTRA_OPTIMIZE       = -fopenmp -DSPEC_OPENMP
 %else
 intspeed:
    EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing -Knofp_relaxed
@@ -112,15 +143,15 @@ intspeed,fpspeed:
    CPORTABILITY         = -DSPEC_LINUX_X64
 
 502.gcc_r,602.gcc_s:
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
+%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5' || '%{COMP}' eq 'llvm12'
    CPORTABILITY         = -fgnu89-inline
 %endif
 
 521.wrf_r,621.wrf_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu'
+%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
    FPORTABILITY         = -fconvert=big-endian
-%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
+%elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
@@ -135,15 +166,32 @@ intspeed,fpspeed:
 
 527.cam4_r,627.cam4_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
+%if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
+%endif
+
+607.cactuBSSN_s:
+%if '%{COMP}' eq 'llvm12'
+   FPORTABILITY         = -Knohpctag
+%endif
+
+621.wrf_s,627.cam4_s:
+%if '%{COMP}' eq 'llvm12'
+   EXTRA_COPTIMIZE      = -mllvm -polly -mllvm -polly-vectorizer=polly
+   EXTRA_CXXOPTIMIZE    = -mllvm -polly -mllvm -polly-vectorizer=polly
+%endif
+
+625.x264_s:
+%if '%{COMP}' eq 'llvm12'
+   #yes it's not see https://www.spec.org/cpu2017/Docs/benchmarks/625.x264_s.html but i need sleep
+   PORTABILITY          = -fcommon
 %endif
 
 628.pop2_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu'
+%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
    FPORTABILITY         = -fconvert=big-endian
-%elif '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
+%elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
 %else
@@ -151,7 +199,7 @@ intspeed,fpspeed:
 %endif
 
 648.exchange2_s:
-%if '%{COMP}' eq 'fuji' || '%{COMP}' eq 'gem5'
+%if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90i -lfj90fmt_sve -lfj90f -lfj90i -lfjsrcinfo
 %endif
 EOF
@@ -159,33 +207,9 @@ EOF
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
-
 source $ROOTDIR/conf/host.cfg
-if [ -z $1 ]; then
-	source $ROOTDIR/conf/intel.cfg
-	source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-	export I_MPI_CC=icc
-	export I_MPI_CXX=icpc
-	export I_MPI_F77=ifort
-	export I_MPI_F90=ifort
-	alias ar=`which xiar`
-	alias ld=`which xild`
-	export ADVISOR_2018_DIR=${ADVISOR_2019_DIR}
-elif [[ "$1" = *"gnu"* ]]; then
-	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-	spack load gcc@8.4.0
-elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"fuji"* ]]; then
-	echo "does not compile on login node"; exit 1
-elif [[ "$1" = *"fuji"* ]]; then
-	sleep 0
-elif [[ "`hostname -s`" = *"fn01"* ]] && [[ "$1" = *"gem5"* ]]; then
-	echo "does not compile on login node"; exit 1
-elif [[ "$1" = *"gem5"* ]]; then
-	sleep 0; #module load FujitsuCompiler/202007
-else
-	echo 'wrong compiler'
-	exit 1
-fi
+source $ROOTDIR/inst/_common.sh
+load_compiler_env "$1"
 
 BM="SPEC_CPU"
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
@@ -199,16 +223,16 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		mkdir -p /tmp/mnt_$BM
 		fuseiso ./cpu2017-1.1.0.iso /tmp/mnt_$BM
 		cd /tmp/mnt_$BM/
-		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
+		if lscpu | grep 'aarch64' >/dev/null 2>&1 || [[ "$1" = *"gem5"* ]]; then
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
 		else
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
 		fi
 		cd -
 		fusermount -u /tmp/mnt_$BM
-	else
+	elif [ ! -f $ROOTDIR/$BM/shrc ]; then
 		cd $ROOTDIR/dep/mnt_$BM
-		if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
+		if lscpu | grep 'aarch64' >/dev/null 2>&1 || [[ "$1" = *"gem5"* ]]; then
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-aarch64
 		else
 			./install.sh -f -d $ROOTDIR/$BM/ -u linux-x86_64
@@ -218,7 +242,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
         cd $ROOTDIR/$BM/
         #patch -p1 --forward < $ROOTDIR/patches/*1-${BM}*.patch
         dump_cpu_config $ROOTDIR/$BM/config/nedo.cfg
-	if [ -z $1 ]; then
+	if [[ "$1" = *"intel"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 intspeed fpspeed intrate fprate"
 		#XXX: scrub ignores compiler: bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=sde --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=intel --define RESDIR=0 intspeed fpspeed"
@@ -226,12 +250,19 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed"
-	elif [[ "$1" = *"fuji"* ]]; then
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fuji --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fuji --define RESDIR=0 intspeed fpspeed"
+	elif [[ "$1" = *"fujitrad"* ]]; then
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed intrate fprate"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed"
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed intrate fprate"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed"
 	elif [[ "$1" = *"gem5"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gem5 --define RESDIR=0 intspeed fpspeed"
+	elif [[ "$1" = *"llvm12"* ]]; then
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed intrate fprate"
+		#bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed ^603.bwaves_s ^621.wrf_s ^627.cam4_s ^628.pop2_s ^638.imagick_s ^654.roms_s" #XXX fix later
 	fi
 	# check that all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;

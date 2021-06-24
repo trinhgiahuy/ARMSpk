@@ -80,7 +80,7 @@ if [ ! -f $ROOTDIR/dep/$BM/pcm-memory.x ]; then
 	# many counters just zero if pcm compiled with perf
 	sed -i -e 's/-DPCM_USE_PERF/#-DPCM_USE_PERF/' ./Makefile
 	# no KNM suport yet, so "fake" it and hope for the best
-	if [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+	if [ -n "${IKNMHOST}" ]; then
 		sed -i -e 's/KNL = 87/KNL = 133/' ./cpucounters.h
 	fi
 	make -j CXX=icpc
@@ -187,8 +187,9 @@ EOF
 	export MAVEN_OPTS="-Xmx4g -XX:ReservedCodeCacheSize=1024m"
 	sed -i "/a7e29e78bd43aa6d137f0bb0afd54a3017865d471456c6d436ae79475bbeb161/i \    version('2.4.0', sha256='b1d6d6cb49d8253b36df8372a722292bb323bd16315d83f0b0bafb66a4154ef2')" $ROOTDIR/dep/spack/var/spack/repos/builtin/packages/spark/package.py
 	spack install spark@2.4.0%gcc@8.4.0 hadoop=True ^hadoop@2.10.0%gcc@8.4.0 ^openjdk@1.8.0_222-b10
-	cd /tmp; wget https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0.tgz
-	tar xzf spark-2.4.0.tgz; cd spark-2.4.0
+	URL="https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0.tgz"; DEP=$(basename $URL)
+	if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
+	cd /tmp; tar xzf $ROOTDIR/dep/${DEP}; cd spark-2.4.0
 	./dev/make-distribution.sh --name custom-spark \
 		--pip --tgz -Phadoop-provided -Phive -Phive-thriftserver -Pyarn -DskipTests
 	export SPARK_HOME=`spack find -p | /bin/grep spark | cut -d' ' -f2- | tr -d ' '`
@@ -255,17 +256,17 @@ BM="mpistub"
 VERSION="e3b0d504e6daba0116907589c944a3be39547057"
 cd $ROOTDIR/dep/$BM/
 if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
-	if [[ "`hostname -s`" = *"fn01"* ]] || [[ "`hostname -s`" = *"peach"* ]]; then
+	if lscpu | grep 'sve' >/dev/null 2>&1 || [[ "`hostname -s`" = *"peach"* ]]; then
 		if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 		git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 		module load FujitsuCompiler/202007
 		rm -rf $ROOTDIR/dep/$BM/build; mkdir -p $ROOTDIR/dep/$BM/build; cd $ROOTDIR/dep/$BM/build
-		if ! CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage' ; then
+		if ! CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage' ; then
 			# peach has too old cmake
 			source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 			spack install cmake@3.4.3; spack load cmake@3.4.3
-			CC=fccpx CXX=FCCpx FC=frtpx cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage'
+			CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage'
 		fi
 		make
 		make install
@@ -285,8 +286,8 @@ if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
 	if ! [[ "`hostname -s`" = *"peach"* ]]; then
 		if ! which python3 >/dev/null 2>&1; then
 			if ! [ `python -V 2>&1 | cut -d'.' -f2` -ge 7 ]; then
-				wget https://www.python.org/ftp/python/2.7/Python-2.7.tar.bz2
-				tar xjf Python-2.7.tar.bz2
+				URL="https://www.python.org/ftp/python/2.7/Python-2.7.tar.bz2"; DEP=$(basename $URL)
+				if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xjf $ROOTDIR/dep/${DEP}
 				cd Python-2.7
 				./configure --prefix=$ROOTDIR/dep/$BM/py27
 				make -j; make install
@@ -295,8 +296,8 @@ if [ ! -f $ROOTDIR/dep/$BM/build/ARM/gem5.opt ]; then
 				export SPACK_PYTHON=`which python2.7`
 				cd -
 			fi
-			wget https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz
-			tar xzf scons-1.3.1.tar.gz
+			URL="https://downloads.sourceforge.net/project/scons/scons/1.3.1/scons-1.3.1.tar.gz"; DEP=$(basename $URL)
+			if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
 			cd scons-1.3.1
 			python2 setup.py install
 			cd -
@@ -325,8 +326,8 @@ if [ ! -f $ROOTDIR/dep/$BM/bin/sst-info ]; then
 	source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 	spack load gcc@8.4.0 ; spack load cmake@3.17.3
 	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall_11dot0dot0_SeriesAdditionalExternalComponents/#intel-pin-tool-317-98314
-	wget https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
-	tar xzf pin-3.17-98314-g0c048d619-gcc-linux.tar.gz
+	URL="https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.17-98314-g0c048d619-gcc-linux.tar.gz"; DEP=$(basename $URL)
+	if [ ! -f $ROOTDIR/dep/${DEP} ]; then if ! wget ${URL} -O $ROOTDIR/dep/${DEP}; then echo "ERR: download failed for ${URL}"; exit 1; fi; fi; tar xzf $ROOTDIR/dep/${DEP}
 	export PIN_HOME=$ROOTDIR/dep/$BM/pin-3.17-98314-g0c048d619-gcc-linux
 	export INTEL_PIN_DIRECTORY=$PIN_HOME
 	# http://sst-simulator.org/SSTPages/SSTBuildAndInstall10dot1dot0SeriesDetailedBuildInstructions/
