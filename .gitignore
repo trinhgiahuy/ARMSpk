@@ -1,4 +1,5 @@
 *.swp
+*.swo
 /dep/sde-external-8.*-lin/
 /util/sdetest*_out*
 /util/polybench-c-3.2*
@@ -11,6 +12,7 @@
 /micro/src/*
 /fs2020/
 /dep/*.iso
+/dep/polybench-c-4.2.1-beta.tar.gz
 /dep/fs2020*.zip
 /dep/REVOCAP_Refiner-1.1.01.tgz
 /dep/modylas-mini-1.0.0.tar.gz
@@ -24,3 +26,10 @@
 /dep/sst/libexec/
 /dep/sst/pin*
 /log/
+/dep/mnt_SPEC_CPU/
+/dep/mnt_SPEC_OMP/
+/dep/mnt_SPEC_MPI/
+*.sh.*.out
+*.sh.*.out.*
+*.sh.*.err
+*.sh.*.err.*
