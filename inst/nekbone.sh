@@ -38,6 +38,9 @@ if [ ! -f $ROOTDIR/$BM/test/nek_mgrid/nekbone ]; then
 		sed -i -e 's/^CC=.*/CC=fcc/g' -e 's/^F77=.*/F77=frt/g' -e 's/^#IFMPI="f/IFMPI="f/g' -e "s#-ipo -xHost#-CcdRR8 -Cpp -Fixed -Kfast,ocl,nolargepage,nolto -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation#g" -e 's# -mkl-static##g' -e "s# -mkl# -SSL2BLAMP#g" ./makenek
 		sed -i -e '277,287s#/#!#g' $ROOTDIR/$BM/src/makenek.inc
 		sed -i -e 's/^CFLAGS+=-DMPI/#CFLAGS+=-DMPI/g' $ROOTDIR/$BM/src/jl/Makefile
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's/-ipo -xHost/-CcdRR8 -Cpp -Fixed -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's# -mkl-static##g' -e "s# -mkl# -SSL2BLAMP#g" $ROOTDIR/$BM/src/makefile.template
+		sed -i -e 's/gfortran/frt/g' -e 's/-fdefault-real-8 -x f77-cpp-input/-CcdRR8 -Cpp -Fixed -Kfast,openmp,ocl,largepage,lto -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' $ROOTDIR/$BM/src/makenek.inc
 	fi
 	./makenek NotUsedCasename $ROOTDIR/$BM/src
 	cd $ROOTDIR

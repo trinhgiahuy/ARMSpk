@@ -42,12 +42,17 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			./configure --disable-fortran -with-openmp \
 				CC=mpifcc CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto" \
 				CXX=mpiFCC CXXFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto" \
-				F77=mpifrt FFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
+				F77=mpifrt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --disable-fortran -with-openmp --without-MPI \
 				CC=fcc CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
 				CXX=FCC CXXFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
-				F77=frt FFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto"
+				F77=frt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto"
+		elif [[ "$1" = *"llvm12"* ]]; then
+			./configure --disable-fortran -with-openmp \
+				CC=mpifcc CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin" \
+				CXX=mpiFCC CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin" \
+				F77=mpifrt FFLAGS="-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
 		fi
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
 		make -j
@@ -67,6 +72,8 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -Nclang -mcpu=a64fx+sve -ffj-ocl -ffj-largepage -flto/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		elif [[ "$1" = *"gem5"* ]]; then
 			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -Nclang -mcpu=a64fx+sve -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
+		elif [[ "$1" = *"llvm12"* ]]; then
+			sed -i -e 's/CC = cc/CC = clang/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' ./Makefile.in
 		fi
 		make
 		cd $ROOTDIR/$BM/
@@ -84,13 +91,19 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./config/defaults.mk
 		elif [[ "$1" = *"gem5"* ]]; then
 			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' ./config/defaults.mk
+		elif [[ "$1" = *"llvm12"* ]]; then
+			sed -i -e 's/icpc/clang++/g' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' ./config/defaults.mk
 		fi
 		if [[ "$1" = *"intel"* ]] || [[ "$1" = *"gnu"* ]]; then
 			make config MFEM_USE_MPI=YES MPICXX=mpicxx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
-		elif [[ "$1" = *"fuji"* ]]; then
+		elif [[ "$1" = *"fujitrad"* ]]; then
+			make config MFEM_USE_MPI=YES MPICXX=mpiFCC MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
+		elif [[ "$1" = *"fujiclang"* ]]; then
 			make config MFEM_USE_MPI=YES MPICXX=mpiFCC MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
 		elif [[ "$1" = *"gem5"* ]]; then
 			make config CMAKE_CXX_COMPILER=FCC MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
+		elif [[ "$1" = *"llvm12"* ]]; then
+			make config MFEM_USE_MPI=YES MPICXX=mpiFCC MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
 		fi
 		cd $ROOTDIR/$BM/
 	fi
@@ -113,6 +126,9 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		make
 		cd -
 		cp serial/laghos .
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e 's/ -lirc -lsvml//g' ./makefile
+		make
 	fi
 	cd $ROOTDIR
 fi

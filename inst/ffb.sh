@@ -6,8 +6,8 @@ source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/inst/_common.sh
 load_compiler_env "$1"
 
-if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
-	echo "WRN: DOES NOT compile in -Nclang mode"
+if [[ "$1" = *"fujiclang"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]]; then
+	echo "WRN: REVOCAP_Refiner-1.1.01 DOES NOT compile in clang mode"
 fi
 
 if [ ! -f $ROOTDIR/dep/REVOCAP_Refiner-1.1.01.tgz ]; then
@@ -102,7 +102,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./make_setting
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		# crashing in some stupid yaml shit with fujitsu compilers
@@ -111,7 +111,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		sed -i -e "s/ = mpi/ = /g" ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kvisimpact,ocl#-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kvisimpact,ocl#-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		sed -i -e "s#^LIBS += -lRcapRefiner#LIBS += -lRcapRefiner -L$ROOTDIR/$BM -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./make_setting
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		sed -i -e '/use mpi/d' -e "/use makemesh/a \  include 'mpif.h'" ./ffb_mini_main.F90
@@ -119,7 +119,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e "s#^LDFLAGS =.*#LDFLAGS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e "s#^LDFLAGS =.*#LDFLAGS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
 	fi
 	make
 	cd $ROOTDIR

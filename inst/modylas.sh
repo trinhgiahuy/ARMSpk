@@ -30,12 +30,18 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		rm make_setting; ln -s make_setting.gcc make_setting
 		sed -i -e 's/-O3/-O3 -march=native\nLIBS += -static/g' ./make_setting
-	elif [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]]; then
+	elif [[ "$1" = *"fujitrad"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i -e 's/FFLAGS += -DPROF_MAPROF/FFLAGS += -DNO_PROF_MAPROF/g' ./Makefile
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
 		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' -e '/^FFLAGS = /a CFLAGS = -Kfast,openmp,ocl,largepage' ./make_setting
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		# crashing in some stupid yaml shit with fujitsu compilers
+		sed -i -e 's/FFLAGS += -DPROF_MAPROF/FFLAGS += -DNO_PROF_MAPROF/g' ./Makefile
+		rm make_setting; ln -s make_setting.fx10 make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e '/^FFLAGS = /a CFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto' ./make_setting
 	elif [[ "$1" = *"gem5"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i -e 's/FFLAGS += -DPROF_MAPROF/FFLAGS += -DNO_PROF_MAPROF/g' ./Makefile
@@ -43,6 +49,11 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
 		sed -i -e 's/ = mpi/ = /g' -e "s#^FFLAGS = #FFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#mfunc=2#mfunc=2 -I$ROOTDIR/dep/mpistub/include/mpistub\nLIBS += -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/-Kfast/-Kfast,openmp,ocl,nolargepage,nolto/g' -e '/^FFLAGS = /a CFLAGS = -Kfast,openmp,ocl,nolargepage' ./make_setting
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's/FFLAGS += -DPROF_MAPROF/FFLAGS += -DNO_PROF_MAPROF/g' ./Makefile
+		rm make_setting; ln -s make_setting.fx10 make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/-Kfast/-Kfast,ocl,largepage,lto/g' -e '/^FFLAGS = /a CFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin' -e "/^FFLAGS = /a -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" ./make_setting
 	fi
 	make
 	cd $ROOTDIR

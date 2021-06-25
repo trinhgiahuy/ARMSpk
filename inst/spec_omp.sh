@@ -35,15 +35,15 @@ BOPTS          = -Kfast,openmp,ocl,eval_concurrent,largepage
 BLINK          =
 %elif '%{COMP}' eq 'fujiclang'
 submit         = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -s unlimited; \$command
-BOPTS          = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp
+BOPTS          = -Nclang -mcpu=a64fx+sve -fopenmp
 BLINK          =
 %elif '%{COMP}' eq 'gem5'
 submit         = ulimit -n 4096; ulimit -s unlimited; bash %{RESDIR}/gem5wrap.sh \$command
-BOPTS          = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp
+BOPTS          = -Nclang -mcpu=a64fx+sve -fopenmp
 BLINK          =
 %elif '%{COMP}' eq 'llvm12'
 submit         = export XOS_MMM_L_PAGING_POLICY=demand:demand:demand; export XOS_MMM_L_ARENA_LOCK_TYPE=0; export OMP_PROC_BIND=close; ulimit -s unlimited; \$command
-BOPTS          = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp
+BOPTS          = -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp
 BLINK          = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
 %else
 %error wrong or unsupported COMP variable specified
@@ -95,8 +95,8 @@ FC             = frt
 CC             = fcc
 CXX            = FCC
 FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,largepage,lto
-COPTIMIZE      = \${BOPTS} -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
-CXXOPTIMIZE    = \${BOPTS} -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+COPTIMIZE      = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+CXXOPTIMIZE    = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
 OS_LIBS        = \${BLINK}
 %elif '%{COMP}' eq 'gem5'
 sw_compiler    = FUJITSU Software Technical Computing Suite
@@ -104,8 +104,8 @@ FC             = frt
 CC             = fcc
 CXX            = FCC
 FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,nolargepage,nolto
-COPTIMIZE      = \${BOPTS} -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
-CXXOPTIMIZE    = \${BOPTS} -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+COPTIMIZE      = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+CXXOPTIMIZE    = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
 OS_LIBS        = \${BLINK}
 %elif '%{COMP}' eq 'llvm12'
 sw_compiler    = LLVM Compiler Infrastructure release 12.0.0
@@ -113,8 +113,8 @@ FC             = frt
 CC             = clang
 CXX            = clang++
 FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,largepage,lto
-COPTIMIZE      = \${BOPTS} -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
-CXXOPTIMIZE    = \${BOPTS} -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+COPTIMIZE      = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+CXXOPTIMIZE    = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
 OS_LIBS        = \${BLINK}
 %endif
 

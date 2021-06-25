@@ -34,7 +34,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
-		sed -i -e "s#-Kprefetch.*#-Kprefetch -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
+		sed -i -e "s#-Kprefetch.*#-Kprefetch -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
 	elif [[ "$1" = *"gem5"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
@@ -46,6 +46,12 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i -e '/use mpi/d' ./comlib.F90
 		sed -i "0,/implicit none/s//implicit none\n  include 'mpif.h'/" ./comlib.F90
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
+	elif [[ "$1" = *"llvm12"* ]]; then
+		# crashing in some stupid yaml shit with fujitsu compilers
+		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
+		TYPE=fx10
+		sed -i -E 's/mpi(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
+		sed -i -e "s#-Kprefetch.*#-Kprefetch -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
 	fi
 	for TEST in $TESTCONF; do
 		PX="`echo $TEST | cut -d '|' -f3`"

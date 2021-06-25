@@ -112,8 +112,8 @@ EOF
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -Ofast -ffast-math -fopenmp -march=armv8.2-a+sve -mcpu=a64fx -mtune=a64fx -flto/g' Makefile.inc
 	elif [[ "$1" = *"llvm12"* ]]; then
 		sed -i -e 's/ -V / /g' -e 's/ -v / /g' $ROOTDIR/$BM/option.list		#flang doesn'f like -V
-		sed -i -e 's/CC=.*/CC=clang/g' -e 's/CXX=.*/CXX=clang++/g' -e 's/FC=.*/FC=frt/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
-		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -fopenmp -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto/g' -e "s#-Kopenmp -Bstatic#-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" Makefile.inc
+		sed -i -e 's/CC=.*/CC=clang/g' -e 's/CXX=.*/CXX=clang++/g' -e 's/FC=.*/FC=frt/g' Makefile.inc
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -fopenmp -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto/g' -e "s#^LDLIBS.*#LDLIBS=-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" Makefile.inc
 	fi
 	for BMconf in ${BINARYS}; do
 		NR=`echo $BMconf | cut -d'.' -f1`; sed -i -e "s/(DEF..)/(DEF$NR)/g" Makefile.inc

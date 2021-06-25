@@ -77,10 +77,10 @@ default:
    CC                   = fcc -m64 -std=c11
    CXX                  = FCC -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Nclang -Ofast -mcpu=a64fx+sve
+   OPT_ROOT             = -Nclang -mcpu=a64fx+sve
    EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,largepage,lto
-   EXTRA_COPTIMIZE      = -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
-   EXTRA_CXXOPTIMIZE    = -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+   EXTRA_COPTIMIZE      = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
+   EXTRA_CXXOPTIMIZE    = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
    LDCFLAGS             =
    LDCXXFLAGS           =
    LDFFLAGS             =
@@ -88,10 +88,10 @@ default:
    CC                   = fcc -m64 -std=c11
    CXX                  = FCC -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Nclang -Ofast -mcpu=a64fx+sve
+   OPT_ROOT             = -Nclang -mcpu=a64fx+sve
    EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,nolargepage,nolto
-   EXTRA_COPTIMIZE      = -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
-   EXTRA_CXXOPTIMIZE    = -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+   EXTRA_COPTIMIZE      = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
+   EXTRA_CXXOPTIMIZE    = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
    LDCFLAGS             =
    LDCXXFLAGS           =
    LDFFLAGS             =
@@ -99,10 +99,10 @@ default:
    CC                   = clang -m64 -std=c11
    CXX                  = clang++ -m64
    FC                   = frt -m64
-   OPT_ROOT             = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx
+   OPT_ROOT             = -ffast-math -mcpu=a64fx -mtune=a64fx
    EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,largepage,lto
-   EXTRA_COPTIMIZE      = -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
-   EXTRA_CXXOPTIMIZE    = -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+   EXTRA_COPTIMIZE      = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+   EXTRA_CXXOPTIMIZE    = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
    LDCFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
    LDCXXFLAGS           = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
    LDFFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
@@ -177,8 +177,8 @@ intspeed,fpspeed:
 
 621.wrf_s,627.cam4_s:
 %if '%{COMP}' eq 'llvm12'
-   EXTRA_COPTIMIZE      = -mllvm -polly -mllvm -polly-vectorizer=polly
-   EXTRA_CXXOPTIMIZE    = -mllvm -polly -mllvm -polly-vectorizer=polly
+   EXTRA_COPTIMIZE      = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly
+   EXTRA_CXXOPTIMIZE    = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly
 %endif
 
 625.x264_s:

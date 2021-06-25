@@ -262,11 +262,11 @@ if [ ! -f $ROOTDIR/dep/$BM/lib/mpistub/libmpi.a ]; then
 		if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
 		module load FujitsuCompiler/202007
 		rm -rf $ROOTDIR/dep/$BM/build; mkdir -p $ROOTDIR/dep/$BM/build; cd $ROOTDIR/dep/$BM/build
-		if ! CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage' ; then
+		if ! CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage -fPIC' -DCMAKE_CXX_FLAGS='-Knolargepage -fPIC' -DCMAKE_Fortran_FLAGS='-Knolargepage -fPIC' ; then
 			# peach has too old cmake
 			source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 			spack install cmake@3.4.3; spack load cmake@3.4.3
-			CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage' -DCMAKE_CXX_FLAGS='-Knolargepage' -DCMAKE_Fortran_FLAGS='-Knolargepage'
+			CC=fcc CXX=FCC FC=frt cmake .. -DCMAKE_INSTALL_PREFIX=$ROOTDIR/dep/$BM/ -DCMAKE_C_FLAGS='-Knolargepage -fPIC' -DCMAKE_CXX_FLAGS='-Knolargepage -fPIC' -DCMAKE_Fortran_FLAGS='-Knolargepage -fPIC'
 		fi
 		make
 		make install

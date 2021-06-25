@@ -31,6 +31,8 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_${HHOST}/sw4lite ]; then
 		sed -i -e 's/mpifort/mpifrt/' -e 's/mpiifort/mpifrt/' -e 's/mpiicpc/mpiFCC/' -e 's/= icc/= mpifcc/' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -SSL2BLAMP#g" ./Makefile
 	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -e 's/mpifort/frt/' -e 's/mpiifort/frt/' -e 's/mpiicpc/FCC/' -e 's/= icc/= fcc/' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -SSL2BLAMP -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#g" ./Makefile
+	elif [[ "$1" = *"llvm12"* ]]; then
+		sed -i -e 's/mpifort/mpifrt/' -e 's/mpiifort/mpifrt/' -e 's/mpiicpc/mpiFCC/' -e 's/= icc/= mpifcc/' -e 's/FORT_FLAGS = -ipo -xHost/FORT_FLAGS = -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp#g" ./Makefile
 	fi
 	make
 	cd $ROOTDIR
