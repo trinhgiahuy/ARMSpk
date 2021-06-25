@@ -214,25 +214,25 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
         dump_omp_config $ROOTDIR/$BM/config/nedo.cfg
 	if [[ "$1" = *"intel"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=intel --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=sde --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=intel --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=sde --define RESDIR=0 gross --ignore_error"
 	elif [[ "$1" = *"gnu"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gnu --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gnu --define RESDIR=0 gross --ignore_error"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fujitrad --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujitrad --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujitrad --define RESDIR=0 gross --ignore_error"
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fujiclang --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujiclang --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujiclang --define RESDIR=0 gross --ignore_error"
 	elif [[ "$1" = *"gem5"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define RESDIR=0 gross --ignore_error"
 		#XXX: peach fccpx/static doesnt support mcmodel
 		#bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define HOST=`hostname -s` --define RESDIR=0 gross ^bt331 ^swim"
 	elif [[ "$1" = *"llvm12"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=llvm12 --define RESDIR=0 gross"
-		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=llvm12 --define RESDIR=0 gross"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=llvm12 --define RESDIR=0 gross --ignore_error"
 	fi
 	# check that most/all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;

@@ -245,24 +245,24 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	if [[ "$1" = *"intel"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 intspeed fpspeed intrate fprate"
 		#XXX: scrub ignores compiler: bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=sde --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=intel --define RESDIR=0 intspeed fpspeed"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=sde --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=intel --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=sde --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"gnu"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"gem5"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 intspeed fpspeed intrate fprate"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gem5 --define RESDIR=0 intspeed fpspeed"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gem5 --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"llvm12"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed intrate fprate"
-		#bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed"
-		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed ^603.bwaves_s ^621.wrf_s ^627.cam4_s ^628.pop2_s ^638.imagick_s ^654.roms_s" #XXX fix later
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed --ignore_error"
+		#bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed ^603.bwaves_s ^621.wrf_s ^627.cam4_s ^628.pop2_s ^638.imagick_s ^654.roms_s" #XXX fix later
 	fi
 	# check that all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;
