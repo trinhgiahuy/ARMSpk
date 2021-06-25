@@ -30,7 +30,8 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./Makefile_intel
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./Makefile_intel
+		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./Makefile_intel
 	elif [[ "$1" = *"gem5"* ]]; then
 		# FJ's -SCALAPACK is hardwired to FJ's MPI, so we need a replacement
 		URL="http://www.netlib.org/scalapack/scalapack-2.0.2.tgz"; DEP=$(basename $URL)
@@ -42,7 +43,8 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cp ./Makefile_kei ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,nolargepage,nolto/g' -e 's/ = mpi/ = /g' -e "s#^CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./Makefile_intel
+		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,nolargepage,nolto/g' -e 's/ = mpi/ = /g' -e "s#^CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" ./Makefile_intel
 	fi
 	make intel
 	cd $ROOTDIR

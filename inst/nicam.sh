@@ -29,11 +29,13 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.Linux64-intel-impi
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ../sysdep/Makedef.Linux64-intel-impi
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.Linux64-intel-impi
+		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ../sysdep/Makedef.Linux64-intel-impi
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		cp ../sysdep/Makedef.Linux64-gnu-openmpi ../sysdep/Makedef.Linux64-intel-impi
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/FAST = -O3/FAST = -O3 -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/CFLAGS = -O3/CFLAGS = -O3 -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ../sysdep/Makedef.Linux64-intel-impi
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.Linux64-intel-impi
+		sed -i -e 's/FAST = -O3/FAST = -O3 -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/CFLAGS = -O3/CFLAGS = -O3 -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ../sysdep/Makedef.Linux64-intel-impi
 	fi
 	# need this because its also used in runs, so overwrite with compiler specifics instead of changing them
 	export NICAM_SYS=Linux64-intel-impi

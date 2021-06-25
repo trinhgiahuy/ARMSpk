@@ -26,15 +26,18 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/Kfast/Kfast,openmp,ocl,largepage/g' ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/Kfast/Kfast,openmp,ocl,largepage/g' ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/CXXFLAGS.* = .*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/CXXFLAGS.* = .*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/CXXFLAGS.* = .*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/CXXFLAGS.* = .*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	fi
 	make

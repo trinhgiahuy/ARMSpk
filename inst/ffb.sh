@@ -23,6 +23,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
 	if [ "x$?" = "x0" ]; then git am --ignore-whitespace < $ROOTDIR/patches/*1-${BM}*.patch; fi
+	instrument_kernel "$1" $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/src
 	if [ ! -f ./metis-5.1.0/bin/graphchk ]; then
 		URL="http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz"; DEP=$(basename $URL)
@@ -33,17 +34,19 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		elif [[ "$1" = *"gnu"* ]]; then
 			make config cc=gcc prefix=`pwd`
 		elif [[ "$1" = *"fujitrad"* ]]; then
-			export fcc_ENV="-Kfast,ocl,largepage"
+			export fcc_ENV="-Kocl,largepage"
 			make config cc=fcc prefix=`pwd`
 			unset fcc_ENV
 		elif [[ "$1" = *"fujiclang"* ]]; then
-			export fcc_clang_ENV="-Nclang -Ofast -mcpu=a64fx+sve -ffj-ocl -ffj-largepage -flto"
+			export fcc_clang_ENV="-Nclang -mcpu=a64fx+sve -ffj-ocl -ffj-largepage -flto"
 			make config cc=fcc prefix=`pwd`
 			unset fcc_clang_ENV
 		elif [[ "$1" = *"gem5"* ]]; then
-			export fcc_clang_ENV="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto"
+			export fcc_clang_ENV="-Nclang -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto"
 			make config cc=fcc prefix=`pwd`
 			unset fcc_clang_ENV
+		elif [[ "$1" = *"llvm12"* ]]; then
+			make config cc=clang prefix=`pwd`
 		fi
 		make install
 		cd $ROOTDIR/$BM/src
@@ -59,37 +62,47 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 			sleep 0
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
-			sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./MakefileConfig.in
+			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./MakefileConfig.in
+			sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./MakefileConfig.in
 		elif [[ "$1" = *"fujiclang"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
-			sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./MakefileConfig.in
+			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./MakefileConfig.in
+			sed -i -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./MakefileConfig.in
 		elif [[ "$1" = *"gem5"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
-			sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' ./MakefileConfig.in
+			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./MakefileConfig.in
+			sed -i -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' ./MakefileConfig.in
 			sed -i -e 's/= mpi/= /g' -e "s# -lstd -lm# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lm#g" ./MakefileConfig.in
+		elif [[ "$1" = *"llvm12"* ]]; then
+			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
+			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./MakefileConfig.in
+			sed -i -e "s#-Kfast.*#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./MakefileConfig.in
 		fi
 		make
 		if [[ "$1" = *"gnu"* ]]; then
 			cd ./lib/; ln -s ./x86_64-linux x86_64-linux-intel; cd -
-		elif [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]]; then
+		elif [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]]; then
 			cd ./lib/; ln -s ./kei x86_64-linux-intel; cd -
 		fi
 		ln -s ./Refiner include
 		cd $ROOTDIR/$BM/src
 	fi
-	sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 	if [[ "$1" = *"intel"* ]]; then
+		sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux-intel #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-xHost/g" -e 's/LIBS += -L${ADVISOR/LIBS += -static -static-intel -qopenmp-link=static -pthread -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -L${ADVISOR/' ./make_setting
 	elif [[ "$1" = *"gnu"* ]]; then
+		sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
 		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-march=native -static/g" -e 's/LIBS += -L${ADVISOR.*/LIBS += -static/' -e 's# -I${ADVISOR_2018_DIR}/include##g' ./make_setting
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Kfast,openmp,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Kvisimpact -Kfast,openmp,ocl,largepage/g' ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Kfast,openmp,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Kvisimpact -Kfast,openmp,ocl,largepage/g' ./make_setting
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ./make_setting
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		# crashing in some stupid yaml shit with fujitsu compilers
@@ -97,10 +110,16 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		sed -i '/CALL DDINIT/i \      LERR = 0' ./les3x.F
 		sed -i -e "s/ = mpi/ = /g" ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kvisimpact,ocl#-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kvisimpact,ocl#-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		sed -i -e "s#^LIBS += -lRcapRefiner#LIBS += -lRcapRefiner -L$ROOTDIR/$BM -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./make_setting
 		sed -i -e '/use mpi/d' -e "/implicit none/a \  include 'mpif.h'" ./ma_prof/src/mod_maprof.F90
 		sed -i -e '/use mpi/d' -e "/use makemesh/a \  include 'mpif.h'" ./ffb_mini_main.F90
+	elif [[ "$1" = *"llvm12"* ]]; then
+		rm -f ./make_setting; cp ./make_setting.k ./make_setting
+		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/kei #" -e 's/^FLAGS /FFLAGS /g' -e "s#REFINER)/include#REFINER)/Refiner#g" -e 's/-Kvisimpact,ocl -Qt/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/-Kvisimpact,ocl/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e "s#^LDFLAGS =.*#LDFLAGS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
 	fi
 	make
 	cd $ROOTDIR

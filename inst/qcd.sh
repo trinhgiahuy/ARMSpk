@@ -27,17 +27,20 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e "s#-Kprefetch.*#-Kprefetch -Kfast,openmp,ocl,largepage,lto#" ./make.${TYPE}.inc
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
+		sed -i -e "s#-Kprefetch.*#-Kprefetch -Kfast,openmp,ocl,largepage,lto#" ./make.${TYPE}.inc
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e "s#-Kprefetch.*#-Kprefetch -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
+		sed -i -e "s#-Kprefetch.*#-Kprefetch -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
 	elif [[ "$1" = *"gem5"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
-		sed -i -E 's/mpi(fcc|FCC|frt)px/\1/g' -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kprefetch.*#-Kprefetch -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
+		sed -i -E 's/mpi(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
+		sed -i -e "s#INCLUDE =.*#INCLUDE = -I./ -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s#\$(FFLAGS).*#\$(FFLAGS) -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kprefetch.*#-Kprefetch -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto -I$ROOTDIR/dep/mpistub/include/mpistub#" ./make.${TYPE}.inc
 		sed -i -e "s#^LIBS += -lmaprof_f#LIBS += -lmaprof_f -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./Makefile
 		sed -i -e "s#\$(PFLAGS).*#\$(PFLAGS) -I$ROOTDIR/dep/mpistub/include/mpistub -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" ./ma_prof/src/Makefile
 		sed -i -e '/use mpi/d' ./comlib.F90

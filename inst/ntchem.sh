@@ -27,17 +27,20 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		sed -i -e 's/integer(C_INT)/integer(kind=8)/' ./src/mp2/mp2_main_mpiomp.f90
 		sed -i -e '/CHARACTER(/d' -e '/INTEGER :: MLeng/a\      CHARACTER(LEN=MLeng) :: Chara' ./src/util_lib/util_transchar.f90
 	elif [[ "$1" = *"fujitrad"* ]]; then
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
 	elif [[ "$1" = *"fujiclang"* ]]; then
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/-Kfast/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
 	elif [[ "$1" = *"gem5"* ]]; then
-		sed -i -E 's/(fcc|FCC|frt)px/\1/g' -e "s# -lmpi_f90 -lmpi_f77# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kfast#-I$ROOTDIR/dep/mpistub/include/mpistub -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto#g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e "s#-Kfast#-I$ROOTDIR/dep/mpistub/include/mpistub -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto#g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine

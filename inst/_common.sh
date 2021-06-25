@@ -38,11 +38,8 @@ function load_compiler_env {
 			export OMPI_CC=gcc; export OMPI_CXX=g++
 			export OMPI_F77=gfortran; export OMPI_FC=gfortran
 		elif [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]]; then
-			alias mpifccpx=mpifcc; alias mpiFCCpx=mpiFCC; alias mpifrtpx=mpifrt
-			alias fccpx=fcc; alias FCCpx=FCC; alias frtpx=frt
+			sleep 0
 		elif [[ "$1" = *"gem5"* ]]; then
-			alias mpifccpx=mpifcc; alias mpiFCCpx=mpiFCC; alias mpifrtpx=mpifrt
-			alias fccpx=fcc; alias FCCpx=FCC; alias frtpx=frt
 			#module load FujitsuCompiler/202007
 			export LD_LIBRARY_PATH=$ROOTDIR/dep/mpistub/lib:$LD_LIBRARY_PATH
 		elif [[ "$1" = *"arm"* ]]; then
@@ -51,7 +48,7 @@ function load_compiler_env {
 		elif [[ "$1" = *"llvm12"* ]]; then
 			. /vol0004/apps/oss/spack/share/spack/setup-env.sh
 			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
-			#spack load llvm@12; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			#spack load llvm@12%gcc; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
 			export OMPI_CC=clang; export OMPI_CXX=clang++
 			#export OMPI_F77=flang; export OMPI_FC=flang
 			#export F18_FC=frt; export FORT90C="-Kfast,openmp,largepage,ocl,lto"; export FORT90CPX=${FORT90C}
