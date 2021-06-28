@@ -27,6 +27,7 @@ function load_compiler_env {
 			spack load openmpi@3.1.6%gcc@8.4.0
 			export OMPI_CC=gcc; export OMPI_CXX=g++
 			export OMPI_F77=gfortran; export OMPI_FC=gfortran
+			export MAYBESTATIC="-static"
 		fi
 	elif [ -n "${FUJIHOST}" ]; then
 		if ! lscpu | grep 'sve' >/dev/null 2>&1; then
@@ -37,6 +38,7 @@ function load_compiler_env {
 			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
 			export OMPI_CC=gcc; export OMPI_CXX=g++
 			export OMPI_F77=gfortran; export OMPI_FC=gfortran
+			export FJMPI="Y"; export FJBLAS="Y"; export MAYBESTATIC=""
 		elif [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]]; then
 			sleep 0
 		elif [[ "$1" = *"gem5"* ]]; then
@@ -47,14 +49,16 @@ function load_compiler_env {
 			#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
 		elif [[ "$1" = *"llvm12"* ]]; then
 			. /vol0004/apps/oss/spack/share/spack/setup-env.sh
-			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
 			#spack load llvm@12%gcc; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
-			export OMPI_CC=clang; export OMPI_CXX=clang++
-			#export OMPI_F77=flang; export OMPI_FC=flang
-			#export F18_FC=frt; export FORT90C="-Kfast,openmp,largepage,ocl,lto"; export FORT90CPX=${FORT90C}
+			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			#
 			LLVMDIR=$HOME/llvm-v12.0.0
 			export PATH=$LLVMDIR/bin:$PATH
 			export LD_LIBRARY_PATH=$LLVMDIR/lib:$LD_LIBRARY_PATH
+			#
+			export OMPI_CC=clang; export OMPI_CXX=clang++
+			#export OMPI_F77=flang; export OMPI_FC=flang
+			#export F18_FC=frt; export FORT90C="-Kfast,openmp,largepage,ocl,lto"; export FORT90CPX=${FORT90C}
 		fi
 	elif [ -n "${RFX7HOST}" ]; then
 		if ! lscpu | grep 'sve' >/dev/null 2>&1; then
@@ -97,10 +101,12 @@ function instrument_kernel {
 	elif [[ "$1" = *"gem5"* ]]; then
 
 		for FILE in `/bin/grep 'include.*ittnotify' -r "$2" | cut -d':' -f1 | sort -u`; do
-			sed -i  -e 's/.*include.*ittnotify\.h.*/#ifndef _POSIX_C_SOURCE\n#define _POSIX_C_SOURCE 199309L\n#endif\n#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' \
-				-e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' \
+			sed -i  -e 's/.*include.*ittnotify\.h.*/#ifndef _POSIX_C_SOURCE\n#define _POSIX_C_SOURCE 199309L\n#endif\n#include <time.h>\n#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE;
+			if ! [[ "$2" = *"DLproxy"* ]] && ! [[ "$2" = *"fs2020"* ]]; then
+			sed -i  -e '/double mkrts, mkrte;/i struct timespec mkrtsclock;' \
 				-e 's/mkrts = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrts = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' \
 				-e 's/mkrte = MPI_Wtime();/clock_gettime(CLOCK_MONOTONIC, \&mkrtsclock); mkrte = (mkrtsclock.tv_sec + mkrtsclock.tv_nsec * .000000001);/' $FILE;
+			fi
 		done
 
 	elif [[ "$1" = *"arm"* ]]; then
