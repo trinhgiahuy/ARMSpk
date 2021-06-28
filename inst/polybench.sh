@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="polybench"
 source $ROOTDIR/conf/${BM}.sh
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if ! [ $(find $ROOTDIR/$BM/linear-algebra/blas/gemm -executable -type f | wc -l) -ge 1 ]; then
 	mkdir -p $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/
@@ -24,8 +25,8 @@ if ! [ $(find $ROOTDIR/$BM/linear-algebra/blas/gemm -executable -type f | wc -l)
 		LINK="-L${ADVISOR_2018_DIR}/lib64 -littnotify -L/usr/lib64 -lm"
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e '/^#define STARTSDE/i #ifndef  MYLITTLEMERMAID_H\n#define  MYLITTLEMERMAID_H\nstatic void __attribute__ ((noinline)) ariel_enable() { asm (""); return; }\nstatic void __attribute__ ((noinline)) ariel_fence()  { asm (""); return; }\n#endif //MYLITTLEMERMAID_H' -e 's/__SSC_MARK(0x111);/ariel_enable(); __SSC_MARK(0x111);/g' -e 's/__SSC_MARK(0x222);/__SSC_MARK(0x222); ariel_fence();/g' $FILE; done
 	elif [[ "$1" = *"gnu"* ]]; then
-		COMPILE="gcc -O3 -march=native -funroll-loops -ffast-math -ftree-vectorize"
-		LINK="-static -L/usr/lib64 -lm"
+		COMPILE="gcc -O3 -march=native -flto -funroll-loops -ffast-math -ftree-vectorize"
+		LINK="-flto ${MAYBESTATIC} -L/usr/lib64 -lm"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		COMPILE="fcc -Kfast,openmp,ocl,largepage"
 		LINK=""

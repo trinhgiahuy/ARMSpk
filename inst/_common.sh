@@ -33,9 +33,10 @@ function load_compiler_env {
 		if ! lscpu | grep 'sve' >/dev/null 2>&1; then
 			echo "ERR: does not compile on login node; please use compute node"; exit 1
 		elif [[ "$1" = *"gnu"* ]]; then
-			. /vol0004/apps/oss/spack/share/spack/setup-env.sh
-			spack load gcc@10.2.0 arch=linux-rhel8-a64fx
-			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			if ! which spack >/dev/null 2>&1; then . /vol0004/apps/oss/spack/share/spack/setup-env.sh; fi
+			spack load gcc@10.2.0 arch=linux-rhel8-a64fx; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			spack load fujitsu-mpi%gcc arch=linux-rhel8-a64fx; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			spack load hwloc@2.2.0%gcc arch=linux-rhel8-a64fx; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
 			export OMPI_CC=gcc; export OMPI_CXX=g++
 			export OMPI_F77=gfortran; export OMPI_FC=gfortran
 			export FJMPI="Y"; export FJBLAS="Y"; export MAYBESTATIC=""
@@ -48,9 +49,10 @@ function load_compiler_env {
 			module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
 			#module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
 		elif [[ "$1" = *"llvm12"* ]]; then
-			. /vol0004/apps/oss/spack/share/spack/setup-env.sh
+			if ! which spack >/dev/null 2>&1; then . /vol0004/apps/oss/spack/share/spack/setup-env.sh; fi
 			#spack load llvm@12%gcc; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
-			spack load fujitsu-mpi%fj; spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			spack load fujitsu-mpi%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
+			spack load hwloc@1.11.11%fj; export LD_LIBRARY_PATH=/lib64:$LD_LIBRARY_PATH
 			#
 			LLVMDIR=$HOME/llvm-v12.0.0
 			export PATH=$LLVMDIR/bin:$PATH
@@ -89,13 +91,15 @@ function instrument_kernel {
 	elif [[ "$1" = *"fujitrad"* ]]; then
 
 		for FILE in `/bin/grep 'include.*ittnotify' -r "$2" | cut -d':' -f1 | sort -u`; do
-			sed -i  -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE;
+			sed -i  -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE;
+			#sed -i  -e 's/.*include.*ittnotify\.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE;
 		done
 
 	elif [[ "$1" = *"fujiclang"* ]]; then
 
 		for FILE in `/bin/grep 'include.*ittnotify' -r "$2" | cut -d':' -f1 | sort -u`; do
-			sed -i  -e 's/.*include.*ittnotify.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE;
+			sed -i  -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE;
+			#sed -i  -e 's/.*include.*ittnotify\.h.*/#include "fj_tool\/fapp.h"\n#define __itt_resume() fapp_start("kernel",1,0);\n#define __itt_pause() fapp_stop("kernel",1,0);\n#define __SSC_MARK(hex)/' $FILE;
 		done
 
 	elif [[ "$1" = *"gem5"* ]]; then

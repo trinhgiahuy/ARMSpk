@@ -19,8 +19,8 @@ check_md5      = 0
 
 %if '%{COMP}' eq 'gnu'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
-BOPTS          = -O3 -fopenmp -march=native -funroll-loops -ffast-math -ftree-vectorize
-BLINK          = -static
+BOPTS          = -O3 -fopenmp -march=native -flto -funroll-loops -ffast-math -ftree-vectorize
+BLINK          = -flto ${MAYBESTATIC}
 %elif '%{COMP}' eq 'intel'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
@@ -167,6 +167,7 @@ source $ROOTDIR/inst/_common.sh
 load_compiler_env "$1"
 
 BM="SPEC_OMP"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	mkdir -p $ROOTDIR/$BM/
 	if [ ! -f $ROOTDIR/dep/mnt_$BM/shrc ]; then

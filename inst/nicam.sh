@@ -33,12 +33,12 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.${NICAM_SYS}
-		sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ../sysdep/Makedef.${NICAM_SYS}
+		sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -Kfast,openmp,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Kfast,openmp,ocl,largepage/g' ../sysdep/Makedef.${NICAM_SYS}
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.${NICAM_SYS}
-		sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' ../sysdep/Makedef.${NICAM_SYS}
+		sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' ../sysdep/Makedef.${NICAM_SYS}
 	elif [[ "$1" = *"llvm12"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 		cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}

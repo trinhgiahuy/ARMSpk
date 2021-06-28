@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="MiniTri"
 VERSION="9771c71f3d25023fc50bc6e84a905d6d50e81151"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -19,7 +20,8 @@ if [ ! -f $ROOTDIR/$BM/miniTri/linearAlgebra/MPI/miniTri.exe ]; then
 		if [[ "$1" = *"intel"* ]]; then
 			sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 		elif [[ "$1" = *"gnu"* ]]; then
-			sed -i -e 's/ icpc/ g++/g' -e 's/-ipo -xHost/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
+			if [ -n "$FJMPI" ]; then sed -i -e 's/ mpicxx/ mpiFCC/g' ./Makefile; fi
+			sed -i -e 's/ icpc/ g++/g' -e 's/-ipo -xHost/-march=native -fno-lto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fno-lto ${MAYBESTATIC}#g" ./Makefile
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			sed -i -e 's/ mpicxx/ mpiFCC/g' -e 's/ icpc/ FCC/g' -e 's/-ipo -xHost/-Kfast,ocl,largepage/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		elif [[ "$1" = *"fujiclang"* ]]; then

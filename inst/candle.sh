@@ -9,6 +9,7 @@ load_compiler_env "$1"
 
 BM="CANDLE"
 VERSION="ea14ed86d3e612f56383c56a6cff6f77210f7412"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/dep/anaconda2/bin/anaconda ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi

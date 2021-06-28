@@ -51,10 +51,10 @@ default:
    CC                   = gcc -m64 -std=c11
    CXX                  = g++ -m64
    FC                   = gfortran -m64
-   OPT_ROOT             = -O3 -march=native -funroll-loops -ffast-math -ftree-vectorize
-   LDCFLAGS             = -static
-   LDCXXFLAGS           = -static
-   LDFFLAGS             = -static
+   OPT_ROOT             = -O3 -march=native -flto -funroll-loops -ffast-math -ftree-vectorize
+   LDCFLAGS             = -flto ${MAYBESTATIC}
+   LDCXXFLAGS           = -flto ${MAYBESTATIC}
+   LDFFLAGS             = -flto ${MAYBESTATIC}
 %elif '%{COMP}' eq 'intel' || '%{COMP}' eq 'sde'
    CC                   = icc -m64 -std=c11
    CXX                  = icpc -m64
@@ -175,8 +175,11 @@ intspeed,fpspeed:
    FPORTABILITY         = -Knohpctag
 %endif
 
-621.wrf_s,627.cam4_s:
-%if '%{COMP}' eq 'llvm12'
+621.wrf_s,627.cam4_s,628.pop2_s:
+%if '%{COMP}' eq 'fujiclang'
+   EXTRA_COPTIMIZE      = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage
+   EXTRA_CXXOPTIMIZE    = -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage
+%elif '%{COMP}' eq 'llvm12'
    EXTRA_COPTIMIZE      = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly
    EXTRA_CXXOPTIMIZE    = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly
 %endif
@@ -212,6 +215,7 @@ source $ROOTDIR/inst/_common.sh
 load_compiler_env "$1"
 
 BM="SPEC_CPU"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 	mkdir -p $ROOTDIR/$BM/
 	if [ ! -f $ROOTDIR/dep/mnt_$BM/shrc ]; then
@@ -248,6 +252,7 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=intel --define RESDIR=0 intspeed fpspeed --ignore_error"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=sde --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"gnu"* ]]; then
+		if [ -n "$FJBLAS" ]; then sed -i -e 's/ -m64//' $ROOTDIR/$BM/config/nedo.cfg; fi
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed --ignore_error"
 	elif [[ "$1" = *"fujitrad"* ]]; then

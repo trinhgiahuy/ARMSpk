@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="XSBench"
 VERSION="4772cf0194e2ae6d6752c5cacb8cf063fbfef7d0"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -18,7 +19,8 @@ if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/= intel/= gnu/' -e 's/-flto/-flto -march=native/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./Makefile
+		if [ -n "$FJMPI" ]; then sed -i -e 's/CC = mpicc/CC = mpifcc/' ./Makefile; fi
+		sed -i -e 's/= intel/= gnu/' -e 's/-flto/-flto -march=native/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" ./Makefile
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Kfast,openmp,ocl,largepage/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 	elif [[ "$1" = *"fujiclang"* ]]; then

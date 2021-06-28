@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="AMG"
 VERSION="295de9693eaabf6f7330ac3a35fd9bd4ad030522"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -22,7 +23,9 @@ if [ ! -f $ROOTDIR/$BM/test/amg ]; then
 		fi
 		sed -i -e 's/INCLUDE_LFLAGS = /INCLUDE_LFLAGS = -static -static-intel -qopenmp-link=static /' ./Makefile.include
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/-ipo -xHost/-march=native -static/g' ./Makefile.include
+		#XXX: fugaku gcc lacks something -> ar: amg_linklist.o: plugin needed to handle lto object
+		if [ -n "$FJMPI" ]; then sed -i -e 's/^CC =.*/CC = mpifcc/g' ./Makefile.include; fi
+		sed -i -e "s/-ipo -xHost/-march=native -fno-lto ${MAYBESTATIC}/g" ./Makefile.include
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile.include
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/^CC =.*/CC = mpifcc/g' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' ./Makefile.include

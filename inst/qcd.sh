@@ -10,6 +10,7 @@ source $ROOTDIR/conf/qcd.sh
 
 BM="QCD"
 VERSION="07277047b170529caa5fcd164afd814e70286ce4"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -22,7 +23,8 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		sed -i -e 's/-shared-intel -mcmodel=medium/-static -static-intel -qopenmp-link=static/' -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./make.${TYPE}.inc
 	elif [[ "$1" = *"gnu"* ]]; then
 		TYPE=gfortran
-		sed -i -e 's/-march=core2 -msse3/-march=native -fno-inline-small-functions/' -e 's/LDFLAGS = /LDFLAGS = -static /' ./make.${TYPE}.inc
+		if [ -n "$FJMPI" ]; then sed -i -e 's/ mpicc/ mpifcc/g' -e 's/ mpif90/ mpifrt/g' ./make.${TYPE}.inc; fi
+		sed -i -e 's/-march=core2 -msse3/-march=native -flto -fno-inline-small-functions/' -e "s/LDFLAGS = /LDFLAGS = -flto ${MAYBESTATIC} /" ./make.${TYPE}.inc
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
@@ -50,7 +52,7 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90
 		TYPE=fx10
-		sed -i -E 's/mpi(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
+		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make.${TYPE}.inc
 		sed -i -e "s#-Kprefetch.*#-Kprefetch -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto#" ./make.${TYPE}.inc
 	fi
 	for TEST in $TESTCONF; do

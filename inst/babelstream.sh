@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="BabelStream"
 VERSION="d9b089a0f94e9423b0653ca7ca533bd04c8501cb"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -18,7 +19,7 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 		make -f OpenMP.make COMPILER=INTEL TARGET=CPU EXTRA_FLAGS="-static -static-intel -qopenmp-link=static"
 	elif [[ "$1" = *"gnu"* ]]; then
 		for FILE in `/usr/bin/grep 'include.*ittnotify' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/.*include.*ittnotify\.h.*/#define __itt_resume()\n#define __itt_pause()\n#define __SSC_MARK(hex)/' $FILE; done
-		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-static"
+		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-flto ${MAYBESTATIC}"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/^COMPILER_GNU =.*/COMPILER_GNU = FCC/' ./OpenMP.make
 		make -f OpenMP.make COMPILER=GNU TARGET=CPU EXTRA_FLAGS="-Kfast,openmp,ocl,largepage,assume=memory_bandwidth"

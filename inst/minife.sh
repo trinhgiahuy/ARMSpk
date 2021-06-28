@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="MiniFE"
 VERSION="daeddf3bfaf3b521a932245fad9871336b53c166"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/mkl/src/miniFE.x ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -19,7 +20,13 @@ if [ ! -f $ROOTDIR/$BM/mkl/src/miniFE.x ]; then
 		if [[ "$1" = *"intel"* ]]; then
 			sed -i -e 's/mpiicpc/mpicxx/' -e 's/=-L${ADVISOR/=-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 		elif [[ "$1" = *"gnu"* ]]; then
-			sed -i -e 's/mpiicpc/mpicxx/' -e 's/-ipo -x[a-zA-Z0-9\-]*/-march=native/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -static#g' -e 's# -mkl # -m64 -I$(MKLROOT)/include #g' ./Makefile
+			if [ -n "$FJMPI" ]; then sed -i -e 's/mpiicpc/mpiFCC/' -e 's/mpicc/mpifcc/g' ./Makefile;
+			else                     sed -i -e 's/mpiicpc/mpicxx/' ./Makefile; fi
+			if [ -n "$MKLROOT" ]; then
+				sed -i -e 's/-ipo -x[a-zA-Z0-9\-]*/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s#-L\${ADVISOR_2018_DIR}/lib64 -littnotify#-Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC}#g" -e 's# -mkl # -m64 -I$(MKLROOT)/include #g' ./Makefile
+			elif [ -n "$FJBLAS" ]; then
+				sed -i -e 's/ -m64//g' -e 's/ -mavx//g' -e 's/-ipo -x[a-zA-Z0-9\-]*/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s#-L\${ADVISOR_2018_DIR}/lib64 -littnotify#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -flto ${MAYBESTATIC}#g" -e "s# -mkl # -I$(dirname `which fcc`)/../include #g" ./Makefile
+			fi
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			if [[ "$SUB" = *"mkl"* ]] || [[ "$SUB" = *"knl"* ]]; then continue; fi
 			sed -i -e 's/mpicxx/mpiFCC/g' -e 's/mpicc/mpifcc/g' -e 's/-ipo -x[a-zA-Z0-9\-]*/-Kfast,openmp,ocl,largepage/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile

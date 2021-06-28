@@ -21,9 +21,11 @@ function do_dir {
 	echo "${MAINFILE%.*}.o: \$(OBJFILE)" >> Makefile
 	echo "${BIN}: ${MAINFILE%.*}.o \$(OBJFILE) \$(COMMON)" >> Makefile
 	if /bin/grep -i program $MAINFILE; then
-		echo -e '\t$(FC) $^ $(LDLIBS) -o $@' >> Makefile
+		echo -e '\t$(FC) $^ $(FFLAGS) $(LDLIBS) -o $@' >> Makefile
 	elif [[ "$MAINFILE" = *".cc" ]]; then
-		echo -e '\t$(CXX) $^ $(LDLIBS) -o $@' >> Makefile
+		echo -e '\t$(CXX) $^ $(CXXFLAGS) $(LDLIBS) -o $@' >> Makefile
+	elif [[ "$MAINFILE" = *".c" ]]; then
+		echo -e '\t$(CC) $^ $(CFLAGS) $(LDLIBS) -o $@' >> Makefile
 	fi
 
 	make -B ${BIN}
@@ -44,6 +46,7 @@ fi
 
 BM="fs2020"
 source $ROOTDIR/conf/${BM}.sh
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/14.streamlike_pattern1/main ]; then
 	mkdir -p $ROOTDIR/$BM/
 	cd $ROOTDIR/$BM/
@@ -99,21 +102,24 @@ EOF
 		sed -i -e 's/CC=.*/CC=icc/g' -e 's/CXX=.*/CXX=icpc/g' -e 's/FC=.*/FC=ifort/g' -e 's#-Kopenmp -Bstatic#-qopenmp -static -static-intel -L${ADVISOR_2018_DIR}/lib64 -littnotify#g' Makefile.inc
 		sed -i -e 's#$(.OPTIMIZE) -Bstatic#$(DEF00) -fpp -std=gnu99 -qopenmp -O3 -xHost -static -static-intel -I${ADVISOR_2018_DIR}/include#g' Makefile.inc
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/CC=.*/CC=gcc/g' -e 's/CXX=.*/CXX=g++/g' -e 's/FC=.*/FC=gfortran/g' -e 's/-Kopenmp -Bstatic/-fopenmp -static/g' Makefile.inc
-		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -fopenmp -O3 -march=native -static/g' Makefile.inc
+		sed -i -e 's/CC=.*/CC=gcc/g' -e 's/CXX=.*/CXX=g++/g' -e 's/FC=.*/FC=gfortran/g' -e "s/-Kopenmp -Bstatic/-fopenmp ${MAYBESTATIC} -lm/g" Makefile.inc
+		sed -i -e "s/\$(.OPTIMIZE) -Bstatic/\$(DEF00) -fopenmp -O3 -march=native -cpp -flto ${MAYBESTATIC}/g" Makefile.inc
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/-Bstatic//g' Makefile.inc
 	elif [[ "$1" = *"fujiclang"* ]]; then
-		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' Makefile.inc
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage/g' -e 's/^LDLIBS=.*/LDLIBS=/' Makefile.inc
+		#XXX: LD is frt, so clang lto does not work
 	elif [[ "$1" = *"gem5"* ]]; then
-		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' Makefile.inc
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/^LDLIBS=.*/LDLIBS=/' Makefile.inc
 	elif [[ "$1" = *"arm"* ]]; then
 		sed -i -e 's/CC=.*/CC=armclang/g' -e 's/CXX=.*/CXX=armclang++/g' -e 's/FC=.*/FC=armflang/g' -e 's/-Kopenmp -Bstatic/-fopenmp/g' Makefile.inc
 		sed -i -e 's/$(.OPTIMIZE) -Bstatic/$(DEF00) -Ofast -ffast-math -fopenmp -march=armv8.2-a+sve -mcpu=a64fx -mtune=a64fx -flto/g' Makefile.inc
 	elif [[ "$1" = *"llvm12"* ]]; then
-		sed -i -e 's/ -V / /g' -e 's/ -v / /g' $ROOTDIR/$BM/option.list		#flang doesn'f like -V
+		sed -i -e 's/ -V / /g' -e 's/ -v / /g' $ROOTDIR/$BM/option.list		#flang doesn'f like -V nor the arm header
+		sed -i -e 's/^DEF17=.*/DEF17=-U__ARM_FEATURE_SVE/g' Makefile.inc
 		sed -i -e 's/CC=.*/CC=clang/g' -e 's/CXX=.*/CXX=clang++/g' -e 's/FC=.*/FC=frt/g' Makefile.inc
-		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -fopenmp -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto/g' -e "s#^LDLIBS.*#LDLIBS=-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" Makefile.inc
+		sed -i -e 's/$(FOPTIMIZE) -Bstatic/$(FOPTIMIZE) -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' -e 's/$(COPTIMIZE) -Bstatic/$(DEF00) -fopenmp -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly/g' -e "s#^LDLIBS=.*#LDLIBS=-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" Makefile.inc
+		#XXX: LD is frt, so clang lto does not work
 	fi
 	for BMconf in ${BINARYS}; do
 		NR=`echo $BMconf | cut -d'.' -f1`; sed -i -e "s/(DEF..)/(DEF$NR)/g" Makefile.inc

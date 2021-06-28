@@ -12,6 +12,7 @@ fi
 
 BM="NGSAnalyzer"
 VERSION="694b38eed8a4c09160045895a1bf86fcb35e85a3"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -26,14 +27,14 @@ if [ ! -f $ROOTDIR/$BM/bin/workflow ]; then
 		sed -i -e 's/ -lm / -static -static-intel -qopenmp-link=static -lm /g' -e 's/-lcurses/-lcurses -ltinfo/' ./samtools-0.1.8_kei/Makefile
 		sed -i -e 's/$@ $(OBJS)/$@ $(OBJS) -static -static-intel -qopenmp-link=static/g' ./splitSam2Contig2/Makefile
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/=icc/=gcc/' -e 's/-ipo -xHost/-march=native/g' -e 's/LDLIBS=-lm/LDLIBS=-static -lm/' ./SNP_indel_caller/Makefile
+		sed -i -e 's/=icc/=gcc/' -e 's/-ipo -xHost/-march=native -flto/g' -e "s/LDLIBS=-lm/LDLIBS=-flto ${MAYBESTATIC} -lm/" ./SNP_indel_caller/Makefile
 		sed -i -e 's/=icc/=gcc/' -e 's/=icpc/=g++/' -e 's/-ipo -xHost/-march=native/g' ./makefile.x86_64_intel
 		sed -i -e 's/=icc/=gcc/' -e 's/=icpc/=g++/' -e 's/-ipo -xHost/-march=native -m64/g' -e 's/-lcurses/-lcurses -ltinfo/' ./samtools-0.1.8_kei/Makefile
 		sed -i -e 's/=icc/=gcc/' -e 's/=icpc/=g++/' -e 's/-ipo -xHost/-march=native -m64/g' -e 's/-lcurses/-lcurses -ltinfo/' ./samtools-0.1.8_kei/misc/Makefile
-		sed -i -e 's/ -lm / -static -lm /g' ./samtools-0.1.8_kei/Makefile
-		sed -i -e 's/$@ $(OBJS)/$@ $(OBJS) -static/g' ./splitSam2Contig2/Makefile
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify# -static#g' ./workflow/Makefile
-		sed -i -e 's/-lm /-static -lm /g' ./bwa-0.5.9rc1_kei/Makefile
+		sed -i -e "s/ -lm / -flto ${MAYBESTATIC} -lm /g" ./samtools-0.1.8_kei/Makefile
+		sed -i -e "s/\$@ \$(OBJS)/\$@ \$(OBJS) -flto ${MAYBESTATIC}/g" ./splitSam2Contig2/Makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" ./workflow/Makefile
+		sed -i -e "s/-lm /-flto ${MAYBESTATIC} -lm /g" ./bwa-0.5.9rc1_kei/Makefile
 		for FILE in `/usr/bin/grep 'inline void bwt_2occ' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/inline void bwt_2occ/void bwt_2occ/' $FILE; done
 		for FILE in `/usr/bin/grep 'inline void bwtl_2occ' -r | cut -d':' -f1 | sort -u`; do sed -i -e 's/inline void bwtl_2occ/void bwtl_2occ/' $FILE; done
 	fi

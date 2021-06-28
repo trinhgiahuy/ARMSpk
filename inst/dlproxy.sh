@@ -8,6 +8,7 @@ load_compiler_env "$1"
 
 BM="DLproxy"
 VERSION="5087c437452c6cc3dbcf0bbaf40648c3155cfca9"
+if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
 if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
@@ -20,9 +21,13 @@ if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 		sed -i -e 's#-mkl#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_intel_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -liomp5 -lpthread -lm -ldl#g' ./Makefile
 		make CC=icc CXX=icpc compile
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/-ipo -xHost/-march=native -static/g' ./Makefile
+		sed -i -e "s/-ipo -xHost/-march=native -flto ${MAYBESTATIC}/g" ./Makefile
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
-		sed -i -e 's#-I${MKLROOT}/include#-m64 -I${MKLROOT}/include#g' -e 's#-mkl#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl#g' ./Makefile
+		if [ -n "$MKLROOT" ]; then
+			sed -i -e 's#-I${MKLROOT}/include#-m64 -I${MKLROOT}/include#g' -e 's#-mkl#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl#g' ./Makefile
+		elif [ -n "$FJBLAS" ]; then
+			sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-I$(dirname `which fcc`)/../include#g" -e "s#-mkl#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf#g" ./Makefile
+		fi
 		make CC=gcc CXX=g++ compile
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' ./Makefile
