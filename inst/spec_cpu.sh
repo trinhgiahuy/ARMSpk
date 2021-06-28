@@ -149,7 +149,9 @@ intspeed,fpspeed:
 
 521.wrf_r,621.wrf_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
+%if '%{COMP}' eq 'gnu'
+   FPORTABILITY         = -fconvert=big-endian -fallow-argument-mismatch
+%elif '%{COMP}' eq 'llvm12'
    FPORTABILITY         = -fconvert=big-endian
 %elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian
@@ -168,6 +170,8 @@ intspeed,fpspeed:
    CPORTABILITY         = -DSPEC_CASE_FLAG
 %if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90f_sve
+%elif '%{COMP}' eq 'gnu'
+   FPORTABILITY         = -fallow-argument-mismatch
 %endif
 
 607.cactuBSSN_s:
@@ -185,14 +189,16 @@ intspeed,fpspeed:
 %endif
 
 625.x264_s:
-%if '%{COMP}' eq 'llvm12'
+%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
    #yes it's not see https://www.spec.org/cpu2017/Docs/benchmarks/625.x264_s.html but i need sleep
    PORTABILITY          = -fcommon
 %endif
 
 628.pop2_s:
    CPORTABILITY         = -DSPEC_CASE_FLAG
-%if '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
+%if '%{COMP}' eq 'gnu'
+   FPORTABILITY         = -fconvert=big-endian -fallow-argument-mismatch
+%elif '%{COMP}' eq 'llvm12'
    FPORTABILITY         = -fconvert=big-endian
 %elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    FPORTABILITY         = -fconvert=big-endian

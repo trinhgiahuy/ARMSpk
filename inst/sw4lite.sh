@@ -27,7 +27,11 @@ if [ ! -f $ROOTDIR/$BM/optimize_mp_${HHOST}/sw4lite ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		if [ -n "$FJMPI" ]; then sed -i -e 's/mpifort/mpifrt/' -e 's/mpiifort/mpifrt/' -e 's/mpiicpc/mpiFCC/' -e 's/= icc/= mpifcc/' ./Makefile;
 		else                     sed -i -e 's/mpifort/mpif90/' -e 's/mpiifort/mpif90/' -e 's/mpiicpc/mpicxx/' -e 's/= icc/= gcc/' ./Makefile; fi
-		sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_sequential.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgfortran -lquadmath -lpthread -lm -ldl -flto ${MAYBESTATIC}#" ./Makefile
+		if [ -n "$MKLROOT" ]; then
+			sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_sequential.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgfortran -lquadmath -lpthread -lm -ldl -flto ${MAYBESTATIC}#" ./Makefile
+		elif [ -n "$FJBLAS" ]; then
+			sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -lgfortran -flto ${MAYBESTATIC}#" ./Makefile
+		fi
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/mpifort/mpifrt/' -e 's/mpiifort/mpifrt/' -e 's/mpiicpc/mpiFCC/' -e 's/= icc/= mpifcc/' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage,lto/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s#EXTRA_LINK_FLAGS = .*#EXTRA_LINK_FLAGS = -SSL2BLAMP#g" ./Makefile
 	elif [[ "$1" = *"fujiclang"* ]]; then

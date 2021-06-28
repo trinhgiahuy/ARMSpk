@@ -22,11 +22,15 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		TYPE=gfortran
 		if [ -n "$FJMPI" ]; then sed -i -e 's/ mpif77/ mpifrt/g' -e 's/ mpif90/ mpifrt/g' ./config/linux64_mpif90_omp_gfortran.makeconfig.in; fi
 		sed -i -e 's/ -fc=gfortran/ -flto/' ./config/linux64_mpif90_omp_gfortran.makeconfig.in
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC}#g" ./src/mp2/GNUmakefile
 		if [ -n "$MKLROOT" ]; then
+			sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC}#g" ./src/mp2/GNUmakefile
 			sed -i -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' ./src/util_lib/GNUmakefile
 		elif [ -n "$FJBLAS" ]; then
-			sed -i -e 's# -I${ADVISOR_2018_DIR}/include# -I${MKLROOT}/include#g' ./src/util_lib/GNUmakefile
+			sed -i -e 's# -m64##g' ./config/linux64_mpif90_omp_gfortran.makeconfig.in
+			sed -i -e 's# -m64##g' ./src/mp2/GNUmakefile
+			sed -i -e 's# -m64##g' ./src/util_lib/GNUmakefile
+			sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -flto ${MAYBESTATIC}#g" ./src/mp2/GNUmakefile
+			sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" ./src/util_lib/GNUmakefile
 		fi
 		sed -e 's/-SSL2BLAMP//' -e 's/mpifrtpx_omp_k_fx10/mpif90_omp_gfortran/' platforms/config_mine.K > config_mine
 		sed -i -e 's/int /long /' ./src/util_lib/ssc.c

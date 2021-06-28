@@ -23,7 +23,7 @@ if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 			sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 		elif [[ "$1" = *"gnu"* ]]; then
 			if [ -n "$FJMPI" ]; then sed -i -e 's/^CC .*=.*/CC = mpifcc/' -e 's/^LD .*=.*/LD = mpifcc/' ./Makefile; fi
-			sed -i -e 's/-ipo -xHost/-march=native -fno-lto/g' -e 's/-qopenmp/-fopenmp/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fno-lto ${MAYBESTATIC}#g" ./Makefile
+			sed -i -e 's/-ipo -xHost/-march=native -fno-lto -fcommon/g' -e 's/-qopenmp/-fopenmp/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fno-lto ${MAYBESTATIC}#g" ./Makefile
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			sed -i -e 's/^CC .*=.*/CC = mpifcc/' -e 's/^LD .*=.*/LD = mpifcc/' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' -e 's/-qopenmp/-fopenmp/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./Makefile
 		elif [[ "$1" = *"fujiclang"* ]]; then

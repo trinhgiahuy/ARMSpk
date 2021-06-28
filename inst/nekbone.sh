@@ -21,10 +21,14 @@ if [ ! -f $ROOTDIR/$BM/test/nek_mgrid/nekbone ]; then
 	if [[ "$1" = *"intel"* ]]; then
 		sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' $ROOTDIR/$BM/src/makefile.template
 	elif [[ "$1" = *"gnu"* ]]; then
-		sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" -e "s# -mkl # -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC} #g" -e "s# -mkl-static# -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_gf_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC}#" $ROOTDIR/$BM/src/makefile.template
+		if [ -n "$MKLROOT" ]; then
+			sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include# -m64 -I${MKLROOT}/include#g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" -e "s# -mkl # -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_intel_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC} #g" -e "s# -mkl-static# -Wl,--start-group \${MKLROOT}/lib/intel64/libmkl_gf_lp64.a \${MKLROOT}/lib/intel64/libmkl_gnu_thread.a \${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -flto ${MAYBESTATIC}#" $ROOTDIR/$BM/src/makefile.template
+		elif [ -n "$FJBLAS" ]; then
+			sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" -e "s# -mkl # -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -lm -flto ${MAYBESTATIC} #g" -e "s# -mkl-static# -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -lm -flto ${MAYBESTATIC} #g" $ROOTDIR/$BM/src/makefile.template
+		fi
 		if [ -n "$FJMPI" ]; then sed -i -e 's/^CC=.*/CC=mpifcc/g' -e 's/^F77=.*/F77=mpifrt/g' ./makenek; fi
 		sed -i -e 's/-ipo -xHost/-march=native/g' -e 's# -mkl-static# -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_gf_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl#g' ./makenek
-		sed -i -e 's/-fdefault-real-8/-fdefault-real-8 -fdefault-double-8/g' $ROOTDIR/$BM/src/makenek.inc
+		sed -i -e 's/-fdefault-real-8/-fdefault-real-8 -fdefault-double-8 -fallow-argument-mismatch/g' $ROOTDIR/$BM/src/makenek.inc
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		# fancy flags from https://arxiv.org/pdf/2009.11806.pdf
 		sed -i -e 's/-ipo -xHost/-CcdRR8 -Cpp -Fixed -Kfast,openmp,ocl,largepage,lto -Kassume=noshortloop -Kassume=memory_bandwidth -Kassume=notime_saving_compilation/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's# -mkl-static##g' -e "s# -mkl# -SSL2BLAMP#g" $ROOTDIR/$BM/src/makefile.template

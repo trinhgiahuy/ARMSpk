@@ -35,7 +35,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		if [[ "$1" = *"intel"* ]]; then
 			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=icc CFLAGS="-O2 -ipo -xHost"
 		elif [[ "$1" = *"gnu"* ]]; then
-			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=gcc CFLAGS="-O2 -march=native -flto"
+			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=gcc CFLAGS="-O2 -march=native -fno-lto"
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2 -KA64FX,SVE -Kocl,largepage"
 		elif [[ "$1" = *"fujiclang"* ]]; then
@@ -67,10 +67,10 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 				FC=ifort FCFLAGS="-O2 -ipo -xHost" \
 				F77=ifort FFLAGS="-O2 -ipo -xHost"
 		elif [[ "$1" = *"gnu"* ]]; then
-			./configure --prefix=`pwd` CC=gcc CFLAGS="-O2 -march=native -flto" \
-				CXX=g++ CXXFLAGS="-O2 -march=native -flto" \
-				FC=gfortran FCFLAGS="-O2 -march=native -flto" \
-				F77=gfortran FFLAGS="-O2 -march=native -flto"
+			./configure --prefix=`pwd` CC=gcc CFLAGS="-O2 -march=native -fno-lto" \
+				CXX=g++ CXXFLAGS="-O2 -march=native -fno-lto" \
+				FC=gfortran FCFLAGS="-O2 -march=native -fno-lto" \
+				F77=gfortran FFLAGS="-O2 -march=native -fno-lto"
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			./configure --prefix=`pwd` CC=fcc CFLAGS="-O2 -KA64FX,SVE -Kocl,largepage" \
 				CXX=FCC CXXFLAGS="-O2 -KA64FX,SVE -Kocl,largepage" \

@@ -31,7 +31,7 @@ if [ ! -f $ROOTDIR/$BM/src/modylas_mini ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		rm make_setting; ln -s make_setting.gcc make_setting
 		if [ -n "$FJMPI" ]; then sed -i -e 's/ mpif90/ mpifrt/g' -e 's/ mpicc/ mpifcc/g' ./make_setting; fi
-		sed -i -e "s/-O3/-O3 -march=native -flto\nLIBS += -flto ${MAYBESTATIC}/g" ./make_setting
+		sed -i -e "s/-O3/-O3 -march=native -fallow-argument-mismatch -fno-lto\nLIBS += -fno-lto ${MAYBESTATIC}/g" ./make_setting
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i -e 's/FFLAGS += -DPROF_MAPROF/FFLAGS += -DNO_PROF_MAPROF/g' ./Makefile

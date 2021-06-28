@@ -28,7 +28,7 @@ if [ ! -f $ROOTDIR/$BM/bin/nhm_driver ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" ./Makefile
 		cp ../sysdep/Makedef.Linux64-gnu-openmpi ../sysdep/Makedef.${NICAM_SYS}
 		if [ -n "$FJMPI" ]; then sed -i -e 's/ mpif90/ mpifrt/g' -e 's/ mpicc/ mpifcc/g' -e 's/ -m64//g' ../sysdep/Makedef.${NICAM_SYS}; fi
-		sed -i -e 's/-O3/-O3 -march=native -flto/g' -e 's/ -pedantic-errors//' -e 's/std=f2003/std=f2008/' -e "s/^LFLAGS = /LFLAGS = -flto ${MAYBESTATIC} /" ../sysdep/Makedef.${NICAM_SYS}
+		sed -i -e 's/-O3/-O3 -march=native -fallow-argument-mismatch -fno-lto/g' -e 's/ -pedantic-errors//' -e 's/std=f2003/std=f2008/' -e "s/^LFLAGS = /LFLAGS = -fno-lto ${MAYBESTATIC} /" ../sysdep/Makedef.${NICAM_SYS}
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}

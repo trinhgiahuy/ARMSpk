@@ -23,7 +23,7 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		rm make_setting; ln -s make_setting.gcc make_setting
 		if [ -n "$FJMPI" ]; then sed -i -e 's/^CXX .*=.*/CXX = mpiFCC/g' -e 's/^F90 .*=.*/F90 = mpifrt/g' ./make_setting; fi
 		#XXX: RAGE.... segfaults w/o -g, i give up, this is getting beyond stupid
-		sed -i -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -g -march=native -fno-lto/g' ./make_setting
+		sed -i -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -g -march=native -fallow-argument-mismatch -fallow-invalid-boz -fno-lto/g' ./make_setting
 		if [ -z "${MAYBESTATIC}" ]; then
 			sed -i -e "s/\$(LIBS).*/\$(LIBS) -lgfortran/g" ./FFV/Makefile
 		else

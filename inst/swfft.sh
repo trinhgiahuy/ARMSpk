@@ -23,8 +23,9 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=icc
 			make -j CFLAGS="-O3 -ipo -xHost -fp-model fast=2 -no-prec-div -qoverride-limits"
 		elif [[ "$1" = *"gnu"* ]]; then
-			./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=gcc
-			make -j CFLAGS="-O3 -march=native -flto"
+			if [ -n "$FJMPI" ]; then ./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=gcc;
+			else                     ./configure --prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran --enable-sse2 --enable-avx CC=gcc; fi
+			make -j CFLAGS="-O3 -march=native -fno-lto"
 		elif [[ "$1" = *"fujitrad"* ]]; then
 			./configure --host=aarch64-unknown-linux-gnu --build=x84_64-unknown-linux-gnu \
 				--prefix=`pwd`/../fftw --disable-mpi --enable-openmp --disable-fortran CC=fcc
@@ -51,8 +52,8 @@ if [ ! -f $ROOTDIR/$BM/build.openmp/TestFDfft ]; then
 		sed -i -e 's/-L${ADVISOR/-lmpi_cxx -static -static-intel -qopenmp-link=static -L${ADVISOR/' ./GNUmakefile
 	elif [[ "$1" = *"gnu"* ]]; then
 		if [ -n "$FJMPI" ]; then sed -i -e 's/?= mpicc/?= mpifcc/g' -e 's/?= mpicxx/?= mpiFCC/g' -e 's/?= mpif90/?= mpifrt/g' ./GNUmakefile; fi
-		sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -flto ${MAYBESTATIC}#g" ./GNUmakefile
-		sed -i -e 's/-ipo -xHost/-march=native -flto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -flto ${MAYBESTATIC}#g" ./GNUmakefile.openmp
+		sed -i -e 's/-ipo -xHost/-march=native -fno-lto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -fno-lto ${MAYBESTATIC}#g" ./GNUmakefile
+		sed -i -e 's/-ipo -xHost/-march=native -fno-lto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -lmpi_cxx -fno-lto ${MAYBESTATIC}#g" ./GNUmakefile.openmp
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		sed -i -e 's/?= mpicc/?= mpifcc/g' -e 's/?= mpicxx/?= mpiFCC/g' -e 's/?= mpif90/?= mpifrt/g' -e 's/-ipo -xHost -cpp/-Kfast,openmp,ocl,largepage,lto -cpp/g' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" -e 's/DFFT_MPI_FLDFLAGS ?=.*/DFFT_MPI_FLDFLAGS ?= --linkstl=libfjc++/g' ./GNUmakefile
 		sed -i -e 's/-ipo -xHost -fopenmp -cpp/-Kfast,openmp,ocl,largepage,lto -cpp/g' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify##g" ./GNUmakefile.openmp

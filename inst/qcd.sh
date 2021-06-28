@@ -24,7 +24,8 @@ if [ ! -f $ROOTDIR/$BM/src/ccs_qcd_solver_bench_class2_111 ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		TYPE=gfortran
 		if [ -n "$FJMPI" ]; then sed -i -e 's/ mpicc/ mpifcc/g' -e 's/ mpif90/ mpifrt/g' ./make.${TYPE}.inc; fi
-		sed -i -e 's/-march=core2 -msse3/-march=native -flto -fno-inline-small-functions/' -e "s/LDFLAGS = /LDFLAGS = -flto ${MAYBESTATIC} /" ./make.${TYPE}.inc
+		sed -i -e 's/-march=core2 -msse3/-march=native -fno-lto -fno-inline-small-functions/' -e "s/LDFLAGS = /LDFLAGS = -fno-lto ${MAYBESTATIC} /" ./make.${TYPE}.inc
+		sed -i -e 's/mcmodel=medium/mcmodel=large/g' ./make.${TYPE}.inc
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		# crashing in some stupid yaml shit with fujitsu compilers
 		sed -i '/call maprof_set_fp_ops(SEC_BICGSTAB/,+17d' ./ccs_qcd_solver_bench.F90

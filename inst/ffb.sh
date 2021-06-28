@@ -96,7 +96,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 	elif [[ "$1" = *"gnu"* ]]; then
 		if [ -n "$FJMPI" ]; then sed -i -e 's/^CC =.*/CC = mpifcc/g' -e 's/^FC =.*/FC = mpifrt/g' ./make_setting; fi
 		sed -i -e 's/^DEFINE += -DNO_METIS/#DEFINE += -DNO_METIS/g' -e "s#\$(HOME)/opt_intel/metis5#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
-		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-march=native -flto ${MAYBESTATIC}/g" -e "s/LIBS += -L\${ADVISOR.*/LIBS += -flto ${MAYBESTATIC}/" -e 's# -I${ADVISOR_2018_DIR}/include##g' ./make_setting
+		sed -i -e 's/^DEFINE += -DNO_REFINER/#DEFINE += -DNO_REFINER/g' -e "s#\$(HOME)/opt_intel/REVOCAP_Refiner#$ROOTDIR/$BM/src/REVOCAP_Refiner-1.1.01#g" -e "s#REFINER)/lib #REFINER)/lib/x86_64-linux #" -e "s/-ipo -xHost -mcmodel=large -shared-intel/-march=native -fallow-argument-mismatch -fno-lto ${MAYBESTATIC}/g" -e "s/LIBS += -L\${ADVISOR.*/LIBS += -fno-lto ${MAYBESTATIC}/" -e 's# -I${ADVISOR_2018_DIR}/include##g' ./make_setting
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		rm -f ./make_setting; cp ./make_setting.k ./make_setting
 		sed -i -e "s#/opt/klocal#$ROOTDIR/$BM/src/metis-5.1.0#g" ./make_setting
