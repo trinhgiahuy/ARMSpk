@@ -19,8 +19,8 @@ check_md5      = 0
 
 %if '%{COMP}' eq 'gnu'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
-BOPTS          = -O3 -fopenmp -march=native -flto -funroll-loops -ffast-math -ftree-vectorize
-BLINK          = -flto ${MAYBESTATIC}
+BOPTS          = -O3 -fopenmp -march=native -funroll-loops -ffast-math -ftree-vectorize
+BLINK          = ${MAYBESTATIC}
 %elif '%{COMP}' eq 'intel'
 submit         = ulimit -n 4096; ulimit -s unlimited; \$command
 BOPTS          = -O3 -qopenmp -xHOST -no-prec_div -fp-model fast=2 -fma
@@ -67,10 +67,10 @@ sw_compiler    = GNU Compilers
 FC             = gfortran
 CC             = gcc
 CXX            = g++
-FOPTIMIZE      = \${BOPTS} -fallow-argument-mismatch -fallow-invalid-boz
-COPTIMIZE      = \${BOPTS}
-CXXOPTIMIZE    = \${BOPTS}
-OS_LIBS        = \${BLINK}
+FOPTIMIZE      = \${BOPTS} -flto -fallow-argument-mismatch -fallow-invalid-boz
+COPTIMIZE      = \${BOPTS} -flto
+CXXOPTIMIZE    = \${BOPTS} -flto
+OS_LIBS        = \${BLINK} -flto
 %elif '%{COMP}' eq 'intel' || '%{COMP}' eq 'sde'
 sw_compiler    = Intel Compiler Suite
 FC             = ifort
@@ -134,11 +134,26 @@ LDOPT          = -shared-intel
 PASS1_LDOPT    = -shared-intel
 %elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5' || '%{COMP}' eq 'llvm12'
 FPORTABILITY   = -mcmodel=large
+%elif '%{COMP}' eq 'gnu'
+FOPTIMIZE      = \${BOPTS} -fallow-argument-mismatch -fallow-invalid-boz
+COPTIMIZE      = \${BOPTS}
+CXXOPTIMIZE    = \${BOPTS}
+OS_LIBS        = \${BLINK}
+FPORTABILITY   = -mcmodel=large
 %endif
 
 359.botsspar=default=default=default:
 %if '%{COMP}' eq 'intel' || '%{COMP}' eq 'sde'
 strict_rundir_verify = 0
+%endif
+
+362.fma3d=default=default=default:
+%if '%{COMP}' eq 'gnu'
+FOPTIMIZE      = \${BOPTS} -fallow-argument-mismatch -fallow-invalid-boz
+COPTIMIZE      = \${BOPTS}
+CXXOPTIMIZE    = \${BOPTS}
+OS_LIBS        = \${BLINK}
+FPORTABILITY   = -mcmodel=large
 %endif
 
 363.swim=default=default=default:
@@ -147,6 +162,12 @@ FPORTABILITY   = -mcmodel=medium
 LDOPT          = -shared-intel
 PASS1_LDOPT    = -shared-intel
 %elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5' || '%{COMP}' eq 'llvm12'
+FPORTABILITY   = -mcmodel=large
+%elif '%{COMP}' eq 'gnu'
+FOPTIMIZE      = \${BOPTS} -fallow-argument-mismatch -fallow-invalid-boz
+COPTIMIZE      = \${BOPTS}
+CXXOPTIMIZE    = \${BOPTS}
+OS_LIBS        = \${BLINK}
 FPORTABILITY   = -mcmodel=large
 %endif
 
