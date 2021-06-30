@@ -1,9 +1,12 @@
 #!/bin/bash
 
 function load_compiler_env {
-	if [ -z "${XEONHOST}" ] && [ -z "${IKNLHOST}" ] && [ -z "${IKNMHOST}" ] && [ -z "${FUJIHOST}" ] && [ -z "${RFX7HOST}" ] ;
-	then
-		echo "ERR: new env and/or host, no known compiler for it, please fix me"
+	if [ -z "${XEONHOST}${IKNLHOST}${IKNMHOST}${FUJIHOST}${RFX7HOST}" ] ; then
+		echo "ERR: new env and/or host, no known compiler for it, please fix me"; exit 1
+	fi
+	if [[ "$1" = *"intel"* ]] || [[ "$1" = *"gnu"* ]] || [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"arm"* ]] || [[ "$1" = *"llvm12"* ]]; then sleep 0;
+	else
+		echo 'ERR: wrong compiler, only support [intel | gnu | fujitrad | fujiclang | gem5 | llvm12]'; exit 1
 	fi
 
 	if [ -n "${XEONHOST}" ] || [ -n "${IKNLHOST}" ] || [ -n "${IKNMHOST}" ]; then
@@ -28,6 +31,7 @@ function load_compiler_env {
 			export OMPI_CC=gcc; export OMPI_CXX=g++
 			export OMPI_F77=gfortran; export OMPI_FC=gfortran
 			export MAYBESTATIC="-static"
+		else echo 'ERR: unsupported compiler on this platform'; exit 1
 		fi
 	elif [ -n "${FUJIHOST}" ]; then
 		if ! lscpu | grep 'sve' >/dev/null 2>&1; then
@@ -61,6 +65,7 @@ function load_compiler_env {
 			export OMPI_CC=clang; export OMPI_CXX=clang++
 			#export OMPI_F77=flang; export OMPI_FC=flang
 			#export F18_FC=frt; export FORT90C="-Kfast,openmp,largepage,ocl,lto"; export FORT90CPX=${FORT90C}
+		else echo 'ERR: unsupported compiler on this platform'; exit 1
 		fi
 	elif [ -n "${RFX7HOST}" ]; then
 		if ! lscpu | grep 'sve' >/dev/null 2>&1; then
@@ -69,10 +74,8 @@ function load_compiler_env {
 			module load /opt/arm/modulefiles/A64FX/RHEL/8/gcc-9.3.0/armpl/20.3.0
 		elif [[ "$1" = *"arm"* ]]; then
 			module load /opt/arm/modulefiles/A64FX/RHEL/8/arm-linux-compiler-20.3/armpl/20.3.0
+		else echo 'ERR: unsupported compiler on this platform'; exit 1
 		fi
-	else
-		echo 'ERR: wrong compiler, only support [intel | gnu | fujitrad | fujiclang | gem5 | llvm12]'
-		exit 1
 	fi
 }
 
@@ -126,5 +129,32 @@ function instrument_kernel {
 		done
 
 	fi
+}
+
+function get_mpi_cmd {
+	NumRanks="$1"
+	NumThreads="$2"
+	MPIOutErr="$3"
+	MPIsnowflake="$4"
+
+	if [ -n "${XEONHOST}" ] || [ -n "${IKNLHOST}" ] || [ -n "${IKNMHOST}" ]; then
+		NumCORES="$((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2`))"
+		MPIRUNCMD="mpiexec -np ${NumRanks} -x OMP_NUM_THREADS=${NumThreads} ${MPIsnowflake}"
+		MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
+		MPIMAPPING="--map-by slot:pe=$(((${NumCORES} / ${NumRanks}) + (${NumCORES} < ${NumRanks})))"
+		MPIIOREDIR=""
+	elif [ -n "${FUJIHOST}" ]; then
+		MPIRUNCMD="mpiexec -np ${NumRanks} -x OMP_NUM_THREADS=${NumThreads} ${MPIsnowflake}"
+		MPIEXECOPT=""
+		MPIMAPPING=""
+		MPIIOREDIR="--std ${MPIOutErr}"
+	elif [ -n "${RFX7HOST}" ]; then
+		MPIRUNCMD="mpirun"
+		MPIEXECOPT=""
+		MPIMAPPING=""
+		MPIIOREDIR=""
+	fi
+
+	echo ${MPIRUNCMD} ${MPIEXECOPT} ${MPIMAPPING} ${MPIIOREDIR}
 }
 
