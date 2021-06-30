@@ -5,10 +5,9 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-ulimit -s unlimited
-ulimit -n 4096
+source $ROOTDIR/conf/env.cfg
+load_compiler_env "$1"
+
 source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 spack load openjdk; spack load maven; spack load scala; spack load hadoop; spack load spark
 export HADOOP_HOME=`spack find -p | /bin/grep hadoop | cut -d' ' -f2- | tr -d ' '`

@@ -4,10 +4,8 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-ulimit -s unlimited
-ulimit -n 4096
+source $ROOTDIR/conf/env.cfg
+load_compiler_env "$1"
 
 # ============================ CANDLE =========================================
 source conf/candle.sh

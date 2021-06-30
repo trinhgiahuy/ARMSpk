@@ -4,19 +4,12 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-ulimit -s unlimited
-ulimit -n 4096
-source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-spack load openmpi@3.1.6%intel@19.0.1.144
-MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
-NumCORES=$((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2`))
-if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
-	MPIEXECOPT+=" -x KMP_AFFINITY=granularity=fine,compact,1,0"
-else
-	MPIEXECOPT+=" -x KMP_AFFINITY=compact"
-fi
+source $ROOTDIR/conf/env.cfg
+load_compiler_env "$1"
+
+if [ -n "${XEONHOST}" ]; then                           moreMPI="-x KMP_AFFINITY=granularity=fine,compact,1,0"
+elif [ -n "${IKNLHOST}" ] || [ -n "${IKNMHOST}" ]; then moreMPI="-x KMP_AFFINITY=compact"
+else                                                    moreMPI=""; fi
 
 # ============================ HPCG ===========================================
 source conf/hpcg.sh
@@ -30,7 +23,7 @@ for BEST in $BESTCONF; do
 	# test to identify hpcg's internal dimensions
 	rm -f hpcg_log_* n*.yaml
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
-	mpiexec $MPIEXECOPT -n $NumMPI $BINARY -n 1 > /dev/null 2>&1
+	$(get_mpi_cmd $NumMPI 1 "/dev/null" $moreMPI) $BINARY -n 1 > /dev/null 2>&1
 	if [ ! "x$?" = "x0" ]; then continue; fi
 	if [ -f n*.yaml ]; then
 		X=$(($MAXXYZ / `grep 'npx:' n*.yaml | awk -F 'npx:' '{print $2}'`))
@@ -45,10 +38,10 @@ for BEST in $BESTCONF; do
 	rm -f hpcg_log_* n*.yaml
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
 	INPUT="`echo $DEFINPUT | sed -e \"s/NX/$X/\" -e \"s/NY/$Y/\" -e \"s/NZ/$Z/\"`"
-	echo "mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	echo "$(get_mpi_cmd $NumMPI $NumOMP $LOG $moreMPI) $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
 		START="`date +%s.%N`"
-		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT >> $LOG 2>&1
+		timeout --kill-after=30s $MAXTIME $(get_mpi_cmd $NumMPI $NumOMP $LOG $moreMPI) $BINARY $INPUT >> $LOG 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 		ENDED="`date +%s.%N`"
 		cat hpcg_log_* >> $LOG 2>&1

@@ -4,14 +4,8 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/conf/intel.cfg
-source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-ulimit -s unlimited
-ulimit -n 4096
-source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-spack load openmpi@3.1.6%intel@19.0.1.144
-MPIEXECOPT="--mca btl ^openib,tcp --oversubscribe --host `hostname`"
-NumCORES=$((`lscpu | /bin/grep ^Socket | cut -d ':' -f2` * `lscpu | /bin/grep ^Core | cut -d ':' -f2`))
+source $ROOTDIR/conf/env.cfg
+load_compiler_env "$1"
 
 # ============================ FFB ============================================
 source conf/ffb.sh
@@ -30,11 +24,11 @@ for BEST in $BESTCONF; do
 	FLOAT=`echo "e((1/3)*l($MAXDCZ / $NumMPI))" | bc -l`
 	DCZ=`echo "($FLOAT+0.5)/1" | bc`
 	INPUT="`echo $INPUT | sed -e \"s/DCZ/$DCZ/\"`"
-	echo "mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI $BINARY $INPUT" >> $LOG 2>&1
+	echo "$(get_mpi_cmd $NumMPI $NumOMP $LOG "") $BINARY $INPUT" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
 		mkdir ./tmp; sleep 1; cd ./tmp
 		START="`date +%s.%N`"
-		timeout --kill-after=30s $MAXTIME mpiexec $MPIEXECOPT --map-by slot:pe=$(((NumCORES / NumMPI) + (NumCORES < NumMPI))) -x OMP_NUM_THREADS=$NumOMP -n $NumMPI ../$BINARY $INPUT >> $LOG 2>&1
+		timeout --kill-after=30s $MAXTIME $(get_mpi_cmd $NumMPI $NumOMP $LOG "") ../$BINARY $INPUT >> $LOG 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
 		ENDED="`date +%s.%N`"
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1

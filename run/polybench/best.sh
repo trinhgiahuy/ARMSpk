@@ -4,15 +4,13 @@ ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
-#source $ROOTDIR/conf/intel.cfg
-#source $INTEL_PACKAGE intel64 > /dev/null 2>&1
-ulimit -s unlimited
-ulimit -n 4096
-#source $ROOTDIR/dep/spack/share/spack/setup-env.sh
-#spack load gcc@8.4.0
-### all static, no need for compilers and envs
+source $ROOTDIR/conf/env.cfg
+load_compiler_env "$1"
 
-if which numactl >/dev/null 2>&1; then PIN="numactl -l -C 7"; else PIN=""; fi
+if which numactl >/dev/null 2>&1; then
+	if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then PIN="numactl -l -C 24";
+	else PIN="numactl -l -C 2"; fi
+else PIN=""; fi
 
 # ============================ PolyBench ====================================
 source conf/polybench.sh
