@@ -3,7 +3,7 @@
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/inst/_common.sh
+source $ROOTDIR/conf/env.cfg
 
 if [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]]; then
 	echo "WRN: DOES NOT compile in -Nclang mode"

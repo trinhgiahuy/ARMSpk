@@ -184,7 +184,7 @@ EOF
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/inst/_common.sh
+source $ROOTDIR/conf/env.cfg
 load_compiler_env "$1"
 
 BM="SPEC_OMP"

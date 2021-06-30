@@ -4,7 +4,7 @@ exit 1 #ignore in this study
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 source $ROOTDIR/conf/host.cfg
-source $ROOTDIR/inst/_common.sh
+source $ROOTDIR/conf/env.cfg
 load_compiler_env "$1"
 
 spack load openjdk; spack load maven; spack load scala; spack load hadoop; spack load spark
