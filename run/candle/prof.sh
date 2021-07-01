@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 1 #ignore in this study
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR

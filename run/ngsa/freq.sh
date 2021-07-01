@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 1 #ignore in this study
 
 function PreprocessInput {
 	PROCS=$1

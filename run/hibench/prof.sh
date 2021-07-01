@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "NO ;-)"; exit 1
+exit 1 #ignore in this study
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
 cd $ROOTDIR

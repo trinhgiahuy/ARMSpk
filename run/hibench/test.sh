@@ -31,13 +31,13 @@ export MAHOUT_HEAPSIZE="8192"
 export NUTCH_HEAPSIZE="8192"
 
 source ${ROOTDIR}/conf/${BenchID}.sh
-LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
+LOG="${ROOTDIR}/log/$(hostname -s)/testrun/${BenchID}.log"
 mkdir -p $(dirname ${LOG})
 move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
-for BEST in ${BESTCONF}; do
-	NumMPI="$(echo ${BEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
-	NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
+for TEST in ${TESTCONF}; do
+	NumMPI="$(echo ${TEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
+	NumOMP="$(echo ${TEST} | cut -d '|' -f2)"
 	sed -i '/localhost/d' ~/.ssh/known_hosts; sed -i '/0\.0\.0\.0/d' ~/.ssh/known_hosts
 	ssh -O exit localhost; ssh -o StrictHostKeyChecking=no localhost echo 0
 	ssh -O exit 0.0.0.0;   ssh -o StrictHostKeyChecking=no 0.0.0.0 echo 0
@@ -52,7 +52,7 @@ for BEST in ${BESTCONF}; do
 		`dirname ${BINARY}`/../prepare/prepare.sh >> ${LOG} 2>&1
 		sleep 10
 		echo "${BINARY} ${INPUT}" >> ${LOG} 2>&1
-		for i in $(seq 1 ${NumRunsBEST}); do
+		for i in $(seq 1 ${NumRunsTEST}); do
 			START="$(date +%s.%N)"
 			timeout --kill-after=30s ${MAXTIME} ${BINARY} ${INPUT} >> ${LOG} 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi

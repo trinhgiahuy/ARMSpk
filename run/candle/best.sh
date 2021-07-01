@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 1 #ignore in this study
 
 SELF="$(readlink -f "${BASH_SOURCE[0]}")"
 ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"

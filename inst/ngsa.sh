@@ -1,14 +1,11 @@
 #!/bin/bash
+exit 1 #ignore in this study
 
 ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )"
 cd $ROOTDIR
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
 load_compiler_env "$1"
-
-if [[ "$1" = *"fuji"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]]; then
-	echo "lol, no thanks not touching this one"; exit 1
-fi
 
 BM="NGSAnalyzer"
 VERSION="694b38eed8a4c09160045895a1bf86fcb35e85a3"
