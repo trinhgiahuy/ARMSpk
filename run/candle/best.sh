@@ -1,22 +1,26 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ CANDLE =========================================
-source conf/candle.sh
+source $ROOTDIR/conf/${BenchID}.sh
 source activate idp
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/candle.log"
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
 	for BINARY in $BINARYS; do
-		NumMPI=1
-		NumOMP=$BEST
+		NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
+		NumOMP="`echo $BEST | cut -d '|' -f2`"
 		pushd "`find . -name $BINARY -exec dirname {} \;`"
 		make libssc.so
 		# check if data is hot or must be preloaded
@@ -35,7 +39,7 @@ for BEST in $BESTCONF; do
 		popd
 	done
 done
-echo "Best CANDLE run:"
+echo "Best ${BenchID} run:"
 BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""

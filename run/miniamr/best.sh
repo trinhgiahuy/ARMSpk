@@ -1,20 +1,24 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ miniAMR ========================================
-source conf/miniamr.sh
+source $ROOTDIR/conf/${BenchID}.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/miniamr.log"
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	X="`echo $BEST | cut -d '|' -f3`"
 	Y="`echo $BEST | cut -d '|' -f4`"
@@ -29,7 +33,7 @@ for BEST in $BESTCONF; do
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 done
-echo "Best miniAMR run:"
+echo "Best ${BenchID} run:"
 BEST="`grep 'total GFLOPS' $LOG | awk -F 'GFLOPS:' '{print $2}' | sort -r -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""

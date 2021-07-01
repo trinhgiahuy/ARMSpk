@@ -1,20 +1,24 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ CoMD ===========================================
-source conf/comd.sh
+source $ROOTDIR/conf/${BenchID}.sh
 DEFINPUT=$INPUT
-LOG="$ROOTDIR/log/fugaku/bestrun/comd.log"
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	X="`echo $BEST | cut -d '|' -f3`"
 	Y="`echo $BEST | cut -d '|' -f4`"
@@ -30,7 +34,7 @@ for BEST in $BESTCONF; do
 	done
 done
 rm *.yaml
-echo "Best CoMD run:"
+echo "Best ${BenchID} run:"
 BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpirun" $LOG | grep -B1 "$BEST"
 echo ""

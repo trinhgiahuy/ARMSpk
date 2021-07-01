@@ -1,22 +1,25 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ NICam ==========================================
-source conf/nicam.sh
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/nicam.log"
+source $ROOTDIR/conf/${BenchID}.sh
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
 # scale down #steps from 11 days to 1 day, and create input data set
 sed -i -e 's/^LSMAX  = 0/LSMAX  = 72/'  ../../test.conf
 make jobshell > /dev/null 2>&1
-if [ -d "$INPUT" ] && [ "x" != "x$INPUT" ]; then cd $INPUT; else exit; fi
+if [ -d "$INPUT" ] && [ -n "$INPUT" ]; then cd $INPUT; else exit; fi
 export FORT_FMT_RECL=400
 ln -s ../../../../bin/nhm_driver .
 ln -s ../../../../data/mnginfo/rl00-prc10.info .
@@ -33,7 +36,7 @@ ln -s ../../../../data/grid/boundary/gl05rl00pe10/boundary_GL05RL00.pe000008 .
 ln -s ../../../../data/grid/boundary/gl05rl00pe10/boundary_GL05RL00.pe000009 .
 
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	echo "$(get_mpi_cmd $NumMPI $NumOMP $LOG "") $BINARY" >> $LOG 2>&1
 	for i in `seq 1 $NumRunsBEST`; do
@@ -49,9 +52,9 @@ done
 # clean up
 cd $ROOTDIR
 cd $APPDIR
-if [ -d "$INPUT" ] && [ "x" != "x$INPUT" ]; then rm -rf $INPUT; fi
+if [ -d "$INPUT" ] && [ -n "$INPUT" ]; then rm -rf $INPUT; fi
 
-echo "Best NICam run:"
+echo "Best ${BenchID} run:"
 BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""

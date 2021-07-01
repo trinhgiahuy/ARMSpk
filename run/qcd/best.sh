@@ -1,19 +1,23 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ CCS QCD ========================================
-source conf/qcd.sh
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/qcd.log"
+source $ROOTDIR/conf/${BenchID}.sh
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	PX="`echo $BEST | cut -d '|' -f3`"
 	PY="`echo $BEST | cut -d '|' -f4`"
@@ -28,7 +32,7 @@ for BEST in $BESTCONF; do
 		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
 	done
 done
-echo "Best QCD run:"
+echo "Best ${BenchID} run:"
 BEST="`grep 'BiCGStab Total FLOPS:' $LOG | awk -F 'FLOPS:' '{print $2}' | sort -r -g | head -1`"
 grep "$BEST\|mpiexec" $LOG | grep -B1 "$BEST"
 echo ""

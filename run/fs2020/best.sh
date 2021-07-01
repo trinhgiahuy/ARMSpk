@@ -1,20 +1,24 @@
 #!/bin/bash
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
-# ============================ FS2020 ====================================
-source conf/fs2020.sh
-LOGDIR="$ROOTDIR/log/`hostname -s`/bestrun/fs2020"
+source $ROOTDIR/conf/${BenchID}.sh
+LOGDIR="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}"
 mkdir -p $LOGDIR
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
-	NumMPI=1
-	NumOMP=$BEST
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
+	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	moreMPI="-x OMP_NUM_PARALELL=$NumOMP -x OMP_PROC_BIND=close -x FLIB_FASTOMP=FALSE -x FLIB_CNTL_BARRIER_ERR=FALSE"
 	for BMconf in $BINARYS; do
 		BINARY="`echo ${BMconf} | cut -d '|' -f1`"

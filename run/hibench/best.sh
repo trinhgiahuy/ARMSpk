@@ -1,12 +1,16 @@
 #!/bin/bash
 echo "NO ;-)"; exit 1
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+ROOTDIR="$(readlink -f $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../)"
+BenchID="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ) )"
 cd $ROOTDIR
 
 source $ROOTDIR/conf/host.cfg
 source $ROOTDIR/conf/env.cfg
-load_compiler_env "$1"
+get_comp_env_name "$1"
+maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
+load_compiler_env "${COMP}"
 
 source $ROOTDIR/dep/spack/share/spack/setup-env.sh
 spack load openjdk; spack load maven; spack load scala; spack load hadoop; spack load spark
@@ -26,14 +30,14 @@ export HADOOP_NAMENODE_INIT_HEAPSIZE="4096"
 export MAHOUT_HEAPSIZE="8192"
 export NUTCH_HEAPSIZE="8192"
 
-# ============================ HiBench ====================================
-source conf/hibench.sh
-LOG="$ROOTDIR/log/`hostname -s`/bestrun/hibench.log"
+source $ROOTDIR/conf/${BenchID}.sh
+LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
 mkdir -p `dirname $LOG`
-cd $APPDIR
+move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
+
 for BEST in $BESTCONF; do
-	NumMPI=1
-	NumOMP=$BEST
+	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
+	NumOMP="`echo $BEST | cut -d '|' -f2`"
 	sed -i '/localhost/d' ~/.ssh/known_hosts; sed -i '/0\.0\.0\.0/d' ~/.ssh/known_hosts
 	ssh -O exit localhost; ssh -o StrictHostKeyChecking=no localhost echo 0
 	ssh -O exit 0.0.0.0;   ssh -o StrictHostKeyChecking=no 0.0.0.0 echo 0
