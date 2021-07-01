@@ -55,7 +55,7 @@ cd ${APPDIR}
 if [ -d "${INPUT}" ] && [ -n "${INPUT}" ]; then rm -rf ${INPUT}; fi
 
 echo "Best ${BenchID} run:"
-BEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print ${2}}' | sort -g | head -1)"
+BEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
 /bin/grep "${BEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${BEST}"
 echo ""
 cd ${ROOTDIR}

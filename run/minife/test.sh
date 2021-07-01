@@ -17,7 +17,7 @@ mkdir -p $(dirname ${LOG})
 move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
 for TEST in ${TESTCONF}; do
-	for BINARY in ${BBINARY}; do
+	for BINARY in ${BINARYS}; do
 		NumMPI="$(echo ${TEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
 		NumOMP="$(echo ${TEST} | cut -d '|' -f2)"
 		echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
@@ -33,7 +33,7 @@ for TEST in ${TESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep 'Total CG Mflops' ${LOG} | awk -F 'Mflops:' '{print ${2}}' | sort -r -g | head -1)"
+TEST="$(/bin/grep 'Total CG Mflops' ${LOG} | awk -F 'Mflops:' '{print $2}' | sort -r -g | head -1)"
 /bin/grep "${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
 echo ""
 cd ${ROOTDIR}

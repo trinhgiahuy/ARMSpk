@@ -34,7 +34,7 @@ for TEST in ${TESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep 'total GFLOPS' ${LOG} | awk -F 'GFLOPS:' '{print ${2}}' | sort -r -g | head -1)"
+TEST="$(/bin/grep 'total GFLOPS' ${LOG} | awk -F 'GFLOPS:' '{print $2}' | sort -r -g | head -1)"
 /bin/grep "${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
 echo ""
 cd ${ROOTDIR}

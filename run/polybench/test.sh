@@ -36,7 +36,7 @@ for TEST in ${TESTCONF}; do
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		done
-		TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print ${2}}' | sort -g | head -1)"
+		TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
 		echo "Best ${BName} run: ${TEST}"
 	done
 done

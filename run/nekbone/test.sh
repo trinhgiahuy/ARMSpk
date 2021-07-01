@@ -33,7 +33,7 @@ for TEST in ${TESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep '^Avg MFlops' ${LOG} | awk -F 'MFlops =' '{print ${2}}' | sort -g -r | head -1)"
+TEST="$(/bin/grep '^Avg MFlops' ${LOG} | awk -F 'MFlops =' '{print $2}' | sort -g -r | head -1)"
 /bin/grep "^Avg.*${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
 echo ""
 cd ${ROOTDIR}

@@ -34,7 +34,7 @@ for TEST in ${TESTCONF}; do
 	cd ../; rm -rf ./testrun
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print ${2}}' | sort -g | head -1)"
+TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
 /bin/grep "${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
 echo ""
 cd ${ROOTDIR}

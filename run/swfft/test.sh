@@ -20,7 +20,7 @@ for TEST in ${TESTCONF}; do
 	NumMPI="$(echo ${TEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="$(echo ${TEST} | cut -d '|' -f2)"
 	# test if Decomposition is valid
-	INSIZE="$(echo ${INPUT} | awk '{print ${2}}')"
+	INSIZE="$(echo ${INPUT} | awk '{print $2}')"
 	$(get_mpi_cmd 1 1 "/dev/null" "") $(dirname ${BINARY})/CheckDecomposition ${INSIZE} ${INSIZE} ${INSIZE} ${NumMPI} > /dev/null 2>&1
 	if [ "x$?" = "x0" ]; then
 		echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
@@ -37,7 +37,7 @@ for TEST in ${TESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print ${2}}' | sort -g | head -1)"
+TEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
 /bin/grep "${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
 echo ""
 cd ${ROOTDIR}

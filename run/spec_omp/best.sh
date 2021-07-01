@@ -33,7 +33,7 @@ for BENCH in ${BINARY}; do
 		REPORT="$(find ${ROOTDIR}/${APPDIR}/result -type f -name '*.log' | sort -g | tail -1)"
 		cat ${REPORT} >> ${LOG} 2>&1
 		/bin/grep 'Run Reported' ${REPORT} >> ${LOG} 2>&1
-		echo "Best ${BENCH} run: " "$(/bin/grep 'Reported' ${REPORT} | awk -F'Reported:[[:blank:]]+' '{print ${2}}' | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1)"
+		echo "Best ${BENCH} run: " "$(/bin/grep 'Reported' ${REPORT} | awk -F'Reported:[[:blank:]]+' '{print $2}' | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1)"
 	done
 done
 cd ${ROOTDIR}
