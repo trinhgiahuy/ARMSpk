@@ -14,28 +14,28 @@ load_compiler_env "${COMP}"
 source $ROOTDIR/conf/${BenchID}.sh
 DEFINPUT=$INPUT
 LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
-mkdir -p `dirname $LOG`
+mkdir -p $(dirname $LOG)
 move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
-	NumOMP="`echo $BEST | cut -d '|' -f2`"
-	X="`echo $BEST | cut -d '|' -f3`"
-	Y="`echo $BEST | cut -d '|' -f4`"
-	Z="`echo $BEST | cut -d '|' -f5`"
-	INPUT="`echo $DEFINPUT | sed -e \"s/PX/$X/\" -e \"s/PY/$Y/\" -e \"s/PZ/$Z/\"`"
+	NumMPI="$(echo $BEST | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
+	NumOMP="$(echo $BEST | cut -d '|' -f2)"
+	X="$(echo $BEST | cut -d '|' -f3)"
+	Y="$(echo $BEST | cut -d '|' -f4)"
+	Z="$(echo $BEST | cut -d '|' -f5)"
+	INPUT="$(echo $DEFINPUT | sed -e "s/PX/$X/" -e "s/PY/$Y/" -e "s/PZ/$Z/")"
 	echo "$(get_mpi_cmd $NumMPI $NumOMP $LOG "") $BINARY $INPUT" >> $LOG 2>&1
-	for i in `seq 1 $NumRunsBEST`; do
-		START="`date +%s.%N`"
+	for i in $(seq 1 $NumRunsBEST); do
+		START="$(date +%s.%N)"
 		timeout --kill-after=30s $MAXTIME $(get_mpi_cmd $NumMPI $NumOMP $LOG "") $BINARY $INPUT >> $LOG 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
-		ENDED="`date +%s.%N`"
-		echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+		ENDED="$(date +%s.%N)"
+		echo "Total running time: $(echo "$ENDED - $START" | bc -l)" >> $LOG 2>&1
 	done
 done
 rm *.yaml
 echo "Best ${BenchID} run:"
-BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
-grep "$BEST\|mpirun" $LOG | grep -B1 "$BEST"
+BEST="$(/bin/grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
+/bin/grep "$BEST\|mpirun" $LOG | /bin/grep -B1 "$BEST"
 echo ""
 cd $ROOTDIR

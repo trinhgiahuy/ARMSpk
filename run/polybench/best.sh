@@ -23,20 +23,20 @@ move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
 for BEST in $BESTCONF; do
 	for BMconf in $BINARYS; do
-		NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
-		NumOMP="`echo $BEST | cut -d '|' -f2`"
-		BINARY="`echo ${BMconf} | tr '|' '_'`"
-		BName="`basename $(echo ${BMconf} | cut -d'|' -f1)`"
+		NumMPI="$(echo $BEST | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
+		NumOMP="$(echo $BEST | cut -d '|' -f2)"
+		BINARY="$(echo ${BMconf} | tr '|' '_')"
+		BName="$(basename $(echo ${BMconf} | cut -d'|' -f1))"
 		LOG="${LOGDIR}/${BName}.log"
 		echo "OMP_NUM_THREADS=$NumOMP timeout --kill-after=30s $MAXTIME $PIN $BINARY $INPUT" >> $LOG 2>&1
-		for i in `seq 1 $NumRunsBEST`; do
-			START="`date +%s.%N`"
+		for i in $(seq 1 $NumRunsBEST); do
+			START="$(date +%s.%N)"
 			OMP_NUM_THREADS=$NumOMP timeout --kill-after=30s $MAXTIME $PIN $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
-			ENDED="`date +%s.%N`"
-			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+			ENDED="$(date +%s.%N)"
+			echo "Total running time: $(echo "$ENDED - $START" | bc -l)" >> $LOG 2>&1
 		done
-		BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1`"
+		BEST="$(/bin/grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
 		echo "Best $BName run: $BEST"
 	done
 done

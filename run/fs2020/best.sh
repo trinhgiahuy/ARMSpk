@@ -17,24 +17,24 @@ mkdir -p $LOGDIR
 move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 
 for BEST in $BESTCONF; do
-	NumMPI="`echo $BEST | cut -d '|' -f1`"; if skip_conf "${NumMPI}"; then continue; fi
-	NumOMP="`echo $BEST | cut -d '|' -f2`"
+	NumMPI="$(echo $BEST | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
+	NumOMP="$(echo $BEST | cut -d '|' -f2)"
 	moreMPI="-x OMP_NUM_PARALELL=$NumOMP -x OMP_PROC_BIND=close -x FLIB_FASTOMP=FALSE -x FLIB_CNTL_BARRIER_ERR=FALSE"
 	for BMconf in $BINARYS; do
-		BINARY="`echo ${BMconf} | cut -d '|' -f1`"
-		MAXOMP="`echo ${BMconf} | cut -s -d '|' -f2`"
+		BINARY="$(echo ${BMconf} | cut -d '|' -f1)"
+		MAXOMP="$(echo ${BMconf} | cut -s -d '|' -f2)"
 		if [ ! -z $MAXOMP ] && [ $NumOMP -gt $MAXOMP ]; then continue; fi
 		if [[ "$BINARY" = "23."* ]] && [ $NumOMP -lt 6 ]; then continue; fi	# needs at least 6 threads to avoid floating-point exception
 		LOG="${LOGDIR}/`echo ${BINARY} | cut -d'/' -f1`.${NumOMP}.log"
 		echo "$(get_mpi_cmd $NumMPI $NumOMP $LOG $moreMPI) $BINARY $INPUT" >> $LOG 2>&1
-		for i in `seq 1 $NumRunsBEST`; do
-			START="`date +%s.%N`"
+		for i in $(seq 1 $NumRunsBEST); do
+			START="$(date +%s.%N)"
 			timeout --kill-after=30s $MAXTIME $(get_mpi_cmd $NumMPI $NumOMP $LOG $moreMPI) $BINARY $INPUT >> $LOG 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding $MAXTIME timeout" >> $LOG 2>&1; fi
-			ENDED="`date +%s.%N`"
-			echo "Total running time: `echo \"$ENDED - $START\" | bc -l`" >> $LOG 2>&1
+			ENDED="$(date +%s.%N)"
+			echo "Total running time: $(echo "$ENDED - $START" | bc -l)" >> $LOG 2>&1
 		done
-		BEST="`grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sed -e 's/D/e/g' | sort -g | head -1`"
+		BEST="$(/bin/grep '^Walltime' $LOG | awk -F 'kernel:' '{print $2}' | sed -e 's/D/e/g' | sort -g | head -1)"
 		echo "Best $BINARY NumOMP=$NumOMP run: $BEST"
 	done
 done
