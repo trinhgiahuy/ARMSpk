@@ -11,7 +11,7 @@ export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
-if ! [ -n "${XEONHOST}" ]; then
+if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
 	### XXX : https://github.com/ANL-CESAR/XSBench#MPI-Support : 'This is a "weak scaling" approach' => in embarrassingly parallel fashion :-(
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
