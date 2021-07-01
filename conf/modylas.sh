@@ -10,7 +10,7 @@ export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
-if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
 	export TESTCONF="8|1 8|2 8|3 8|4 8|6 8|8 8|10
 			 16|1 16|2 16|3 16|4
@@ -18,7 +18,7 @@ if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
 			 64|1"
 	export BESTCONF="8|6" #openmpi maps this config oddly but fallback is as fast as before with intel mpi"16|3"
 	export SCALCONF="8|128 32|32 128|8"
-elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
+elif [ -n "${IKNLHOST}" ]; then
 	# on one of the Phi (knl)
 	export TESTCONF="8|4 8|8 8|16 8|32
 			 16|4 16|8 16|12 16|16
@@ -27,7 +27,7 @@ elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
 			 128|1 128|2 128|3
 			 256|1 256|2"
 	export BESTCONF="64|4"
-elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+elif [ -n "${IKNMHOST}" ]; then
 	# on one of the Phi (knm)
 	export TESTCONF="8|4 8|8 8|16 8|32
 			 16|4 16|8 16|12 16|16
@@ -36,7 +36,10 @@ elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
 			 128|1 128|2 128|3
 			 256|1 256|2"
 	export BESTCONF="64|4"
-else
-	echo "Unsupported host"
-	exit
+elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
+	export TESTCONF="8|1 8|2 8|3 8|4 8|6
+			 16|1 16|2 16|3 16|4
+			 32|1 32|2"
+	export BESTCONF=""
+	export SCALCONF=""
 fi

@@ -41,11 +41,11 @@ stencils/jacobi-1d/jacobi-1d|LARGE
 stencils/jacobi-2d/jacobi-2d|LARGE
 stencils/seidel-2d/seidel-2d|LARGE"
 export INPUT=""
-export NumRunsTEST=1
+export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="2m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
-export TESTCONF="1"
-export BESTCONF="1"
+export TESTCONF="1|1"
+export BESTCONF="1|1"

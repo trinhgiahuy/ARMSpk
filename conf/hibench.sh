@@ -31,20 +31,21 @@ export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
-if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
-	export TESTCONF="1"
-	export BESTCONF="1"
+	export TESTCONF="1|1"
+	export BESTCONF="1|1"
 	export SCALCONF=""
-elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
+elif [ -n "${IKNLHOST}" ]; then
 	# on one of the Phi (knl)
-	export TESTCONF="1"
-	export BESTCONF="1"
-elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+	export TESTCONF="1|1"
+	export BESTCONF="1|1"
+elif [ -n "${IKNMHOST}" ]; then
 	# on one of the Phi (knm)
-	export TESTCONF="1"
-	export BESTCONF="1"
-else
-	echo "Unsupported host"
-	exit
+	export TESTCONF="1|1"
+	export BESTCONF="1|1"
+elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
+	export TESTCONF="1|1"
+	export BESTCONF="1|1"
+	export SCALCONF=""
 fi

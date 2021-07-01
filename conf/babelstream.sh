@@ -10,21 +10,22 @@ export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
-if [[ $HOSTNAME = *"${XEONHOST}"* ]]; then
+if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
 	export MAXTIME="10m"
-	export TESTCONF="2 6 12 18 24"
-	export BESTCONF="12"
-	export SCALCONF="256 1024"
-elif [[ $HOSTNAME = *"${IKNLHOST}"* ]]; then
+	export TESTCONF="1|2 1|6 1|12 1|18 1|24"
+	export BESTCONF="1|12"
+	export SCALCONF="1|256 1|1024"
+elif [ -n "${IKNLHOST}" ]; then
 	# on one of the Phi (knl)
-	export TESTCONF="8 16 32 64 96 128"
-	export BESTCONF="64"
-elif [[ $HOSTNAME = *"${IKNMHOST}"* ]]; then
+	export TESTCONF="1|8 1|16 1|32 1|64 1|96 1|128"
+	export BESTCONF="1|64"
+elif [ -n "${IKNMHOST}" ]; then
 	# on one of the Phi (knm)
-	export TESTCONF="9 18 36 72 108 144"
-	export BESTCONF="144"
-else
-	echo "Unsupported host"
-	exit
+	export TESTCONF="1|9 1|18 1|36 1|72 1|108 1|144"
+	export BESTCONF="1|144"
+elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
+	export TESTCONF="1|12 1|16 1|24 1|32 1|36 1|48"
+	export BESTCONF=""
+	export SCALCONF=""
 fi
