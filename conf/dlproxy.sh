@@ -23,6 +23,6 @@ elif [ -n "${IKNMHOST}" ]; then
         export TESTCONF=""
         export BESTCONF=""
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	export BESTCONF="1|4 1|8 1|12 1|24 1|32 1|36 1|48"
-	export TESTCONF=""
+	export TESTCONF="1|4 1|8 1|12 1|24 1|32 1|36 1|48"
+	export BESTCONF=""
 fi
