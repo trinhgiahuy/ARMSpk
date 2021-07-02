@@ -39,12 +39,12 @@ move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 for BEST in ${BESTCONF}; do
 	NumMPI="$(echo ${BEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
-	echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsBEST}); do
 		# prep input (dep on numMPI; up to 12 supported)
 		PreprocessInput ${NumMPI} ${INPUTDIR}
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1

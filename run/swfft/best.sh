@@ -21,16 +21,16 @@ for BEST in ${BESTCONF}; do
 	NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
 	# test if Decomposition is valid
 	INSIZE="$(echo ${INPUT} | awk '{print $2}')"
-	$(get_mpi_cmd 1 1 "/dev/null" "") $(dirname ${BINARY})/CheckDecomposition ${INSIZE} ${INSIZE} ${INSIZE} ${NumMPI} > /dev/null 2>&1
+	$(get_mpi_cmd "1" "1" "/dev/null" "") $(dirname ${BINARY})/CheckDecomposition ${INSIZE} ${INSIZE} ${INSIZE} ${NumMPI} > /dev/null 2>&1
 	if [ "x$?" = "x0" ]; then
-		echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+		echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 	else
-		echo "INVALID Decomposition: $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+		echo "INVALID Decomposition: $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 		continue
 	fi
 	for i in $(seq 1 ${NumRunsBEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1

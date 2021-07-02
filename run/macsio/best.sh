@@ -22,10 +22,10 @@ for BEST in ${BESTCONF}; do
 	NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
 	INPUT="$(echo ${DEFINPUT} | sed -e "s/NDPP/$((${MAXNDPP} / ${NumMPI}))/")"
 	mkdir -p ./bestrun; cd ./bestrun
-	echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ../${BINARY} ${INPUT}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ../${BINARY} ${INPUT}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsBEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ../${BINARY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ../${BINARY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		/bin/grep 'Processor\|^Info' macsio-log.log >> ${LOG} 2>&1

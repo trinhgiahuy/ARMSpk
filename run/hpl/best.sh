@@ -23,10 +23,10 @@ for BEST in ${BESTCONF}; do
 	MPIP="$(echo ${BEST} | cut -d '|' -f3)"
 	MPIQ="$(echo ${BEST} | cut -d '|' -f4)"
 	sed -e "s/PNS/${HPLNS}/" -e "s/PNB/${HPLNB}/" -e "s/PPP/${MPIP}/" -e "s/PPQ/${MPIQ}/" ./HPL.dat.bak > ./HPL.dat
-	echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsBEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		cat ./HPL.out >> ${LOG} 2>&1; rm ./HPL.out

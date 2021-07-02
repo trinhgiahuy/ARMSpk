@@ -27,7 +27,7 @@ for BEST in ${BESTCONF}; do
 	# test to identify hpcg's internal dimensions
 	rm -f hpcg_log_* n*.yaml
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
-	$(get_mpi_cmd ${NumMPI} 1 "/dev/null" ${moreMPI}) ${BINARY} -n 1 > /dev/null 2>&1
+	$(get_mpi_cmd "${NumMPI}" "1" "/dev/null" "${moreMPI}") ${BINARY} -n 1 > /dev/null 2>&1
 	if [ ! "x$?" = "x0" ]; then continue; fi
 	if [ -f n*.yaml ]; then
 		X=$((${MAXXYZ} / $(/bin/grep 'npx:' n*.yaml | awk -F 'npx:' '{print $2}')))
@@ -42,10 +42,10 @@ for BEST in ${BESTCONF}; do
 	rm -f hpcg_log_* n*.yaml
 	rm -f hpcg20*.txt HPCG-Benchmark_3*.txt
 	INPUT="$(echo ${DEFINPUT} | sed -e "s/NX/${X}/" -e "s/NY/${Y}/" -e "s/NZ/${Z}/")"
-	echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} ${moreMPI}) ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsBEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} ${moreMPI}) ${BINARY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		cat hpcg_log_* >> ${LOG} 2>&1

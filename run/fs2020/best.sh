@@ -25,11 +25,11 @@ for BEST in ${BESTCONF}; do
 		MAXOMP="$(echo ${BMconf} | cut -s -d '|' -f2)"
 		if [ ! -z ${MAXOMP} ] && [ ${NumOMP} -gt ${MAXOMP} ]; then continue; fi
 		if [[ "${BINARY}" = "23."* ]] && [ ${NumOMP} -lt 6 ]; then continue; fi	# needs at least 6 threads to avoid floating-point exception
-		LOG="${LOGDIR}/`echo ${BINARY} | cut -d'/' -f1`.${NumOMP}.log"
-		echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} ${moreMPI}) ${BINARY} ${INPUT}" >> ${LOG} 2>&1
+		LOG="${LOGDIR}/$(echo ${BINARY} | cut -d'/' -f1).log"
+		echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${INPUT}" >> ${LOG} 2>&1
 		for i in $(seq 1 ${NumRunsBEST}); do
 			START="$(date +%s.%N)"
-			timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} ${moreMPI}) ${BINARY} ${INPUT} >> ${LOG} 2>&1
+			timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${INPUT} >> ${LOG} 2>&1
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1

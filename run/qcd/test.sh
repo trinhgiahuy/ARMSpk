@@ -23,10 +23,10 @@ for TEST in ${TESTCONF}; do
 	PY="$(echo ${TEST} | cut -d '|' -f4)"
 	PZ="$(echo ${TEST} | cut -d '|' -f5)"
 	BINARYYY="${BINARY}_${PX}${PY}${PZ}"
-	echo "$(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARYYY} ${INPUT}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARYYY} ${INPUT}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsTEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd ${NumMPI} ${NumOMP} ${LOG} "") ${BINARYYY} ${INPUT} >> ${LOG} 2>&1
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ${BINARYYY} ${INPUT} >> ${LOG} 2>&1
 		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
