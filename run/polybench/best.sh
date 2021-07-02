@@ -32,7 +32,7 @@ for BEST in ${BESTCONF}; do
 		for i in $(seq 1 ${NumRunsBEST}); do
 			START="$(date +%s.%N)"
 			OMP_NUM_THREADS=${NumOMP} timeout --kill-after=30s ${MAXTIME} ${PIN} ${BINARY} ${INPUT} >> ${LOG} 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		done

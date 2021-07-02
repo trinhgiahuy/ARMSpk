@@ -26,7 +26,7 @@ if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 		if [ -n "$MKLROOT" ]; then
 			sed -i -e 's#-I${MKLROOT}/include#-m64 -I${MKLROOT}/include#g' -e 's#-mkl#-Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl#g' ./Makefile
 		elif [ -n "$FJBLAS" ]; then
-			sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-I$(dirname `which fcc`)/../include#g" -e "s#-mkl#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf#g" ./Makefile
+			sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-I$(dirname `which fcc`)/../include#g" -e "s#-mkl#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjomp.o -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf#g" ./Makefile
 		fi
 		make CC=gcc CXX=g++ compile
 	elif [[ "$1" = *"fujitrad"* ]]; then
@@ -51,7 +51,7 @@ if [ ! -f $ROOTDIR/$BM/benchmarks/conv_gemm/main ]; then
 		sed -i -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' ./Makefile
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 		sed -i -e "s#-DUSE_MKL -I\${MKLROOT}/include#-m64 -I$(dirname `which fcc`)/../include#g" ./Makefile
-		sed -i -e "s#-mkl#-lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp#g" ./Makefile
+		sed -i -e "s#-mkl#$(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjomp.o -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp#g" ./Makefile
 		make CC=clang CXX=clang++ compile
 	fi
 	cd $ROOTDIR

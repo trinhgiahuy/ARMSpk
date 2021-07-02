@@ -55,7 +55,7 @@ for BEST in ${BESTCONF}; do
 		for i in $(seq 1 ${NumRunsBEST}); do
 			START="$(date +%s.%N)"
 			timeout --kill-after=30s ${MAXTIME} ${BINARY} ${INPUT} >> ${LOG} 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 			sleep 10; cat report/hibench.report >> ${LOG}; rm -rf report/

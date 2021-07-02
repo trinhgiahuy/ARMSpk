@@ -29,7 +29,7 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 			sed -i -e 's# -m64##g' ./config/linux64_mpif90_omp_gfortran.makeconfig.in
 			sed -i -e 's# -m64##g' ./src/mp2/GNUmakefile
 			sed -i -e 's# -m64##g' ./src/util_lib/GNUmakefile
-			sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -flto ${MAYBESTATIC}#g" ./src/mp2/GNUmakefile
+			sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjomp.o -lfj90rt2 -lssl2mtexsve -lssl2mtsve -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt -lfjprofcore -lfjprofomp -lelf -flto ${MAYBESTATIC}#g" ./src/mp2/GNUmakefile
 			sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$(dirname `which fcc`)/../include#g" ./src/util_lib/GNUmakefile
 		fi
 		sed -e 's/-SSL2BLAMP//' -e 's/mpifrtpx_omp_k_fx10/mpif90_omp_gfortran/' platforms/config_mine.K > config_mine
