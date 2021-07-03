@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export APPDIR="./BabelStream"
-export BINARYS="./omp-stream_2 ./omp-stream_14"
+export BINARYS="./omp-stream_2 ./omp-stream_8" #./omp-stream_14"
 export INPUT="-s SIZE -n 10"
 export NumRunsTEST=3
 export NumRunsBEST=10
