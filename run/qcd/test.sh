@@ -33,7 +33,7 @@ for TEST in ${TESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-TEST="$(/bin/grep 'BiCGStab Total FLOPS:' ${LOG} | awk -F 'FLOPS:' '{print $2}' | sort -r -g | head -1)"
-/bin/grep "${TEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${TEST}"
+WALLT="$(/bin/grep 'BiCGStab Total FLOPS:' ${LOG} | awk -F 'FLOPS:' '{print $2}' | sort -r -g | head -1)"
+/bin/grep "${WALLT}\|^${MPIRUNCMD}" ${LOG} | /bin/grep -B1 "${WALLT}"
 echo ""
 cd ${ROOTDIR}

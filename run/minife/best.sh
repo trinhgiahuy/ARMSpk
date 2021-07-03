@@ -33,7 +33,7 @@ for BEST in ${BESTCONF}; do
 	done
 done
 echo "Best ${BenchID} run:"
-BEST="$(/bin/grep 'Total CG Mflops' ${LOG} | awk -F 'Mflops:' '{print $2}' | sort -r -g | head -1)"
-/bin/grep "${BEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${BEST}"
+WALLT="$(/bin/grep 'Total CG Mflops' ${LOG} | awk -F 'Mflops:' '{print $2}' | sort -r -g | head -1)"
+/bin/grep "${WALLT}\|^${MPIRUNCMD}" ${LOG} | /bin/grep -B1 "${WALLT}"
 echo ""
 cd ${ROOTDIR}

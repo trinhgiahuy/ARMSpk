@@ -39,7 +39,7 @@ for BEST in ${BESTCONF}; do
 	cd ../
 done
 echo "Best ${BenchID} run:"
-BEST="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
-/bin/grep "${BEST}\|mpiexec" ${LOG} | /bin/grep -B1 "${BEST}"
+WALLT="$(/bin/grep '^Walltime' ${LOG} | awk -F 'kernel:' '{print $2}' | sort -g | head -1)"
+/bin/grep "${WALLT}\|^${MPIRUNCMD}" ${LOG} | /bin/grep -B1 "${WALLT}"
 echo ""
 cd ${ROOTDIR}
