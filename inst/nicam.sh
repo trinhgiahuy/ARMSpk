@@ -15,7 +15,7 @@ source $ROOTDIR/conf/nicam.sh
 BM="NICAM"
 VERSION="3f758000ffce6ee95a27fb6099f654ecdc5e3add"
 if [[ "$2" = *"rebuild"* ]]; then rm -rf $BM .git/modules/$BM; git submodule update --init $BM; fi
-if [ ! -f $ROOTDIR/$BM/omp1/bin/nhm_driver ]; then
+if [ ! -f $ROOTDIR/$BM/omp1/bin/driver-dc ]; then
 	cd $ROOTDIR/$BM/
 	if ! [[ "$(git rev-parse --abbrev-ref HEAD)" = *"precision"* ]]; then git checkout -b precision ${VERSION}; fi
 	git apply --check $ROOTDIR/patches/*1-${BM}*.patch
@@ -29,18 +29,18 @@ if [ ! -f $ROOTDIR/$BM/omp1/bin/nhm_driver ]; then
 		export NICAM_SYS=Linux64-intel-impi
 		if [[ "$1" = *"intel"* ]]; then
 			#no point in creating multiple for intel
-			if [ -n "$(find $ROOTDIR/$BM/ -executable -name nhm_driver)" ]; then
+			if [ -n "$(find $ROOTDIR/$BM/ -type f -executable -path '*/bin/driver-dc')" ]; then
 				cd "$ROOTDIR/$BM/"; rm -rf "$ROOTDIR/$BM/omp${NumOMP}/"
-				cp -sR "$(readlink -f $(dirname $(dirname $(find $ROOTDIR/$BM/ -executable -name nhm_driver))))" "$ROOTDIR/$BM/omp${NumOMP}/"
+				cp -sR "$(readlink -f $(dirname $(dirname $(find $ROOTDIR/$BM/ -type f -executable -path '*/bin/driver-dc'))))" "$ROOTDIR/$BM/omp${NumOMP}/"
 				continue
 			fi
 			sed -i -e 's/-L${ADVISOR/-static -static-intel -qopenmp-link=static -L${ADVISOR/' ./Makefile
 			sed -i -e 's/mpiifort/mpif90/' -e 's/mpiicc/mpicc/' -e 's/-shared-intel/-static -static-intel -qopenmp-link=static/g' -e 's/^LFLAGS = /LFLAGS = -static -static-intel -qopenmp-link=static /' ../sysdep/Makedef.${NICAM_SYS}
 		elif [[ "$1" = *"gnu"* ]]; then
 			#no point in creating multiple for gnu either
-			if [ -n "$(find $ROOTDIR/$BM/ -executable -name nhm_driver)" ]; then
+			if [ -n "$(find $ROOTDIR/$BM/ -type f -executable -path '*/bin/driver-dc')" ]; then
 				cd "$ROOTDIR/$BM/"; rm -rf "$ROOTDIR/$BM/omp${NumOMP}/"
-				cp -sR "$(readlink -f $(dirname $(dirname $(find $ROOTDIR/$BM/ -executable -name nhm_driver))))" "$ROOTDIR/$BM/omp${NumOMP}/"
+				cp -sR "$(readlink -f $(dirname $(dirname $(find $ROOTDIR/$BM/ -type f -executable -path '*/bin/driver-dc'))))" "$ROOTDIR/$BM/omp${NumOMP}/"
 				continue
 			fi
 			sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -flto ${MAYBESTATIC}#g" ./Makefile
