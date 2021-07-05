@@ -49,7 +49,7 @@ elif [ -n "${IKNMHOST}" ]; then
 	export BESTCONF="1|128"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export MAXTIME="11m"
-	export TESTCONF="1|6 1|8 1|12 1|16 1|24 1|36 1|48
+	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|36 1|48
 			 4|1
 			 6|1
 			 8|1

@@ -25,7 +25,7 @@ elif [ -n "${IKNMHOST}" ]; then
 	export TESTCONF="1|9 1|18 1|36 1|72 1|108 1|144"
 	export BESTCONF="1|144"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	export TESTCONF="1|12 1|16 1|24 1|32 1|36 1|48"
+	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|32 1|36 1|48"
 	export BESTCONF=""
 	export SCALCONF=""
 fi

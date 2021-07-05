@@ -24,7 +24,7 @@ export BINARYS="01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main
 22.QCD.ddd_in_s_.qws-0.1.7.tune.170621/main
 23.QCD.jinv_ddd_in_s_.qws-0.1.7.tune.170720/main"
 export INPUT=""
-export NumRunsTEST=1
+export NumRunsTEST=3
 export NumRunsBEST=10
 export MAXTIME="2m"
 export RUNSDE="yes"

@@ -5,7 +5,7 @@ export BINARY="./nekbone"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export ielN=13824
+export ielN=8640	#2^6*3^3*5 to split nicely -> mcmodel=large needed above 10k
 export MAXTIME="1m"
 export RUNSDE="yes"
 export RUNPCM="no"
@@ -25,7 +25,7 @@ elif [ -n "${IKNMHOST}" ]; then
 	export TESTCONF="64|1 72|1 96|1 128|1 144|1 192|1 256|1 288|1"
 	export BESTCONF="72|1"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	export TESTCONF="1|8 1|12 1|16 1|24 1|36 1|48
+	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|36 1|48
 			 2|4 2|8 2|12 2|16 2|24
 			 4|4 4|6 4|8 4|12
 			 6|2 6|4 6|8

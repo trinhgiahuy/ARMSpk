@@ -6,7 +6,7 @@ export BINARY="./laghos"
 export INPUT="-p 1 -pt 311 -m data/cube01_hex.mesh -rs 2 -tf 0.1 -no-vis -pa" #XXX: this only works for 24 mpi procs, but the non-cartesian code is broken AF with openmpi; also scale down runtime with tf 06 -> tf 0.1
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="3m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -53,7 +53,7 @@ elif [ -n "${IKNMHOST}" ]; then
 			 288|1"
 	export BESTCONF="64|1"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	export TESTCONF="1|8 1|12 1|16 1|24 1|36 1|48
+	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|36 1|48
 			 2|6 2|8 2|12 2|16 2|24
 			 4|1 4|2 4|4 4|6 4|8 4|12
 			 6|1 6|2 6|4 6|8
