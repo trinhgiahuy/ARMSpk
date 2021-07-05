@@ -48,8 +48,8 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 				F77=mpifrt FFLAGS="-Kfast,openmp,ocl,largepage,lto"
 		elif [[ "$1" = *"fujiclang"* ]]; then
 			./configure --disable-fortran -with-openmp \
-				CC=mpifcc CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto" \
-				CXX=mpiFCC CXXFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto" \
+				CC=mpifcc CFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto" \
+				CXX=mpiFCC CXXFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto" \
 				F77=mpifrt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --disable-fortran -with-openmp --without-MPI \
@@ -133,7 +133,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/-ipo -xHost/-Kfast,openmp,ocl,largepage/g' -e 's/ -lirc -lsvml//g' ./makefile
 		make
 	elif [[ "$1" = *"fujiclang"* ]]; then
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage/g' -e 's/ -lirc -lsvml//g' ./makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -flto/g' -e 's/ -lirc -lsvml//g' ./makefile
 		make
 	elif [[ "$1" = *"gem5"* ]]; then
 		cd serial/
