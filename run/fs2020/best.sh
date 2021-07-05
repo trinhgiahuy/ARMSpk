@@ -9,7 +9,7 @@ source ${ROOTDIR}/conf/host.cfg
 source ${ROOTDIR}/conf/env.cfg
 get_comp_env_name "${1}"
 maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
-load_compiler_env "${COMP}"
+load_compiler_env "${COMP}" "8"
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOGDIR="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}"
@@ -30,7 +30,8 @@ for BEST in ${BESTCONF}; do
 		for i in $(seq 1 ${NumRunsBEST}); do
 			START="$(date +%s.%N)"
 			timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${INPUT} >> ${LOG} 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+			clenup_after_mpi_cmd
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		done

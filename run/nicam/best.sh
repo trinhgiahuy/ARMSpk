@@ -9,10 +9,13 @@ source ${ROOTDIR}/conf/host.cfg
 source ${ROOTDIR}/conf/env.cfg
 get_comp_env_name "${1}"
 maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
-load_compiler_env "${COMP}" "8"         # no clue but on Fu NICAM needs much bigger stack
+load_compiler_env "${COMP}" "8"         # no clue but on Fu it needs much bigger stack
 
 moreMPI="-x FORT_FMT_RECL=400"
-if [[ "${COMP}" = *"fujitrad"* ]] || [[ "${COMP}" = *"fujiclang"* ]] || [[ "${COMP}" = *"gem5"* ]] || [[ "${COMP}" = *"llvm12"* ]]; then ENDIAN="-Wl,-T"; else; ENDIAN=""; fi
+if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
+	#XXX: my love for fujitsu needs to be endless
+	moreMPI+="${moreMPI} -x FORT90L='-Wl,-T'"
+fi
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
@@ -46,11 +49,12 @@ for BEST in ${BESTCONF}; do
 	NumMPI="$(echo ${BEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
 	NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
 	pushd "${APPROOT}/$(echo "${APPDIR}" | sed -e "s#NICAM#omp${NumOMP}#g")/${INPUT}"
-	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${ENDIAN}" >> ${LOG} 2>&1
+	echo "$(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY}" >> ${LOG} 2>&1
 	for i in $(seq 1 ${NumRunsBEST}); do
 		START="$(date +%s.%N)"
-		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} ${ENDIAN} >> ${LOG} 2>&1
-		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "${moreMPI}") ${BINARY} >> ${LOG} 2>&1
+		clenup_after_mpi_cmd
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		cat ./msg.pe00000 >> ${LOG} 2>&1
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1

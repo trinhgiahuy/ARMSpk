@@ -33,7 +33,8 @@ for BEST in ${BESTCONF}; do
 			#timeout --kill-after=30s ${MAXTIME} mpiexec ${MPIEXECOPT} -genvall -genv OMP_NUM_THREADS=${NumOMP} -n ${NumMPI} python ${BINARY} ${INPUT} >> ${LOG} 2>&1
 			export OMP_NUM_THREADS=${NumOMP}; export KMP_BLOCKTIME=30; export KMP_SETTINGS=1; export KMP_AFFINITY='granularity=fine,compact,1,0';
 			timeout --kill-after=30s ${MAXTIME} numactl --preferred 1 python ${BINARY} ${INPUT} >> ${LOG} 2>&1
-			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+			clenup_after_mpi_cmd
+			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		done

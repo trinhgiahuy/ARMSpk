@@ -9,7 +9,7 @@ source ${ROOTDIR}/conf/host.cfg
 source ${ROOTDIR}/conf/env.cfg
 get_comp_env_name "${1}"
 maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
-load_compiler_env "${COMP}"
+load_compiler_env "${COMP}" "32"		# no clue but on Fu it needs much bigger stack
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 DEFINPUT=${INPUT}
@@ -33,7 +33,8 @@ for TEST in ${TESTCONF}; do
 		mkdir ./tmp; sleep 1; cd ./tmp
 		START="$(date +%s.%N)"
 		timeout --kill-after=30s ${MAXTIME} $(get_mpi_cmd "${NumMPI}" "${NumOMP}" "${LOG}" "") ../${BINARY} ${INPUT} >> ${LOG} 2>&1
-		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then clenup_after_mpi_cmd; echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
+		clenup_after_mpi_cmd
+		if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 		ENDED="$(date +%s.%N)"
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		cd ../; rm -rf ./tmp; sleep 1

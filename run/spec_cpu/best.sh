@@ -12,6 +12,10 @@ maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
 load_compiler_env "${COMP}"
 
 SPECCMD="runcpu --config=nedo.cfg --nobuild --action=run --noreportable --use_submit_for_speed"
+if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
+	#XXX: my love for fujitsu needs to be endless
+	SPECCMD="export FORT90L='-Wl,-T'; ${SPECCMD}"
+fi
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOGDIR="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}"
@@ -32,8 +36,8 @@ for BENCH in ${BINARY}; do
 		echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1
 		REPORT="$(find ${APPROOT}/result -type f -name '*.log' | sort -g | tail -1)"
 		cat ${REPORT} >> ${LOG} 2>&1
-		/bin/grep 'Run Reported' ${REPORT} >> ${LOG} 2>&1
-		echo "Best ${BENCH} run: " "$(/bin/grep 'Run Reported' ${REPORT} | cut -d'(' -f2 | cut -d')' -f1 | tr -s ' ' | cut -d ' ' -f3 | sort -g | head -1)"
+		/bin/grep 'Error .*runtime=\|Success .*runtime=' ${REPORT} >> ${LOG} 2>&1
+		echo "Best ${BENCH} run: " "$(/bin/grep 'Success .*runtime=' ${REPORT} | awk -F 'runtime=' '{print $2}' |cut -d',' -f1 | sort -g | head -1)"
 	done
 done
 cd ${ROOTDIR}
