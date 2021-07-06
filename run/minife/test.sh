@@ -28,7 +28,7 @@ for TEST in ${TESTCONF}; do
 			if [ "x$?" = "x124" ] || [ "x$?" = "x137" ]; then echo "Killed after exceeding ${MAXTIME} timeout" >> ${LOG} 2>&1; fi
 			ENDED="$(date +%s.%N)"
 			#verify correct runs
-			if /bin/grep 'Iterations: 200$' "${LOG}.tmp" >/dev/null 2>&1; then echo cat "${LOG}.tmp" >> ${LOG} 2>&1; else echo "miniFE::cg_solve ERROR, numerical breakdown!" >> ${LOG} 2>&1; fi; rm -r "${LOG}.tmp"
+			if /bin/grep 'Iterations: 200$' ./miniFE.*.yaml >/dev/null 2>&1; then cat "${LOG}.tmp" >> ${LOG} 2>&1; else echo "miniFE::cg_solve ERROR, numerical breakdown!" >> ${LOG} 2>&1; fi; rm -r "${LOG}.tmp"
 			cat ./miniFE.*.yaml >> ${LOG} 2>&1
 			rm -f ./miniFE.*.yaml
 			echo "Total running time: $(echo "${ENDED} - ${START}" | bc -l)" >> ${LOG} 2>&1

@@ -14,7 +14,7 @@ load_compiler_env "${COMP}" "8"		# no clue but on Fu it needs much bigger stack
 moreMPI="-x FORT_FMT_RECL=400"
 if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	#XXX: my love for fujitsu needs to be endless
-	moreMPI+="${moreMPI} -x FORT90L='-Wl,-T'"
+	moreMPI+=" -x FORT90L='-Wl,-T'"
 fi
 
 source ${ROOTDIR}/conf/${BenchID}.sh
