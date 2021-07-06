@@ -31,7 +31,7 @@ if [ ! -f $ROOTDIR/$BM/ref/ma.x ]; then
 		elif [[ "$1" = *"gem5"* ]]; then
 			sed -i -e 's/^CC .*=.*/CC = fcc/' -e 's/^LD .*=.*/LD = fcc/' -e 's/ -lm / /g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/-qopenmp/-fopenmp/g' -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi#g" ./Makefile
 		elif [[ "$1" = *"llvm12"* ]]; then
-			sed -i -e 's/^CC .*=.*/CC = mpifcc/' -e 's/^LD .*=.*/LD = mpifcc/' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fcommon/g' -e 's/-qopenmp/-fopenmp/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
+			sed -i -e 's/^CC .*=.*/CC = mpifcc/' -e 's/^LD .*=.*/LD = mpifcc/' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fcommon/g' -e 's/-qopenmp/-fopenmp/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 			#XXX need -fcommon , see https://www.bountysource.com/issues/94002370-clang-11-generates-many-multiple-definitions-when-linking-mmg
 		fi
 		make

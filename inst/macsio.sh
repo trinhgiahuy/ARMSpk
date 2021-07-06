@@ -43,7 +43,7 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=fcc CFLAGS="-O2 -Nclang -mcpu=a64fx+sve -ffj-ocl -ffj-no-largepage -fno-lto"
 		elif [[ "$1" = *"llvm12"* ]]; then
-			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=clang CFLAGS="-O2 -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin"
+			./configure --disable-shared --enable-static --prefix=`pwd`/../ CC=clang CFLAGS="-O2 -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full"
 		fi
 		make
 		make install
@@ -87,8 +87,8 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 				FC=frt FCFLAGS="-O2 -KA64FX,SVE -Kocl,nolargepage,nolto" \
 				F77=frt FFLAGS="-O2 -KA64FX,SVE -Kocl,nolargepage,nolto"
 		elif [[ "$1" = *"llvm12"* ]]; then
-			./configure --prefix=`pwd` CC=clang CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
-				CXX=clang++ CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+			./configure --prefix=`pwd` CC=clang CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+				CXX=clang++ CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
 				FC=frt FCFLAGS="-O2 -mcpu=a64fx+sve -mtune=a64fx+sve -Kocl,largepage,lto" \
 				F77=frt FFLAGS="-O2 -mcpu=a64fx+sve -mtune=a64fx+sve -Kocl,largepage,lto"
 		fi
@@ -138,8 +138,8 @@ if [ ! -f $ROOTDIR/$BM/macsio/macsio ]; then
 		sed -i -e 's/ -lmpi / /g' -e 's/libsilo.a/libsilo.a -lmpi/g' ./macsio/CMakeFiles/macsio.dir/link.txt
 	elif [[ "$1" = *"llvm12"* ]]; then
 		cmake -DCMAKE_BUILD_TYPE=release \
-			-DCMAKE_C_COMPILER=`which mpifcc` -DCMAKE_C_FLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
-			-DCMAKE_CXX_COMPILER=`which mpiFCC` -DCMAKE_CXX_FLAGS="-Wno-c++11-narrowing -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+			-DCMAKE_C_COMPILER=`which mpifcc` -DCMAKE_C_FLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+			-DCMAKE_CXX_COMPILER=`which mpiFCC` -DCMAKE_CXX_FLAGS="-Wno-c++11-narrowing -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
 			-DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
 			-DCMAKE_INSTALL_PREFIX=../ -DWITH_JSON-CWX_PREFIX=../../dep/json-cwx -DWITH_SILO_PREFIX=../../dep/silo-4.10.2 ..
 	fi

@@ -53,13 +53,14 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 				F77=mpifrt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --disable-fortran -with-openmp --without-MPI \
-				CC=fcc CFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
-				CXX=FCC CXXFLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
+				CC=fcc CFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
+				CXX=FCC CXXFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
 				F77=frt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto"
 		elif [[ "$1" = *"llvm12"* ]]; then
+			#XXX: doesnt like polly
 			./configure --disable-fortran -with-openmp \
-				CC=mpifcc CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
-				CXX=mpiFCC CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+				CC=mpifcc CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
+				CXX=mpiFCC CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
 				F77=mpifrt FFLAGS="-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
 		fi
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
@@ -81,7 +82,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		elif [[ "$1" = *"gem5"* ]]; then
 			sed -i -e 's/CC = cc/CC = fcc/g' -e 's/OPTFLAGS = -O2\s*$/OPTFLAGS = -O2 -Nclang -mcpu=a64fx+sve -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/^LDOPTIONS =/LDOPTIONS = $(OPTFLAGS) /g' ./Makefile.in
 		elif [[ "$1" = *"llvm12"* ]]; then
-			sed -i -e 's/CC = cc/CC = clang/g' -e "s#OPTFLAGS = -O2\s*$#OPTFLAGS = -O2 -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile.in
+			sed -i -e 's/CC = cc/CC = clang/g' -e "s#OPTFLAGS = -O2\s*$#OPTFLAGS = -O2 -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile.in
 		fi
 		make
 		cd $ROOTDIR/$BM/
@@ -101,7 +102,8 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		elif [[ "$1" = *"gem5"* ]]; then
 			sed -i -e 's/icpc/FCC/g' -e 's/-ipo -xHost/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' ./config/defaults.mk
 		elif [[ "$1" = *"llvm12"* ]]; then
-			sed -i -e 's/icpc/clang++/g' -e "s#-ipo -xHost#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./config/defaults.mk
+			#XXX: doesnt like polly
+			sed -i -e 's/icpc/clang++/g' -e "s#-ipo -xHost#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./config/defaults.mk
 		fi
 		if [[ "$1" = *"intel"* ]]; then
 			make config MFEM_USE_MPI=YES MPICXX=mpicxx MFEM_USE_OPENMP=YES MFEM_THREAD_SAFE=YES MFEM_DEBUG=NO && make -j
@@ -142,7 +144,7 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 		cd -
 		cp serial/laghos .
 	elif [[ "$1" = *"llvm12"* ]]; then
-		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" -e "s#-ipo -xHost#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" -e 's/ -lirc -lsvml//g' ./makefile
+		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" -e "s#-ipo -xHost#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" -e 's/ -lirc -lsvml//g' ./makefile
 		make
 	fi
 	cd $ROOTDIR

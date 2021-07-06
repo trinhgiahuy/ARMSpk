@@ -101,8 +101,8 @@ default:
    FC                   = frt -m64
    OPT_ROOT             = -ffast-math -mcpu=a64fx -mtune=a64fx
    EXTRA_FOPTIMIZE      = -Kfast,ocl,eval_concurrent,largepage,lto
-   EXTRA_COPTIMIZE      = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
-   EXTRA_CXXOPTIMIZE    = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+   EXTRA_COPTIMIZE      = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
+   EXTRA_CXXOPTIMIZE    = -Ofast -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
    LDCFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
    LDCXXFLAGS           = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
    LDFFLAGS             = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)
@@ -207,6 +207,12 @@ intspeed,fpspeed:
    FPORTABILITY         = -convert big_endian -assume byterecl
 %endif
 
+638.imagick_s:
+%if '%{COMP}' eq 'llvm12'
+   EXTRA_COPTIMIZE      = -Ofast -flto=full
+   EXTRA_CXXOPTIMIZE    = -Ofast -flto=full
+%endif
+
 648.exchange2_s:
 %if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
    LDOUT_EXTRA_OPTIONS  = -lfj90i -lfj90fmt_sve -lfj90f -lfj90i -lfjsrcinfo
@@ -257,22 +263,28 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		#XXX: scrub ignores compiler: bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=sde --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=intel --define RESDIR=0 intspeed fpspeed --ignore_error"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=sde --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=intel --define RESDIR=0 intspeed fpspeed intrate fprate"
 	elif [[ "$1" = *"gnu"* ]]; then
 		if [ -n "$FJBLAS" ]; then sed -i -e 's/ -m64//' $ROOTDIR/$BM/config/nedo.cfg; fi
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gnu --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=gnu --define RESDIR=0 intspeed fpspeed intrate fprate"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=fujitrad --define RESDIR=0 intspeed fpspeed intrate fprate"
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=fujiclang --define RESDIR=0 intspeed fpspeed intrate fprate"
 	elif [[ "$1" = *"gem5"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=gem5 --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=gem5 --define RESDIR=0 intspeed fpspeed intrate fprate"
 	elif [[ "$1" = *"llvm12"* ]]; then
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=scrub --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed intrate fprate"
 		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed --ignore_error"
+		bash -c "source ./shrc; runcpu --config=nedo.cfg --action=clean --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed intrate fprate"
 		#bash -c "source ./shrc; runcpu --config=nedo.cfg --action=build --define COMP=llvm12 --define RESDIR=0 intspeed fpspeed ^603.bwaves_s ^621.wrf_s ^627.cam4_s ^628.pop2_s ^638.imagick_s ^654.roms_s" #XXX fix later
 	fi
 	# check that all are static

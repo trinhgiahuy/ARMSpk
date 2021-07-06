@@ -31,7 +31,7 @@ if [ ! -f $ROOTDIR/$BM/omp-stream ]; then
 		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto"
 	elif [[ "$1" = *"llvm12"* ]]; then
 		sed -i -e 's/-fopenmp=libomp/-fopenmp/' ./OpenMP.make
-		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)"
+		make -f OpenMP.make COMPILER=CLANG TARGET=CPU EXTRA_FLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)"
 	fi
 	cd $ROOTDIR
 fi

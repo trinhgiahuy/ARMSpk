@@ -48,7 +48,7 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 	elif [[ "$1" = *"llvm12"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e "s#--linkfortran#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt#g" -e "s#^LIBS.*#LIBS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
+		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' -e "s#--linkfortran#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt#g" -e "s#^LIBS.*#LIBS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	fi
 	make

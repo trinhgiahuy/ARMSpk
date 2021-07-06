@@ -79,7 +79,7 @@ if [ ! -f $ROOTDIR/$BM/bin/les3x.mpi ]; then
 		elif [[ "$1" = *"llvm12"* ]]; then
 			rm ./MakefileConfig.in; ln -s ./MakefileConfig.Kei ./MakefileConfig.in
 			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./MakefileConfig.in
-			sed -i -e "s#-Kfast.*#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./MakefileConfig.in
+			sed -i -e "s#-Kfast.*#-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./MakefileConfig.in
 		fi
 		make
 		if [[ "$1" = *"gnu"* ]]; then

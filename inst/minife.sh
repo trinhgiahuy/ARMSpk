@@ -39,7 +39,7 @@ if [ ! -f $ROOTDIR/$BM/mkl/src/miniFE.x ]; then
 			sed -i -e 's/mpicxx/FCC/g' -e 's/mpicc/fcc/g' -e 's/-DHAVE_MPI/-DHAVE_NO_MPI/g' -e 's/-ipo -x[a-zA-Z0-9\-]*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's#-L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		elif [[ "$1" = *"llvm12"* ]]; then
 			if [[ "$SUB" = *"mkl"* ]] || [[ "$SUB" = *"knl"* ]]; then continue; fi
-			sed -i -e 's/mpicxx/mpiFCC/g' -e 's/mpicc/mpifcc/g' -e 's/-ipo -x[a-zA-Z0-9\-]*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s#-L\${ADVISOR_2018_DIR}/lib64 -littnotify#-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
+			sed -i -e 's/mpicxx/mpiFCC/g' -e 's/mpicc/mpifcc/g' -e 's/-ipo -x[a-zA-Z0-9\-]*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s#-L\${ADVISOR_2018_DIR}/lib64 -littnotify#-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 		fi
 		make
 		if [[ "$1" = *"fujitrad"* ]] || [[ "$1" = *"fujiclang"* ]] || [[ "$1" = *"gem5"* ]] || [[ "$1" = *"llvm12"* ]] || [ -n "$FJBLAS" ]; then cp miniFE.x ../../mkl/src/; fi

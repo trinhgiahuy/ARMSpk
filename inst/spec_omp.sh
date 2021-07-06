@@ -113,8 +113,8 @@ FC             = frt
 CC             = clang
 CXX            = clang++
 FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,largepage,lto
-COPTIMIZE      = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
-CXXOPTIMIZE    = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin
+COPTIMIZE      = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
+CXXOPTIMIZE    = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
 OS_LIBS        = \${BLINK}
 %endif
 
@@ -175,7 +175,7 @@ FPORTABILITY   = -mcmodel=large
 CPORTABILITY   = -std=c99
 
 372.smithwa=default=default=default:
-%if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
+%if '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5' || '%{COMP}' eq 'llvm12'
 CPORTABILITY   = -fsigned-char
 %endif
 EOF
@@ -238,23 +238,29 @@ if [ ! -f $ROOTDIR/$BM/bin/runcpu ]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=intel --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=intel --define RESDIR=0 gross --ignore_error"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=sde --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=intel --define RESDIR=0 gross"
 	elif [[ "$1" = *"gnu"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=gnu --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gnu --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=gnu --define RESDIR=0 gross"
 	elif [[ "$1" = *"fujitrad"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fujitrad --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujitrad --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=fujitrad --define RESDIR=0 gross"
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=fujiclang --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=fujiclang --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=fujiclang --define RESDIR=0 gross"
 	elif [[ "$1" = *"gem5"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=gem5 --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=gem5 --define RESDIR=0 gross"
 		#XXX: peach fccpx/static doesnt support mcmodel
 		#bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=gem5 --define HOST=`hostname -s` --define RESDIR=0 gross ^bt331 ^swim"
 	elif [[ "$1" = *"llvm12"* ]]; then
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=scrub --define COMP=llvm12 --define RESDIR=0 gross"
 		bash -c "source ./shrc; runspec --config=nedo.cfg --action=build --size=train --define COMP=llvm12 --define RESDIR=0 gross --ignore_error"
+		bash -c "source ./shrc; runspec --config=nedo.cfg --action=clean --define COMP=llvm12 --define RESDIR=0 gross"
 	fi
 	# check that most/all are static
 	find $ROOTDIR/$BM/benchspec/ -path '*/build_peak_*.0000/*' -executable -type f -exec echo {} \; -exec ldd {} \;

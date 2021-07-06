@@ -79,7 +79,7 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./sfmt/Makefile_intel
-		sed -i -e 's/-Kfast.*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' ./sfmt/Makefile_intel
+		sed -i -e 's/-Kfast.*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' ./sfmt/Makefile_intel
 	fi
 	make intel
 	cd $ROOTDIR

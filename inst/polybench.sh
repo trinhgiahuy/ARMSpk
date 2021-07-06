@@ -40,7 +40,7 @@ if ! [ $(find $ROOTDIR/$BM/linear-algebra/blas/gemm -executable -type f | wc -l)
 		COMPILE="armclang -Ofast -ffast-math -march=armv8.2-a+sve -mcpu=a64fx -mtune=a64fx -flto"
 		LINK="-lm"
 	elif [[ "$1" = *"llvm12"* ]]; then
-		COMPILE="clang -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin"
+		COMPILE="clang -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full"
 		LINK="-fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)"
 	fi
 	for BMconf in ${BINARYS}; do

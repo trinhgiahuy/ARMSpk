@@ -28,7 +28,7 @@ if [ ! -f $ROOTDIR/$BM/src/XSBench ]; then
 	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -e 's/^MPI.*= yes/MPI = no/' -e 's/= intel/= gnu/' -e 's/CC = gcc/CC = fcc/' -e 's/-flto/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 	elif [[ "$1" = *"llvm12"* ]]; then
-		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
+		sed -i -e 's/= intel/= gnu/' -e 's/CC = mpicc/CC = mpifcc/' -e 's/-flto/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/' -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 	fi
 	make
 	cd $ROOTDIR

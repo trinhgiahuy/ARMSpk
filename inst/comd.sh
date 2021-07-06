@@ -35,7 +35,7 @@ if [ ! -f $ROOTDIR/$BM/bin/CoMD-openmp-mpi ]; then
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./Makefile
 		sed -i -e '/.*include.*stdio\.h/i #ifndef _POSIX_C_SOURCE\n#define _POSIX_C_SOURCE 199309L\n#endif' -e '/.*include.*time\.h/i #include <sys\/types.h>\n#include <signal.h>' -e '/.*include.*mpi\.h/d' $ROOTDIR/$BM/src-openmp/CoMD.c
 	elif [[ "$1" = *"llvm12"* ]]; then
-		sed -i -e 's/^CC =.*/CC = mpifcc/' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=thin/g' ./Makefile
+		sed -i -e 's/^CC =.*/CC = mpifcc/' -e 's/-ipo -xHost/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' ./Makefile
 		sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 	fi
 	make
