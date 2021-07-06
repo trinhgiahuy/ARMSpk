@@ -12,10 +12,6 @@ maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
 load_compiler_env "${COMP}"
 
 SPECCMD="runcpu --config=nedo.cfg --nobuild --action=run --noreportable --use_submit_for_speed"
-if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	#XXX: my love for fujitsu needs to be endless
-	SPECCMD="export FORT90L='-Wl,-T'; ${SPECCMD}"
-fi
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOGDIR="${ROOTDIR}/log/$(hostname -s)/testrun/${BenchID}"
@@ -25,6 +21,9 @@ move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 for BENCH in ${BINARY}; do
 	BM="$(echo ${BENCH} | cut -d '|' -f1)"
 	SIZE="$(echo ${BENCH} | cut -d '|' -f2)"
+	#XXX: my love for fujitsu needs to be endless
+	if [[ "${BM}" = *".cam4_"* ]] || [[ "${BM}" = *".pop2_"* ]]; then SPECCMD="export FORT90L='-Wl,-T'; ${SPEC0CMD}"
+	else                                                              SPECCMD="${SPEC0CMD}"; fi
 	LOG="${LOGDIR}/${BM}.log"
 	for TEST in ${TESTCONF}; do
 		NumMPI="$(echo ${TEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
