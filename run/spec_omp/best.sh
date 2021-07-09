@@ -9,13 +9,9 @@ source ${ROOTDIR}/conf/host.cfg
 source ${ROOTDIR}/conf/env.cfg
 get_comp_env_name "${1}"
 maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
-load_compiler_env "${COMP}"
+load_compiler_env "${COMP}" "-1"
 
 SPECCMD="runspec --config=nedo.cfg --nobuild --action=run --noreportable"
-#if [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-#	#XXX: my love for fujitsu needs to be endless
-#	SPECCMD="export FORT90L='-Wl,-T'; ${SPECCMD}"
-#fi
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOGDIR="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}"
@@ -25,10 +21,12 @@ move_to_scratch_area "${ROOTDIR}" "${APPDIR}"
 for BENCH in ${BINARY}; do
 	BM="$(echo ${BENCH} | cut -d '|' -f1)"
 	SIZE="$(echo ${BENCH} | cut -d '|' -f2)"
+	SnowflakeNumOMP="$(echo ${BENCH} | cut -d '|' -f3)"
 	LOG="${LOGDIR}/${BM}.log"
 	for BEST in ${BESTCONF}; do
 		NumMPI="$(echo ${BEST} | cut -d '|' -f1)"; if skip_conf "${NumMPI}"; then continue; fi
 		NumOMP="$(echo ${BEST} | cut -d '|' -f2)"
+		if [ -n "${SnowflakeNumOMP}" ]; then NumOMP="${SnowflakeNumOMP}"; fi
 		echo -e "=== runing ${BENCH} ===\nsource ./shrc; ${SPECCMD} --iterations=${NumRunsBEST} --size=${SIZE} --threads=${NumOMP} --define COMP=${COMP} --define RESDIR=0 ${BM}" >> ${LOG} 2>&1
 		START="$(date +%s.%N)"
 		bash -c "source ./shrc; ${SPECCMD} --iterations=${NumRunsBEST} --size=${SIZE} --threads=${NumOMP} --define COMP=${COMP} --define RESDIR=0 ${BM}" >> ${LOG} 2>&1

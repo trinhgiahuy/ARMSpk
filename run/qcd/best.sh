@@ -9,7 +9,7 @@ source ${ROOTDIR}/conf/host.cfg
 source ${ROOTDIR}/conf/env.cfg
 get_comp_env_name "${1}"
 maybe_submit_job "${COMP}" "${SELF}" "${ROOTDIR}/conf/${BenchID}.sh"
-load_compiler_env "${COMP}"
+load_compiler_env "${COMP}" "-1"
 
 source ${ROOTDIR}/conf/${BenchID}.sh
 LOG="${ROOTDIR}/log/$(hostname -s)/bestrun/${BenchID}.log"
