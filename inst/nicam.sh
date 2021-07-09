@@ -58,13 +58,13 @@ if [ ! -f $ROOTDIR/$BM/omp1/bin/driver-dc ]; then
 			cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}
 			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.${NICAM_SYS}
 			sed -i -E "s/(parallel_iteration|instance)=([0-9]+)/\1=${NumOMP}/g" ../sysdep/Makedef.${NICAM_SYS}
-			sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' ../sysdep/Makedef.${NICAM_SYS}
+			sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' ../sysdep/Makedef.${NICAM_SYS}
 		elif [[ "$1" = *"llvm12"* ]]; then
 			sed -i -e 's# -I${ADVISOR_2018_DIR}/include##g' -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./Makefile
 			cp ../sysdep/Makedef.FX10 ../sysdep/Makedef.${NICAM_SYS}
 			sed -i -E 's/(fcc|FCC|frt)px/\1/g' ../sysdep/Makedef.${NICAM_SYS}
 			sed -i -E "s/(parallel_iteration|instance)=([0-9]+)/\1=${NumOMP}/g" ../sysdep/Makedef.${NICAM_SYS}
-			sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' ../sysdep/Makedef.${NICAM_SYS}
+			sed -i -e 's/^PERF_MONIT.*/PERF_MONIT = -Ntl_notrt -U_FIPP_ -U_FAPP_/g' -e 's/FAST.*= -K/FAST = -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto -K/g' -e 's/^CFLAGS =.*/CFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' ../sysdep/Makedef.${NICAM_SYS}
 		fi
 		# need this because its also used in runs, so overwrite with compiler specifics instead of changing them
 		make ENABLE_OPENMP=1 -j

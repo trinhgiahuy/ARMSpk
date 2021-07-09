@@ -94,7 +94,7 @@ sw_compiler    = FUJITSU Software Technical Computing Suite
 FC             = frt
 CC             = fcc
 CXX            = FCC
-FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,largepage,lto
+FOPTIMIZE      = \${BOPTS} -Kfast,openmp,ocl,eval_concurrent,largepage,lto
 COPTIMIZE      = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
 CXXOPTIMIZE    = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-largepage -flto
 OS_LIBS        = \${BLINK}
@@ -103,7 +103,7 @@ sw_compiler    = FUJITSU Software Technical Computing Suite
 FC             = frt
 CC             = fcc
 CXX            = FCC
-FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,nolargepage,nolto
+FOPTIMIZE      = \${BOPTS} -Kfast,openmp,ocl,eval_concurrent,nolargepage,nolto
 COPTIMIZE      = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
 CXXOPTIMIZE    = \${BOPTS} -Ofast -ffj-ocl -ffj-eval-concurrent -ffj-no-largepage -fno-lto
 OS_LIBS        = \${BLINK}
@@ -112,7 +112,7 @@ sw_compiler    = LLVM Compiler Infrastructure release 12.0.0
 FC             = frt
 CC             = clang
 CXX            = clang++
-FOPTIMIZE      = \${BOPTS} -Kfast,ocl,eval_concurrent,largepage,lto
+FOPTIMIZE      = \${BOPTS} -Kfast,openmp,ocl,eval_concurrent,largepage,lto
 COPTIMIZE      = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
 CXXOPTIMIZE    = \${BOPTS} -Ofast -ffast-math -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full
 OS_LIBS        = \${BLINK}

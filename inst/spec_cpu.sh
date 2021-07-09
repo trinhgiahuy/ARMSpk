@@ -122,18 +122,26 @@ intspeed:
 
 fpspeed:
    EXTRA_OPTIMIZE       = -qopenmp -DSPEC_OPENMP
-%elif '%{COMP}' eq 'gnu' || '%{COMP}' eq 'llvm12'
+%elif '%{COMP}' eq 'gnu'
 intspeed:
    EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing
 
 fpspeed:
    EXTRA_OPTIMIZE       = -fopenmp -DSPEC_OPENMP
-%else
+%elif '%{COMP}' eq 'fujitrad' || '%{COMP}' eq 'fujiclang' || '%{COMP}' eq 'gem5'
 intspeed:
-   EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing -Knofp_relaxed
+   EXTRA_COPTIMIZE      = -fopenmp -Kopenmp -DSPEC_OPENMP -fno-strict-aliasing -Knofp_relaxed
+
+fpspeed:
+   EXTRA_OPTIMIZE       = -fopenmp -Kopenmp -DSPEC_OPENMP
+%elif '%{COMP}' eq 'llvm12'
+intspeed:
+   EXTRA_COPTIMIZE      = -fopenmp -DSPEC_OPENMP -fno-strict-aliasing
+   EXTRA_FPORTABILITY   = -Kopenmp -DSPEC_OPENMP
 
 fpspeed:
    EXTRA_OPTIMIZE       = -fopenmp -DSPEC_OPENMP
+   EXTRA_FPORTABILITY   = -Kopenmp -DSPEC_OPENMP
 %endif
 
 intspeed,fpspeed:

@@ -44,19 +44,19 @@ if [ ! -f $ROOTDIR/$BM/bin/rimp2.exe ]; then
 		cp platforms/config_mine.K config_mine
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
-		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/INC) -Kfast/INC) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/INC) -Kfast/INC) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
 	elif [[ "$1" = *"gem5"* ]]; then
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
-		sed -i -e "s# -lmpi_f90 -lmpi_f77# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/INC) -Kfast/INC) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kfast#-I$ROOTDIR/dep/mpistub/include/mpistub -Kfast#g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77# -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi -lmpifort#g" -e 's/INC) -Kfast/INC) -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,nolargepage,nolto/g' -e "s#-Kfast#-I$ROOTDIR/dep/mpistub/include/mpistub -Kfast#g" ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" -e 's# -L${ADVISOR_2018_DIR}/lib64 -littnotify##g' ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include# -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine
 	elif [[ "$1" = *"llvm12"* ]]; then
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
-		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/INC) -Kfast/INC) -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
+		sed -i -e "s# -lmpi_f90 -lmpi_f77##g" -e 's/INC) -Kfast/INC) -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' -e 's/INCMOD) -Kfast/INCMOD) -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto/g' ./config/linux64_mpifrtpx_omp_k_fx10.makeconfig.in
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" -e "s# -L\${ADVISOR_2018_DIR}/lib64 -littnotify# -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./src/mp2/GNUmakefile
 		sed -i -e "s# -I\${ADVISOR_2018_DIR}/include##g" ./src/util_lib/GNUmakefile
 		cp platforms/config_mine.K config_mine

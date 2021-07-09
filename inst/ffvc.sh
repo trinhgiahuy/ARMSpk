@@ -23,7 +23,7 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 		rm make_setting; ln -s make_setting.gcc make_setting
 		if [ -n "$FJMPI" ]; then sed -i -e 's/^CXX .*=.*/CXX = mpiFCC/g' -e 's/^F90 .*=.*/F90 = mpifrt/g' ./make_setting; fi
 		#XXX: RAGE.... segfaults w/o -g, i give up, this is getting beyond stupid
-		sed -i -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -g -march=native -fallow-argument-mismatch -fallow-invalid-boz -fno-lto/g' ./make_setting
+		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/= -lgfortran/= /g' -e 's/-O3/-O3 -march=native -fallow-argument-mismatch -fallow-invalid-boz -fno-lto/g' ./make_setting
 		if [ -z "${MAYBESTATIC}" ]; then
 			sed -i -e "s/\$(LIBS).*/\$(LIBS) -lgfortran/g" ./FFV/Makefile
 		else
@@ -38,17 +38,17 @@ if [ ! -f $ROOTDIR/$BM/bin/ffvc_mini ]; then
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./make_setting
+		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto/g' ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"gem5"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
+		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/-Cpp -Kfast/-Cpp -Nclang -Ofast -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,nolargepage,nolto/g' -e 's/= mpi/= /g' -e "s#^LIBS.*#LIBS = -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi\nCXXFLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub\nF90FLAGS += -I$ROOTDIR/dep/mpistub/include/mpistub#g" ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	elif [[ "$1" = *"llvm12"* ]]; then
 		rm make_setting; ln -s make_setting.fx10 make_setting
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./make_setting
-		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' -e "s#--linkfortran#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt#g" -e "s#^LIBS.*#LIBS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
+		sed -i -e '/= -DPROF_MAPROF$/d' -e 's/^CXXFLAGS.*/CXXFLAGS = -Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' -e 's/-Cpp -Kfast/-Cpp -Kfast,openmp,ocl,largepage/g' -e "s#--linkfortran#-L$(readlink -f $(dirname $(which mpifcc))/../lib64) $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjhpctag.o $(readlink -f $(dirname $(which mpifcc))/../lib64)/fjlang08.o -lfj90i -lfj90fmt_sve -lfj90f -lfjsrcinfo -lfj90rt#g" -e "s#^LIBS.*#LIBS = -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)#g" ./make_setting
 		sed -i -e 's/#define message()/#define fuckthismessage()/' ./FB/mydebug.h
 	fi
 	make

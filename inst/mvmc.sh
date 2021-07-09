@@ -39,17 +39,17 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./pfapack/Makefile_intel
-		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./pfapack/Makefile_intel
+		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage,lto/g' ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./sfmt/Makefile_intel
 		sed -i -e 's/-Kfast/-Kfast,openmp,ocl,largepage/g' ./sfmt/Makefile_intel
 	elif [[ "$1" = *"fujiclang"* ]]; then
 		cp ./Makefile_kei ./Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./Makefile_intel
-		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' -e '/^CFLAGS =/a FFLAGS = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto' -e 's/CFLAGS) $(LIB/FFLAGS) $(LIB/g' ./Makefile_intel
+		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' -e '/^CFLAGS =/a FFLAGS = -Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto' -e 's#CFLAGS) $(LIB#FFLAGS) $(LIB#g' ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./pfapack/Makefile_intel
-		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./pfapack/Makefile_intel
+		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto/g' ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./sfmt/Makefile_intel
 		sed -i -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto/g' ./sfmt/Makefile_intel
@@ -63,20 +63,20 @@ if [ ! -f $ROOTDIR/$BM/src/vmc.out ] || [ "x`ls -s $ROOTDIR/$BM/src/vmc.out | aw
 		cd $ROOTDIR/$BM/src
 		cp ./Makefile_kei ./Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./Makefile_intel
-		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/ = mpi/ = /g' -e "s#^CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" -e '/^CFLAGS =/a FFLAGS = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto' -e 's/CFLAGS) $(LIB/FFLAGS) $(LIB/g' ./Makefile_intel
+		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' -e 's/ = mpi/ = /g' -e "s#^CFLAGS = #CFLAGS = -I$ROOTDIR/dep/mpistub/include/mpistub #g" -e "s#^LIB = #LIB = $ROOTDIR/$BM/src/scalapack-2.0.2/libscalapack.a -Wl,-rpath=$ROOTDIR/dep/mpistub/lib/mpistub -L$ROOTDIR/dep/mpistub/lib/mpistub -lmpi #g" -e '/^CFLAGS =/a FFLAGS = -Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,nolargepage,nolto' -e 's#CFLAGS) $(LIB#FFLAGS) $(LIB#g' ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./pfapack/Makefile_intel
-		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto/g' ./pfapack/Makefile_intel
+		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,nolargepage,nolto/g' ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./sfmt/Makefile_intel
 		sed -i -e 's/-Kfast.*/-Nclang -Ofast -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto/g' ./sfmt/Makefile_intel
 	elif [[ "$1" = *"llvm12"* ]]; then
 		cp ./Makefile_kei ./Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./Makefile_intel
-		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' -e 's/^REPORT.*/REPORT=/g' -e '/^CFLAGS =/a FFLAGS = -Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto' -e 's/CFLAGS) $(LIB/FFLAGS) $(LIB/g' ./Makefile_intel
+		sed -i -e 's/Makefile_kei/Makefile_intel/g' -e 's/-Kfast.*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -fno-lto/g' -e 's/^REPORT.*/REPORT=/g' -e '/^CFLAGS =/a FFLAGS = -mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto' -e 's/CFLAGS) $(LIB/FFLAGS) $(LIB/g' ./Makefile_intel
 		cp ./pfapack/Makefile_kei ./pfapack/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./pfapack/Makefile_intel
-		sed -i -e 's/-Kfast/-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto/g' ./pfapack/Makefile_intel
+		sed -i -e 's/-Kfast/-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto/g' ./pfapack/Makefile_intel
 		cp ./sfmt/Makefile_kei ./sfmt/Makefile_intel
 		sed -i -E 's/(fcc|FCC|frt)px/\1/g' ./sfmt/Makefile_intel
 		sed -i -e 's/-Kfast.*/-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -mllvm -polly -mllvm -polly-vectorizer=polly -flto=full/g' ./sfmt/Makefile_intel

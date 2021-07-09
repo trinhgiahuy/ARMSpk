@@ -50,18 +50,18 @@ if [ ! -f $ROOTDIR/$BM/laghos ]; then
 			./configure --disable-fortran -with-openmp \
 				CC=mpifcc CFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto" \
 				CXX=mpiFCC CXXFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-largepage -fno-lto" \
-				F77=mpifrt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
+				F77=mpifrt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto"
 		elif [[ "$1" = *"gem5"* ]]; then
 			./configure --disable-fortran -with-openmp --without-MPI \
 				CC=fcc CFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
 				CXX=FCC CXXFLAGS="-Nclang -O3 -mcpu=a64fx+sve -fopenmp -ffj-ocl -ffj-no-largepage -fno-lto" \
-				F77=frt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kfast,ocl,nolargepage,nolto"
+				F77=frt FFLAGS="-Nclang -mcpu=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,nolargepage,nolto"
 		elif [[ "$1" = *"llvm12"* ]]; then
 			#XXX: doesnt like polly
 			./configure --disable-fortran -with-openmp \
 				CC=mpifcc CFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
 				CXX=mpiFCC CXXFLAGS="-Ofast -ffast-math -mcpu=a64fx -mtune=a64fx -fopenmp -flto=full -fuse-ld=lld -L$(readlink -f $(dirname $(which mpifcc))/../lib64) -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)" \
-				F77=mpifrt FFLAGS="-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kfast,ocl,largepage,lto"
+				F77=mpifrt FFLAGS="-mcpu=a64fx+sve -mtune=a64fx+sve -fopenmp -Kopenmp -Kfast,ocl,largepage,lto"
 		fi
 		sed -i -e 's/ -openmp/ -fopenmp/g' ./config/Makefile.config
 		make -j
