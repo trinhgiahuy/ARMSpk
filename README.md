@@ -13,7 +13,7 @@ BSD-3-Clause
 - check ./inst/_init.sh for missing dependencies
 
 ### Compile each benchmark:
-- for llvm12 without polly do `cd inst; for x in `ls *sh`; do sed -i -e 's/flto=full/flto=thin/g' -e 's/-mllvm -polly -mllvm -polly-vectorizer=polly//' $x; done; cd -`
+- for llvm12 without polly do ``cd inst; for x in `ls *sh`; do sed -i -e 's/flto=full/flto=thin/g' -e 's/-mllvm -polly -mllvm -polly-vectorizer=polly//' $x; done; cd -``
 - execute `./inst/*.sh [fujitrad | fujiclang | llvm12 | gnu]` for all files and the desired compiler (except those starting with underscore)
 - note: some benchmarks might need external and/or download additional files which are not part of this repo due to license contraints
 - note: a newer version of RIKEN's micro kernels can be accessed here: https://github.com/RIKEN-RCCS/fs2020-tapp-kernels/tree/main/tapp-kernels ; please integrate it yourself if needed
