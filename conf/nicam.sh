@@ -6,7 +6,7 @@ export NICAM_SYS=Linux64-intel-impi
 export INPUT="./gl05rl00z40pe10"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="2m"
+export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -26,6 +26,12 @@ elif [ -n "${IKNMHOST}" ]; then
 	export BESTCONF="10|20"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="10|1 10|2 10|3 10|4 10|5 10|6"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="10|4"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="10|4"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="10|4"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="10|4"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF=""	#no single rank option
+	export NumRunsGEM5=1
 fi

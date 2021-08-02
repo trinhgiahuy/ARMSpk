@@ -7,7 +7,7 @@ export MAXNDPP=1024  #increase by ~3x to support 1k MPI threads; $((2*2*2*2*2*3*
 export INPUT="--part_size 20000 --units_prefix_system decimal --num_dumps NDPP"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="2m"
+export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -27,6 +27,12 @@ elif [ -n "${IKNMHOST}" ]; then
 	export BESTCONF="64|1"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|1 4|1 6|1 12|1 24|1 36|1 48|1"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="48|1"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="48|1"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="48|1"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="48|1"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|1"
+	export NumRunsGEM5=1
 fi

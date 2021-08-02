@@ -43,9 +43,11 @@ stencils/seidel-2d/seidel-2d|LARGE"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="2m"
+export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 export TESTCONF="1|1"
 export BESTCONF="1|1"
+export GEM5CONF="1|1"
+	export NumRunsGEM5=1

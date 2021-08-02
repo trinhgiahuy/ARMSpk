@@ -7,7 +7,7 @@ export HPLNS=$((192*192))
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="5m"
+export MAXTIME="50m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -58,7 +58,14 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 12|1|4|3 12|2|4|3 12|3|4|3 12|4|4|3
 			 24|1|6|4 24|2|6|4
 			 48|1|8|6"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="48|1|8|6"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="48|1|8|6"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="48|1|8|6"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="48|1|8|6"
+	fi
+	export HPLNB="192"
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|48|1|1"
+	export NumRunsGEM5=1
 	export HPLNB="192"
 fi

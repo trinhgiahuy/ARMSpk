@@ -5,7 +5,7 @@ export BINARY="../src/vmc.out"
 export INPUT="./multiDir.def"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -60,6 +60,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 24|1 24|2
 			 32|1 32|2
 			 48|1 48|2"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="24|2"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="24|2"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="48|1"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="48|1"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|48"
+	export NumRunsGEM5=1
 fi

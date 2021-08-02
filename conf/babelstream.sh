@@ -5,14 +5,14 @@ export BINARYS="./omp-stream_2 ./omp-stream_8" #./omp-stream_14"
 export INPUT="-s SIZE -n 10"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="2m"
+export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
 if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
-	export MAXTIME="10m"
+	export MAXTIME="100m"
 	export TESTCONF="1|2 1|6 1|12 1|18 1|24"
 	export BESTCONF="1|12"
 	export SCALCONF="1|256 1|1024"
@@ -26,6 +26,12 @@ elif [ -n "${IKNMHOST}" ]; then
 	export BESTCONF="1|144"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|32 1|36 1|48"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="1|36"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="1|36"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="1|24"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="1|32"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|36"
+	export NumRunsGEM5=1
 fi

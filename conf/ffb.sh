@@ -6,7 +6,7 @@ export MAXDCZ=$((50*50*50))
 export INPUT="PX PY PZ DCZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -59,6 +59,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 24|1|4|3|2 24|2|4|3|2
 			 32|1|4|4|2 32|2|4|4|2
 			 48|1|4|4|3"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="4|1|2|2|1"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="48|1|4|4|3"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="48|1|4|4|3"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="48|1|4|4|3"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|2|1|1|1"
+	export NumRunsGEM5=1
 fi

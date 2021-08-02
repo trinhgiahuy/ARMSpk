@@ -7,7 +7,7 @@ export INPUTMPI="./bcsstk30.mtx MM"
 export INPUTOMP="./bcsstk30.mtx 16 OMPNT MM"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -48,7 +48,7 @@ elif [ -n "${IKNMHOST}" ]; then
 			 288|1"
 	export BESTCONF="1|128"
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
-	export MAXTIME="11m"
+	export MAXTIME="110m"
 	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|36 1|48
 			 4|1
 			 6|1
@@ -57,6 +57,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 24|1
 			 32|1
 			 48|1"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="32|1"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="32|1"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="1|48"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="1|48"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|1"
+	export NumRunsGEM5=1
 fi

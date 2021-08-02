@@ -1,18 +1,16 @@
-PAPER = precision
+PAPER = a64fxCvC
 TEX   = $(wildcard *.tex)
-BIB   = 99-$(PAPER).bib
+BIB   = $(PAPER).bib
 FIG   = $(wildcard figures/*.pdf figures/*.png graphs/*.pdf graphs/*.png)
 
 .PHONY: all clean
 
 $(PAPER).pdf: $(TEX) $(BIB) $(FIG) cleanall
-	latex $(PAPER)
-	latex $(PAPER)
+	pdflatex $(PAPER)
+	pdflatex $(PAPER)
 	bibtex $(PAPER)
-	latex $(PAPER)
-	latex $(PAPER)
-	dvipdfmx $(PAPER).dvi
-	rm $(PAPER).dvi
+	pdflatex $(PAPER)
+	pdflatex $(PAPER)
 
 clean:
 	rm -f *.ilg *.aux *.log *.dvi *.idx *.toc *.lof *.lot *.soc $(PAPER).out

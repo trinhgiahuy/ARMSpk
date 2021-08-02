@@ -26,7 +26,7 @@ bin/workloads/websearch/pagerank/spark/run.sh"
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="100m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -47,5 +47,7 @@ elif [ -n "${IKNMHOST}" ]; then
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|1"
 	export BESTCONF="1|1"
-	export SCALCONF=""
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|1"
+	export NumRunsGEM5=1
 fi

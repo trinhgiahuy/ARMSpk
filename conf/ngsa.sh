@@ -6,14 +6,14 @@ export INPUTDIR="./ngsa_mini_input"
 export INPUT="$INPUTDIR/bwa_db/reference.fa $INPUTDIR/seq_contig.md $INPUTDIR/reference.fa $INPUTDIR/reference.fa.fai $INPUTDIR/00-read-rank"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="14m"
+export MAXTIME="140m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
 if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
-	export MAXTIME="10m"
+	export MAXTIME="100m"
 	export TESTCONF="1|6 1|12 1|24 1|32 1|48 1|96
 			 2|6 2|12 2|24
 			 4|1 4|2 4|4 4|6 4|12
@@ -53,6 +53,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 32|1 32|2
 			 48|1 48|2
 			 96|1"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF=""
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF=""
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF=""
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF=""
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF=""
+	export NumRunsGEM5=1
 fi

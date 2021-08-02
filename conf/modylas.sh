@@ -5,7 +5,7 @@ export BINARY="../../src/modylas_mini"
 export INPUT="./wat222"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -40,6 +40,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="8|1 8|2 8|3 8|4 8|6
 			 16|1 16|2 16|3 16|4
 			 32|1 32|2"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="16|3"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="16|3"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="16|3"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="16|3"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF=""	#no single rank option
+	export NumRunsGEM5=1
 fi

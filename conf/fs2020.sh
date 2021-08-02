@@ -26,7 +26,7 @@ export BINARYS="01.MD.LOOP.makino170209_Ccode.tune03_7loop_oclunroll.170316/main
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="2m"
+export MAXTIME="20m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -47,5 +47,7 @@ elif [ -n "${IKNMHOST}" ]; then
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|1 1|4 1|8 1|12 1|16 1|24 1|32 1|36 1|48"
 	export BESTCONF="1|12"
-	export SCALCONF=""
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|12"
+	export NumRunsGEM5=1
 fi

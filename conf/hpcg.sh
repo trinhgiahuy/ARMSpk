@@ -7,7 +7,7 @@ export MAXXYZ=$((2*2*2*3*5))
 export INPUT="--nx=NX --ny=NY --nz=NZ"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="100m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -55,6 +55,12 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 12|1 12|2 12|3 12|4
 			 24|1 24|2
 			 48|1"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="48|1"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="48|1"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="48|1"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="48|1"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|16"
+	export NumRunsGEM5=1
 fi

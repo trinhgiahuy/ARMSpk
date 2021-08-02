@@ -7,14 +7,14 @@ export PATH=$ROOTDIR/dep/anaconda2/bin:$PATH
 export MKL_THREADING_LAYER=GNU
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="10m"
+export MAXTIME="100m"
 export RUNSDE="no"
 export RUNPCM="no"
 export RUNVTUNE="no"
 
 if [ -n "${XEONHOST}" ]; then
 	# on "normal" Xeon
-	export MAXTIME="10m"
+	export MAXTIME="100m"
 	export TESTCONF="1|2 1|6 1|12 1|24 1|48"
 	export BESTCONF="1|12"
 elif [ -n "${IKNLHOST}" ]; then
@@ -28,4 +28,7 @@ elif [ -n "${IKNMHOST}" ]; then
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|32 1|36 1|48"
 	export BESTCONF=""
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF=""
+	export NumRunsGEM5=1
 fi

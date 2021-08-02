@@ -5,7 +5,7 @@ export BINARYS="./mkl/src/miniFE.x ./openmp-opt-knl/src/miniFE.x ./openmp-opt/sr
 export INPUT="-nx 128 -ny 128 -nz 128"
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="1m"
+export MAXTIME="10m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -64,6 +64,13 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 			 32|1 32|2
 			 48|1"
 	export BBINARY="./mkl/src/miniFE.x"
-	export BESTCONF=""
-	export SCALCONF=""
+	if   [[ "$1" = *"fujitrad"* ]];  then export BESTCONF="4|12"
+	elif [[ "$1" = *"fujiclang"* ]]; then export BESTCONF="4|12"
+	elif [[ "$1" = *"llvm12"* ]];    then export BESTCONF="4|12"
+	elif [[ "$1" = *"gnu"* ]];       then export BESTCONF="4|12"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export BBINARY="./mkl/src/miniFE.x"
+	export GEM5CONF="1|24"
+	export NumRunsGEM5=1
 fi

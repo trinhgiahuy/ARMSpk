@@ -25,7 +25,7 @@ export BINARY="600.perlbench_s|train
 export INPUT=""
 export NumRunsTEST=3
 export NumRunsBEST=10
-export MAXTIME="60m"
+export MAXTIME="600m"
 export RUNSDE="yes"
 export RUNPCM="no"
 export RUNVTUNE="no"
@@ -44,5 +44,18 @@ elif [ -n "${IKNMHOST}" ]; then
 	export BESTCONF=""
 elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 	export TESTCONF="1|4 1|8 1|12 1|16 1|24 1|32 1|36 1|48"
-	export BESTCONF=""
+	export BESTCONF="1|48"
+	if   [[ "$1" = *"fujitrad"* ]];  then
+		export BINARY="$(echo $BINARY | sed -E 's/(bwaves_s|wrf_s|pop2_s)([a-z|]+)/\1\2|32/g' | sed -E 's/(imagick_s)([a-z|]+)/\1\2|8/g')"
+	elif [[ "$1" = *"fujiclang"* ]]; then
+		export BINARY="$(echo $BINARY | sed -E 's/(bwaves_s|wrf_s|pop2_s)([a-z|]+)/\1\2|32/g' | sed -E 's/(imagick_s)([a-z|]+)/\1\2|8/g')"
+	elif [[ "$1" = *"llvm12"* ]];    then
+		export BINARY="$(echo $BINARY | sed -E 's/(bwaves_s|wrf_s|pop2_s|fotonik3d_s)([a-z|]+)/\1\2|32/g' | sed -E 's/(imagick_s)([a-z|]+)/\1\2|8/g')"
+	elif [[ "$1" = *"gnu"* ]];       then
+		export BINARY="$(echo $BINARY | sed -E 's/(bwaves_s|wrf_s|cam4_s|pop2_s|fotonik3d_s)([a-z|]+)/\1\2|32/g' | sed -E 's/(cactuBSSN_s|lbm_s)([a-z|]+)/\1\2|36/g' | sed -E 's/(imagick_s)([a-z|]+)/\1\2|8/g')"
+	fi
+elif [ -n "${GEM5HOST}" ]; then
+	export GEM5CONF="1|48"
+	export NumRunsGEM5=1
+	export BINARY="$(echo $BINARY | sed -E 's/(bwaves_s|wrf_s|pop2_s)([a-z|]+)/\1\2|32/g' | sed -E 's/(imagick_s)([a-z|]+)/\1\2|8/g')"
 fi
