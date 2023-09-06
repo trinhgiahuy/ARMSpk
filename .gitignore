@@ -45,3 +45,4 @@
 *.sh.*.out.*
 *.sh.*.err
 *.sh.*.err.*
+/AMG/
