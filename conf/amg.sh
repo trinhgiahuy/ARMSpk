@@ -61,4 +61,17 @@ elif [ -n "${FUJIHOST}" ] || [ -n "${RFX7HOST}" ]; then
 elif [ -n "${GEM5HOST}" ]; then
 	export GEM5CONF="1|36|1|1|1"
 	export NumRunsGEM5=1
+#TODO: Add ARM Host BESTCONF and TESTCONF here
+elif [ -n "${ARMHOST}" ]; then
+	# on one of the arm host
+  echo "Exporting TESTCONF and BESTCONF for ARM host"
+	# export TESTCONF="1|64|1|1|1 1|128|1|1|1 1|192|1|1|1 1|256|1|1|1
+			 # 4|16|2|2|1 4|32|2|2|1 4|48|2|2|1 4|64|2|2|1
+			 # 16|4|4|2|2 16|8|4|2|2 16|12|4|2|2 16|16|4|2|2
+			 # 32|2|4|4|2 32|4|4|4|2 32|6|4|4|2 32|8|4|4|2
+			 # 64|1|4|4|4 64|2|4|4|4 64|4|4|4|4 64|6|4|4|4
+			 # 128|1|8|4|4 128|2|8|4|4 128|3|8|4|4
+			 # 256|1|8|8|4 256|2|8|8|4":w
+  export TESTCONF="1|64|1|1|1 1|128|1|1|1 1|192|1|1|1 1|256|1|1|1"
+	export BESTCONF="1|128|1|1|1"
 fi
