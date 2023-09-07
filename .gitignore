@@ -46,3 +46,4 @@
 *.sh.*.err
 *.sh.*.err.*
 /AMG/
+*bku.sh
