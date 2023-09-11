@@ -20,7 +20,7 @@ elif [ -n \"\${ARMHOST}\" ]; then
   export BESTCONF=\"\""
 
 INPUT_SCRIPT="$1"
-
+org_permissions=$(stat -c %a "${INPUT_SCRIPT}")
 TEMP_FILE=$(mktemp)
 
 # awk requires $ENVIRON["CODE_DEFINE"] to access the global variable defined, 
@@ -44,5 +44,6 @@ END {
 } ' "$INPUT_SCRIPT" > "${TEMP_FILE}"
 
 mv "${TEMP_FILE}" "${INPUT_SCRIPT}"
-
+echo ${org_permissions}
+chmod "${org_permissions}" "$INPUT_SCRIPT"
 
