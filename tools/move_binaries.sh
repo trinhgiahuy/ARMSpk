@@ -2,33 +2,34 @@
 # =============================================================================
 #
 # Description: This script will
-#   * Look for file $ROOTDIR/run/$BenchID the line `source $ROOTID/conf/${BenchID}.sh` originally
+#   * Look for file $ROOTDIR/run/$BENCH_ID/test.sh tthe line `source $ROOTID/conf/${BENCH_ID}.sh` originally
 #   + If have \$1, continue
 #   + If exist but missing \$1, append to it
 #   + If not exist the source line, output error for manual checkk [WON'T HAPPEN]
 #
-#   * Look for file $ROOTDIR/conf/${BenchID}.sh the line `export BINARY=` originally.
+#   * Look for file $ROOTDIR/conf/${BENCH_ID}.sh the line `export BINARY=` originally.
 #   + Check the corresponding binary with $2 compiler options if exist
 #   + Append the move code to binary directory
-#   
-#
 #
 # Usage:
-#     
-#     ./move_binaries.sh conf/amg.sh gnu
 #
-#     
+#     ./move_binaries.sh amg gnu
+#
 # Look for line export BINARY =
 # MOVE THE LINE TO $ROOTDIR/bin
 # The bin is checked in execute_top.sh, then create $ROOTDIR/bin/$bm/gnu & $ROOTDIR/bin/$bm/llvm-arm/
-# r:      Huy Trinh
-# Emai:        huy.trinh@a.riken.jp 
-# Datue:        Sept 7, 2023
+# Author:       Huy Trinh
+# Emai:         huy.trinh@a.riken.jp
+# Datue:        Sept 9, 2023
 # =============================================================================
 #
 #
 # Then look for $2 is gnu|llvm-arm then move binaries to it
+
 #
+E_LOG() {
+    echo "$(eval echo $LOG_P)"
+}
 
 # Check for required input
 if [[ -z "$1" || -z "$2" ]]; then
@@ -38,33 +39,64 @@ fi
 
 ROOTDIR=$(cd "$(dirname ${BASH_SOURCE})/../" && pwd)
 # Input file
-# Should look like conf/amg.sh
-INPUT_FILE=$1
-BenchID=$(basename $INPUT_FILE .sh)
-echo $BenchID
-COMPILER=$2
-BIN_DIR=$ROOTDIR/bin/$BM/$COMPILER/
-# Temporary file for t
-TEMP_FILE=$(mktemp)
+# Should look like amg
+BENCH_ID=$1
+CONF_FILE="$ROOTDIR/conf/${BENCH_ID}.sh"
 
+# EXTRACT BINARY NAM EINSIDE "" INSIDE export BINARY= in CONF FILE
+#TODO: ADD CASE OF MULTIPLE BINARIES NAME
+source $ROOTDIR/conf/env.cfg
+echo conffile $CONF_FILE
+# DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
+DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
+# echo DOUBLE_QUOTE $DOUBLE_QUOTE
+# echo ${DOUBLE_QUOTE[0]}
+# echo ${DOUBLE_QUOTE[1]}
+# echo ${DOUBLE_QUOTE[2]}
+BINARYNAME=$(basename ${DOUBLE_QUOTE[0]})
+
+# echo BINNAME $BINARYNAEM
+# echo $BENCH_ID
+COMPILER=$2
+BIN_DIR=$ROOTDIR/bin/$BENCH_ID/\$1
+# Temporary file for t
+
+echo ${BIN_DIR}/$BINARYNAME
 
 export MOVE_CODE="\
-mv \$BINARY ${BIN_DIR}
-export BINARY=${BIN_DIR}/\$(basename \$BINARY)
+export BINARY=\"${BIN_DIR}/$BINARYNAME\"
 echo \"NEW BINARY IS \$BINARY\""
 
-RUN_TEST_FILE="$ROOTDIR/run/${BenchID}/test.sh"
-echo "RUN_TEST_FILE: $RUN_TEST_FILE"
+export CHECK_PARAM_CODE="\
+if [ -z \"\$1\" ]; then
+    echo \"SOURCE CFG FILE REQUIRES INPUT gnu|llvm-arm PARAM\"
+    return 1
+fi
+
+"
+
+
+RUN_TEST_FILE="$ROOTDIR/run/${BENCH_ID}/test.sh"
+# echo "RUN_TEST_FILE: $RUN_TEST_FILE"
+
+# ALMOST NOT HAPPEN BUT STILL NEED TO CHECK
+if ! rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}.sh' $RUN_TEST_FILE > /dev/null 2>&1;then
+    echo [ERROR] MISSING THE SOURCE CONFIG FILE IN RUN FILE! MANUALLY CHECK.
+    exit 1
+else
+    echo ""
+fi
 
 # Check exist $1 option in line source conf file in run file
-if rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh "\$1"' $RUN_TEST_FILE > /dev/null 2>&1; then
-  echo "[LOG] Run file for ${BenchID} already has option \$1. Skipping.."
+# if rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}.sh "\$1"' $RUN_TEST_FILE > /dev/null 2>&1; then
+if rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}.sh ..' $RUN_TEST_FILE > /dev/null 2>&1; then
+    echo "$(E_LOG) Run file for ${BENCH_ID} already has option \$1. Skipping.."
 elif rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh' $RUN_TEST_FILE > /dev/null 2>&1; then
    # sed -i 's|source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh|& "$1"|' $RUN_TEST_FILE
   sed -i -E 's|source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh|& "$1"|' $RUN_TEST_FILE
-  echo "[LOG] Added \$1 to run file for ${BenchID}"
+  echo "$(E_LOG) [run/${BENCH_ID}/test.sh] ADDING \$1 TO SOURCE LINE"
 else
-  echo "[ERROR] Pattern 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh' not found in $INPUT_FILE. Exiting."
+  echo "[ERROR] Pattern 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh' not found in $CONF_FILE. Exiting."
   exit 1
 fi
 
@@ -77,24 +109,46 @@ else
 fi
 
 
-# Check if the file already exist the lines, 
+original_permission=$(stat -c %a "$CONF_FILE")
+# Check if exit param check code at the begining
+if ! rg --no-ignore 'SOURCE CFG FILE' $CONF_FILE > /dev/null 2>&1;then
+    echo "$(E_LOG) CODE PARAM CHECK NOT ADDED! ADDING CODE CHECK PARAM TO CONF FILE"
+    TEMP_FILE=$(mktemp)
+    awk -v PARAM_CHECK="$CHECK_PARAM_CODE" '
+    {
+        if ($0 ~ /^export APPDIR=/){
+            print PARAM_CHECK
+            print $0
+        }else{
+            print $0
+        }
+    }' "${CONF_FILE}" > "${TEMP_FILE}"
+    mv "${TEMP_FILE}" "${CONF_FILE}"
+    chmod $original_permission "$CONF_FILE"
+else
+    echo "PARAM CODE EXIST! NO ADD"
+fi
+# Check if the file already exist the lines,
 #   export BINARY= source $ROOTDIR/conf/${BenchID}.sh
-# If yes, then ignore, 
+# If yes, then ignore,
 # If no, append
 
-if ! rg --no-ignore 'NEW BINARY' $INPUT_FILE > /dev/null 2>&1;then
-  echo "[LOG] COLD BINARY NOT UPDATED TO COMPILERS! ADDING CODE TO CONF FILE.."
-  awk -v MOVE_CODE="$MOVE_CODE" '
-  {
-    if ($0 ~ /^export BINARY=/){
-      print $0
-      print MOVE_CODE
-    } else {
-      print $0
-    }
-  }' "${INPUT_FILE}" > "${TEMP_FILE}"
-
-  mv "${TEMP_FILE}" "${INPUT_FILE}"
+if ! rg --no-ignore 'NEW BINARY' $CONF_FILE > /dev/null 2>&1;then
+    echo "$(E_LOG) CODE BINARY NOT UPDATED TO COMPILERS! ADDING CODE MOVE BINARY TO CONF FILE.."
+    TEMP_FILE=$(mktemp)
+    awk -v MOVE_CODE="$MOVE_CODE" '
+    {
+        if ($0 ~ /^export BINARY=/){
+            print "#" $0
+            print MOVE_CODE
+        } else {
+            print $0
+        }
+    }' "${CONF_FILE}" > "${TEMP_FILE}"
+    mv "${TEMP_FILE}" "${CONF_FILE}"
+    chmod $original_permission "$CONF_FILE"
+else
+    echo "$(E_LOG) CONF FILE IS UPDATED TO COMPILERS! NO ADD"
 fi
 
 
@@ -106,9 +160,10 @@ else
   exit 1
 fi
 
-if rg --no-ignore 'NEW BINARY' $INPUT_FILE > /dev/null 2>&1; then
-  echo "[SUCCESS] CONF FILE $(basename $INPUT_FILE) BINARY UPDATED TO COMPILERS"
+
+if rg --no-ignore 'NEW BINARY' $CONF_FILE > /dev/null 2>&1; then
+  echo "[SUCCESS] CONF FILE ${CONF_FILE} BINARY UPDATED TO COMPILERS"
 else
-  echo "[ERROR] CONF FILE $(basename $INPUT_FILE) BINARY NOT UPDATED TO COMPILERS"
+  echo "[ERROR] CONF FILE ${CONF_FILE} BINARY NOT UPDATED TO COMPILERS"
   exit 1
 fi

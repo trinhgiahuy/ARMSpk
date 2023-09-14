@@ -1,17 +1,27 @@
 #!/bin/bash
-#
+# =============================================================================
 # Description: This script will
 #   * Check for org directories in conf/, inst/, run/ directories,if not create
 #   * Check for backup files in conf/org/, inst/org/, run/$Benchmark_ID/org/ directories, if not create
-# 
+#
 # FIRST EVER RUN: it will check for Jens' code version and replica those files into org directories with _old prefix.
 # OTHER RUN     : it will check for the exist of 2 versions of benchmark in each directories
 #                 _old in org refer to Jens' code, normal refer to my maybe modified version
 #
+# Author:       Huy Trinh
+# Emai:         huy.trinh@a.riken.jp
+# Date:         Sept 7, 2023
+
 # Usage:
-# 
+#
 #   check_crewate_backup.sh $Benchmark_ID_Arr
 #
+# Example:
+#
+#   tools/check_create_backup.sh 'amg' ['comd' ['laghos']]`
+# =============================================================================
+
+
 ROOTDIR=$(cd "$(dirname $BASH_SOURCE[0])/.." && pwd)
 # echo $ROOTDIR
 
@@ -44,9 +54,9 @@ for dir in "${CHECK_DIRS[@]}"; do
       # if ! rg "${bm_id}_old.sh" "${org_dir}";then
         echo "[BACKUP] [$dir/org/${bm_id}_old] NOT FOUND! REPLICA..."
         # Exist Jens' files in $dir, replica with _old prefix
-        cp "$ROOTDIR/$dir/${bm_script}" "$org_dir/${bm_id}_old.sh"
+        cp -p "$ROOTDIR/$dir/${bm_script}" "$org_dir/${bm_id}_old.sh"
       fi
-    fi 
+    fi
   done
 done
 
@@ -58,7 +68,7 @@ for bm_id in ${Benchmark_ID_Arr[@]};do
     echo "[LOG] [run/$bm_id/org] BACK UP DIR INSIDE NOT FOUND! CREATING.."
     mkdir -p "$bm_run_org_dir"
   fi
-  
+
   bm_id_bku="${bm_id}_old.sh"
   # echo $bm_id_bku
   run_dir="$ROOTDIR/run/$bm_id"
@@ -73,7 +83,7 @@ for bm_id in ${Benchmark_ID_Arr[@]};do
           ! -e "${bm_run_org_dir}/best.sh" ]];then
       # Copy the whole run directory to bku
       echo "[BACKUP] [run/${bm_id}/org] REPLICA WHOLE DIRECTORY run/$bm_id..."
-      cp "${run_dir}/"*.sh "${bm_run_org_dir}" 
+      cp -p "${run_dir}/"*.sh "${bm_run_org_dir}"
     fi
   fi
 done
