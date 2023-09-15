@@ -30,7 +30,7 @@ INPUT_FILE=$1
 
 CHECK_LOG_CODE="\
 if [ ! -e \$LOG ];then
-    [\$0] echo \"DOES NOT HAVE LOG FILE. CREATING...\"
+    echo \"[\$0] DOES NOT HAVE LOG FILE. CREATING...\"
     touch \$LOG
 fi
 
