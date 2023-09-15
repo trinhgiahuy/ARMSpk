@@ -33,5 +33,4 @@ else
         echo "[ERROR] [$0] NO MAKE FOUND IN LINE... CHECK $INPUT_FILE MANUALLY"
         exit 1
     fi
-
 fi
