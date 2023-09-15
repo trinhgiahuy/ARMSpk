@@ -8,7 +8,7 @@
 #   + If not exist the source line, output error for manual checkk [WON'T HAPPEN]
 #
 #   * Look for file $ROOTDIR/conf/${BENCH_ID}.sh the line `export BINARY=` originally.
-#   + Check the corresponding binary with $2 compiler options if exist
+#   + Check the corresponding binary with compiler options if exist
 #   + Append the move code to binary directory
 #
 # Usage:
@@ -58,10 +58,16 @@ BINARYNAME=$(basename ${DOUBLE_QUOTE[0]})
 # echo BINNAME $BINARYNAEM
 # echo $BENCH_ID
 COMPILER=$2
+
+# HERE BIN_DIR is bin/b$BENCH_ID/$1 IS CORRECT!
+# THIS BIN_DIR is WRITE TO CONFIG FILE WHEN SOURCE
+# WILL TAKE $1 AS COMPILER AND GET BINARY FROM OUR BIN DIR
+#
 BIN_DIR=$ROOTDIR/bin/$BENCH_ID/\$1
-# Temporary file for t
+BIN_DIR_CHECK=$ROOTDIR/bin/$BENCH_ID/$COMPILER
 
 echo ${BIN_DIR}/$BINARYNAME
+echo ${BIN_DIR_CHECK}
 
 export MOVE_CODE="\
 export BINARY=\"${BIN_DIR}/$BINARYNAME\"
@@ -101,11 +107,11 @@ else
 fi
 
 # Check if the bin/$BenchID/$2 directory exists. If not, create it.
-if [ ! -d "$BIN_DIR" ]; then
+if [ ! -d "$BIN_DIR_CHECK" ]; then
   echo "[LOG] Directory ${BIN_DIR} does not exist. Creating..."
   mkdir -p "$BIN_DIR"
 else
-  echo "[LOG] Directory ${BIN_DIR} exists."
+  echo "[LOG] Directory ${BIN_DIR_CHECK} exists."
 fi
 
 
