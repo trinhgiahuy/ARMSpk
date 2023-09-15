@@ -84,6 +84,14 @@ if ! grep -q "E_LOG" "$INPUT_FILE"; then
 
     cat <<EOF >> "${TEMP_FILE}"
 
+# CHECK IF CMAKE SUCCESS AND EXECUTABLE BM EXIST
+if [ ! -x \$BINEXE ];then
+    echo "\$(E_LOG) BUILD BENCHMARK FAIL. EXITING.."
+    exit 1
+else
+    echo "\$(E_LOG) FOUND EXECUTABLE OR BUILD SUCCESS."
+fi
+
 if  [ ! -e \$BINARY_DIR/\$BENCHID/\$1/\$(basename \$BINEXE) ];then
     echo "\$(E_LOG) REPLICA BIN FOR \$(basename \$BINEXE) NOT FOUND! COPYING TO bin/\$BENCHID/\$1"
     cp -p \$BINEXE \$BINARY_DIR/\$BENCHID/\$1
