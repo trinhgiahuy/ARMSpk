@@ -9,14 +9,14 @@
 # * '$(which mpifcc))/../lib64': '$(which clang))/../lib' BEFORE 'mpifcc': 'clang'
 #
 # Usage:
-#   
+#
 #   python3 subtitute_llvmarm.py --inst_file $ROOTDIR/inst/amg.sh
 #
-# Safe Features: 
+# Safe Features:
 #   * The script checks for if there is exist llvm-arm code block, if yes then skip & exit
 #   * The script checks for if exist the backup files ( format $bm_bku.sh). If not then create before make changes
 # Author:      Huy Trinh
-# Emai:        huy.trinh@a.riken.jp   
+# Emai:        huy.trinh@a.riken.jp
 # Date:        Sept 8, 2023
 # =============================================================================
 
@@ -30,7 +30,7 @@ import shutil
 # Global replacements dictionary for the 'llvm-arm' block
 REPLACEMENTS = {
 
-#===AMG   
+#===AMG
     '$(which mpifcc))/../lib64': '$(which clang))/../lib',
     ' -Wl,-rpath=$(readlink -f $(dirname $(which clang))/../lib)': '',
 
@@ -56,17 +56,17 @@ def ensure_backup(file_path):
     if not os.path.exists(backup_file):
         print(f"[LOG] Creating backup file {backup_file}...")
         shutil.copy2(file_path,backup_file)
-    else: 
+    else:
         print(f"[LOG] Backup file {backup_file} already exists!")
     return backup_file
 
 def subtitute_llvmarm(file_path):
     with open(file_path, 'r') as file:
         content = file.read()
-   
+
 
     # Ensure backup file before make changes
-    ensure_backup(file_path)   
+    #  ensure_backup(file_path)
 
     # Check if the "llvm-arm" block already exist
     llvm_arm_patterm = r'elif\s*\[\[\s*"\$1"\s*=\s*.*"llvm-arm".*\]\]'
