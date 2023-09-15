@@ -10,6 +10,7 @@
 # Usage:
 #
 #       tools/append_config.sh conf/$bm.sh
+#TODO: Seperate $INPUT FOR CODE_DEFINE, some $bm does not have domain decomposition
 # =============================================================================
 export CODE_DEFINE="\
 elif [ -n \"\${ARMHOST}\" ]; then
