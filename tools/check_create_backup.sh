@@ -34,6 +34,9 @@ Benchmark_ID_Arr=("$@")
 CHECK_DIRS=("conf" "inst")
 #
 
+RESTORE_DIR=$HOME/restore/a64fxCvC
+
+
 # Check and create 'org' directories for conf and inst
 for dir in "${CHECK_DIRS[@]}"; do
   org_dir="$ROOTDIR/$dir/org"
@@ -54,7 +57,7 @@ for dir in "${CHECK_DIRS[@]}"; do
       # if ! rg "${bm_id}_old.sh" "${org_dir}";then
         echo "[BACKUP] [$dir/org/${bm_id}_old] NOT FOUND! REPLICA..."
         # Exist Jens' files in $dir, replica with _old prefix
-        cp -p "$ROOTDIR/$dir/${bm_script}" "$org_dir/${bm_id}_old.sh"
+        cp -p "$RESTORE_DIR/$dir/${bm_script}" "$org_dir/${bm_id}_old.sh"
       fi
     fi
   done
@@ -69,9 +72,9 @@ for bm_id in ${Benchmark_ID_Arr[@]};do
     mkdir -p "$bm_run_org_dir"
   fi
 
-  bm_id_bku="${bm_id}_old.sh"
+  # bm_id_bku="${bm_id}_old.sh"
   # echo $bm_id_bku
-  run_dir="$ROOTDIR/run/$bm_id"
+  run_dir="$RESTORE_DIR/run/$bm_id"
   # echo $run_dir
   if [[ ! -e "${run_dir}/test.sh" || \
         ! -e "${run_dir}/best.sh" ]];then
