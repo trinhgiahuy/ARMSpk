@@ -31,11 +31,6 @@ E_LOG() {
     echo "$(eval echo $LOG_P)"
 }
 
-# Check for required input
-if [[ -z "$1" || -z "$2" ]]; then
-  echo "Usage: $0 <input-benchmark> gnu|llvm-arm"
-  exit 1
-fi
 
 ROOTDIR=$(cd "$(dirname ${BASH_SOURCE})/../" && pwd)
 # Input file
@@ -43,35 +38,61 @@ ROOTDIR=$(cd "$(dirname ${BASH_SOURCE})/../" && pwd)
 BENCH_ID=$1
 CONF_FILE="$ROOTDIR/conf/${BENCH_ID}.sh"
 
+# Check for required input
+if [[ -z "$1" || -z "$2" ]]; then
+  echo "Usage: $0 <input-benchmark> gnu|llvm-arm"
+  exit 1
+fi
+
+if [[ $1 =~ minitri ]];then
+    isMinitri=1
+else
+    isMinitri=0
+fi
+
 # EXTRACT BINARY NAM EINSIDE "" INSIDE export BINARY= in CONF FILE
 #TODO: ADD CASE OF MULTIPLE BINARIES NAME
 source $ROOTDIR/conf/env.cfg
 echo conffile $CONF_FILE
-# DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
-DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
-# echo DOUBLE_QUOTE $DOUBLE_QUOTE
-# echo ${DOUBLE_QUOTE[0]}
-# echo ${DOUBLE_QUOTE[1]}
-# echo ${DOUBLE_QUOTE[2]}
-BINARYNAME=$(basename ${DOUBLE_QUOTE[0]})
-
-# echo BINNAME $BINARYNAEM
-# echo $BENCH_ID
 COMPILER=$2
-
-# HERE BIN_DIR is bin/b$BENCH_ID/$1 IS CORRECT!
-# THIS BIN_DIR is WRITE TO CONFIG FILE WHEN SOURCE
-# WILL TAKE $1 AS COMPILER AND GET BINARY FROM OUR BIN DIR
-#
 BIN_DIR=$ROOTDIR/bin/$BENCH_ID/\$1
 BIN_DIR_CHECK=$ROOTDIR/bin/$BENCH_ID/$COMPILER
+if [ ! $isMinitri -eq 1 ];then
+    # DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
+    DOUBLE_QUOTE=($(extract_double_quote "$CONF_FILE"))
+    # echo DOUBLE_QUOTE $DOUBLE_QUOTE
+    echo ${DOUBLE_QUOTE[0]}
+    echo ${DOUBLE_QUOTE[1]}
+    # echo ${DOUBLE_QUOTE[2]}
+    BINARYNAME=$(basename ${DOUBLE_QUOTE[0]})
 
-echo ${BIN_DIR}/$BINARYNAME
-echo ${BIN_DIR_CHECK}
+    # echo BINNAME $BINARYNAEM
+    # echo $BENCH_ID
 
-export MOVE_CODE="\
+    # HERE BIN_DIR is bin/b$BENCH_ID/$1 IS CORRECT!
+    # THIS BIN_DIR is WRITE TO CONFIG FILE WHEN SOURCE
+    # WILL TAKE $1 AS COMPILER AND GET BINARY FROM OUR BIN DIR
+    #
+    echo ${BIN_DIR}/$BINARYNAME
+    echo ${BIN_DIR_CHECK}
+    export MOVE_CODE="\
 export BINARY=\"${BIN_DIR}/$BINARYNAME\"
 echo \"NEW BINARY IS \$BINARY\""
+
+else
+    #MINITRI BENCHMARK
+    echo "IS MINITRI BENCHMARK"
+    DOUBLE_QUOTE=($(extract_double_quote_minitri "$CONF_FILE"))
+    echo ${DOUBLE_QUOTE[0]}
+
+    MINITRI_BASENAME=$(basename ${DOUBLE_QUOTE[0]})
+
+    export MOVE_CODE="\
+export BINARYMPI=\"${BIN_DIR}/MPI/${MINITRI_BASENAME}\"
+export BINARYOMP=\"${BIN_DIR}/OMP/${MINITRI_BASENAME}\"
+echo \"NEW BINARY MPI IS \$BINARYMPI & BINARY OMP IS \$BINARYOMP \""
+
+fi
 
 export CHECK_PARAM_CODE="\
 if [ -z \"\$1\" ]; then
@@ -80,7 +101,7 @@ if [ -z \"\$1\" ]; then
 fi
 
 "
-
+echo $MOVE_CODE
 
 RUN_TEST_FILE="$ROOTDIR/run/${BENCH_ID}/test.sh"
 # echo "RUN_TEST_FILE: $RUN_TEST_FILE"
@@ -142,21 +163,38 @@ fi
 if ! rg --no-ignore 'NEW BINARY' $CONF_FILE > /dev/null 2>&1;then
     echo "$(E_LOG) CODE BINARY NOT UPDATED TO COMPILERS! ADDING CODE MOVE BINARY TO CONF FILE.."
     TEMP_FILE=$(mktemp)
-    awk -v MOVE_CODE="$MOVE_CODE" '
-    {
-        if ($0 ~ /^export BINARY=/){
-            print "#" $0
-            print MOVE_CODE
-        } else {
-            print $0
-        }
-    }' "${CONF_FILE}" > "${TEMP_FILE}"
+    if [ ! $isMinitri -eq 1 ];then
+        awk -v MOVE_CODE="$MOVE_CODE" '
+        {
+            if ($0 ~ /^export BINARY=/){
+                print "#" $0
+                print MOVE_CODE
+            } else {
+                print $0
+            }
+        }' "${CONF_FILE}" > "${TEMP_FILE}"
+    else
+        awk -v MOVE_CODE="$MOVE_CODE" '
+        {
+            if ($0 ~ /^export BINARYMPI=/){
+                print "#" $0
+                flag = 1
+            } else if ( $0 ~ /^export BINARYOMP=/){
+                print "#" $0
+                if (flag == 1){
+                    print MOVE_CODE
+                    flag = 0
+                }
+            } else {
+                print $0
+            }
+        }' "${CONF_FILE}" > "${TEMP_FILE}"
+    fi
     mv "${TEMP_FILE}" "${CONF_FILE}"
     chmod $original_permission "$CONF_FILE"
 else
     echo "$(E_LOG) CONF FILE IS UPDATED TO COMPILERS! NO ADD"
 fi
-
 
 # Verify that those file has expected output
 if rg --no-ignore 'source \$\{ROOTDIR\}/conf/\$\{BenchID\}\.sh "\$1"' $RUN_TEST_FILE > /dev/null 2>&1; then
