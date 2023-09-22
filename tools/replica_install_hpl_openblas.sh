@@ -59,10 +59,14 @@ if [ ! -f $ROOTDIR/$BM/bin/$ARCH/xhpl ];then
     TEMP_FILE=$(mktemp)
     org_permission=$(stat -c %a "${INPUT_FILE}")
     if ! rg 'Adding exit' $INPUT_FILE > /dev/null 2>&1; then
-        awk -v n="$last_make_line" 'NR == n && !/exit 1/ {print "\techo \"Adding exit1\"; exit 1"} 1' "$INPUT_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$INPUT_FILE"
+        echo "DO NOT FIND EXIT.ADD"
+        echo last_make_line $last_make_line
+        awk -v n="$last_make_line" 'NR == n {print "\techo \"Adding exit1\"; exit 1"} 1' "$INPUT_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$INPUT_FILE"
+        # awk -v n="$last_make_line" 'NR == n && !/exit 1/ {print "\techo \"Adding exit1\"; exit 1"} 1' "$INPUT_FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$INPUT_FILE"
+        chmod $org_permission "$INPUT_FILE"
+    else
+        echo "FIND EXIT"
     fi
-    chmod $org_permission "$INPUT_FILE"
-
     # Call Jen's install script
     $1 $2
 
@@ -103,4 +107,12 @@ if [ ! -f $ROOTDIR/$BM/bin/$ARCH/xhpl ];then
     make arch=$ARCH
 else
     echo "[LOG] XHPL binary exist! Nothing to do"
+fi
+cd $ROOTDIR
+
+# COPY BINARY HPL TO OUR CUSTOM BIN DIR
+if [ ! -e $ROOTDIR/bin/hpl/$2/xhpl ];then
+    echo "COPYING XHPL TO bin/hpl/$2"
+    echo "$BM_DIR/bin/$ARCH/xhpl"
+    cp -p $BM_DIR/bin/$ARCH/xhpl $ROOTDIR/bin/hpl/$2/
 fi
