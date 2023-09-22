@@ -40,25 +40,25 @@ benchmark_id_arr=(
     # 'candle' # REQUIRE CONDA ENV
     # 'comd'
     # 'dlproxy' # INSTALL ERROR
-    'ffb'
-    'ffvc'
+    # 'ffb'
+    # 'ffvc'
     # 'hpcg'
-    # 'hpl' Current error due to make use patches, with arch=Linux64 not suitable
+    'hpl'
     #  Study patches and modify it properly
 
     # 'laghos'
-    'macsio'
-    'miniamr'
-    'minife'
-    'minitri'
-    'modylas'
-    'mvmc'
-    'nekbone'
-    'ngsa'
-    'nicam'
-    'ntchem'
-    'qcd'
-    'xsbench'
+    # 'macsio'
+    # 'miniamr'
+    # 'minife'
+    # 'minitri'
+    # 'modylas'
+    # 'mvmc'
+    # 'nekbone'
+    # 'ngsa'
+    # 'nicam'
+    # 'ntchem'
+    # 'qcd'
+    # 'xsbench'
 )
 compiler_opts=(
   'gnu'
@@ -100,11 +100,24 @@ for compiler_opt in "${compiler_opts[@]}";do
     sh_fn="${bm_id}.sh"
     # echo $sh_fn
     # python3 tools/subtitute_llvmarm.py --inst_file inst/$sh_fn
-    tools/insert_copy_bin.sh inst/$sh_fn
+    if [[ $bm_id =~ minitri ]];then
+        echo "Got minitri"
+        tools/insert_copy_bin_minitri.sh inst/$sh_fn
+    else
+        tools/insert_copy_bin.sh inst/$sh_fn
+    fi
     tools/append_make_err_handling.sh inst/$sh_fn
 
     # Call install benchmark
-    inst/$sh_fn $compiler_opt
+    # If hpl script, call replica_install_openblas.sh
+    if [[ $bm_id =~ hpl ]];then
+        echo "Got hpl"
+        # rm -rf HPL/
+        tools/replica_install_hpl_openblas.sh inst/$sh_fn $compiler_opt
+    else
+        inst/$sh_fn $compiler_opt
+    fi
+
     if [ $? -ne 0 ]; then
         echo "[ERROR] FILE inst/$sh_fn RETURN ERROR. EXITING.."
         exit 1
@@ -118,6 +131,15 @@ for compiler_opt in "${compiler_opts[@]}";do
     if [ ! -e "$term_log_file" ];then
       echo "Creating terminal log file for benchmark $bm_id"
       touch $term_log_file
+    fi
+
+    # CHECK IF BINARY EXIST! IF NOT EXIST
+    BIN_DIR="$ROOTDIR/bin/$bm_id/$compiler_opt"
+    if ! find "$BIN_DIR" -maxdepth 1 -type f -executable -print | grep -q .;then
+        echo "NO EXECUTABLE"
+        exit 1
+    else
+        echo "FOUND EXECUTABLE"
     fi
 
     # Update and print progress bar
