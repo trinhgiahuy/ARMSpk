@@ -84,6 +84,16 @@ if ! grep -q "E_LOG" "$INPUT_FILE"; then
 
     cat <<EOF >> "${TEMP_FILE}"
 
+# CHECK IF DIRECTORY TO BINARY IS VALID
+#
+# ANOTHER USE IS ~= //
+if [[ "\$BINEXE" == *//* ]];then
+    echo "\$(E_LOG) BINARY \$BINEXE MAY NOT BE VALID. CHECK AGAIN "
+    exit 1
+else
+    echo "\$(E_LOG) BINARY \$BINEXE MAY BE VALID AT THIS TIME."
+fi
+
 # CHECK IF CMAKE SUCCESS AND EXECUTABLE BM EXIST
 if [ ! -x \$BINEXE ];then
     echo "\$(E_LOG) BUILD BENCHMARK FAIL. EXITING.."
