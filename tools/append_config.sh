@@ -21,6 +21,14 @@ TESTCONFVAL="1|64|1|1|1 1|128|1|1|1
             128|1|8|4|4"
 
 
+# DO NOT USE THIS TESTCONFVAL for HPL, XHPL cannot run with 1 MPI process
+# TESTCONFVAL="4|16|2|2|1 4|32|2|2|1
+            # 8|1|2|2|2 8|2|2|2|2 8|4|2|2|2 8|8|2|2|2 8|16|2|2|2
+            # 16|4|4|2|2 16|8|4|2|2
+            # 32|2|4|4|2 32|4|4|4|2
+            # 64|1|4|4|4 64|2|4|4|4
+            # 128|1|8|4|4"
+
 BM_ARR_NO_DOMAIN=(
     'babelstream'
     'candle'
@@ -45,7 +53,6 @@ BM_ARR_NO_DOMAIN=(
 INPUT_SCRIPT="$1"
 BASENAME_SCRIPT=$(basename $INPUT_SCRIPT)
 BENCH_ID="${BASENAME_SCRIPT%.sh}"
-echo $BENCH_ID
 
 
 # If benchmark exist in an array of no domain
@@ -53,20 +60,33 @@ if [[ "${BM_ARR_NO_DOMAIN[@]}" =~ "$BENCH_ID" ]];then
     echo "[$0] BENCHMARK $BENCH_ID DO NOT REQUIRE DOMAIN IN TESTCONF"
     # export TESTCONFVAL=$(echo "${TESTCONFVAL}" | sed 's/\([0-9]*|[0-9]*\)|[0-9]*|[0-9]*|[0-9]*//g')
     export TESTCONFVAL=$(echo "${TESTCONFVAL}" | sed 's/\([0-9]*|[0-9]*\)|[0-9]*|[0-9]*|[0-9]*/\1/g')
-
-    echo "NEW $TESTCONFVAL"
+    # echo "NEW $TESTCONFVAL"
+elif [[ "$BENCH_ID" =~ hpl ]];then
+    echo "BENCHMARK HPL DIFFERENT CONFIG"
+    # GET 2 DOMAINS ONLY
+    export TESTCONFVAL=$(echo "${TESTCONFVAL}" | sed 's/\([0-9]*|[0-9]*|[0-9]*|[0-9]*\)|[0-9]*/\1/g')
 else
     echo "[$0] BENCHMARK $BENCH_ID REQUIRE DOMAIN IN TESTCONF"
 fi
 
 #TODO: Add code hibench,polybench is exception with only test 1|1
-
-CODE_DEFINE="\
+if [[ "$BENCH_ID" =~ hpl ]];then
+    CODE_DEFINE="\
 elif [ -n \"\${ARMHOST}\" ]; then
-	export TESTCONF=\"$TESTCONFVAL\"
+    export TESTCONF=\"$TESTCONFVAL\"
+    export BESTCONF=\"\"
+    export HPLNB=\"192\""
+elif [[ "$BENCH_ID" =~ hibench || "$BENCH_ID" =~ polybench ]];then
+    #TODO: ADD HERE
+    CODE_DEFINE=""
+else
+    CODE_DEFINE="\
+elif [ -n \"\${ARMHOST}\" ]; then
+    export TESTCONF=\"$TESTCONFVAL\"
     export BESTCONF=\"\""
+fi
 
-echo $CODE_DEFINE
+# echo $CODE_DEFINE
 
 org_permissions=$(stat -c %a "${INPUT_SCRIPT}")
 TEMP_FILE=$(mktemp)
