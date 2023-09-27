@@ -67,9 +67,13 @@ if [ ! -f $ROOTDIR/$BM/bin/$ARCH/xhpl ];then
     else
         echo "FIND EXIT"
     fi
-    # Call Jen's install script
+
+    # Call "FAKE" install to apply patches and get latest Jens' modification
     $1 $2
 
+
+    # DIFFERENT FOR EACH BENCHMARK SPECS
+    # REAL UPDATE COMPILE OPTIONS FOR SUPERCOMP07 NODE
     cd
     if [ ! -d ~/hpl ];then
         echo "CREATING HPL dir in home directory "
