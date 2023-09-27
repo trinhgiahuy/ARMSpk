@@ -43,16 +43,14 @@ benchmark_id_arr=(
     # 'ffb'
     # 'ffvc'
     # 'hpcg'
-    'hpl'
-    #  Study patches and modify it properly
-
+    # 'hpl'
     # 'laghos'
     # 'macsio'
     # 'miniamr'
     # 'minife'
     # 'minitri'
     # 'modylas'
-    # 'mvmc'
+    'mvmc'
     # 'nekbone'
     # 'ngsa'
     # 'nicam'
@@ -64,6 +62,11 @@ compiler_opts=(
   'gnu'
   # 'llvm-arm'
 )
+
+# Deactivate if previous run MVMC
+# replica_instsall_mvmc itself will activate the py27_env
+conda deactivate
+
 
 # echo "${benchmark_id_arr[@]}"
 # echo "${compiler_opts[@]}"
@@ -114,7 +117,11 @@ for compiler_opt in "${compiler_opts[@]}";do
         echo "Got hpl"
         # rm -rf HPL/
         tools/replica_install_hpl_openblas.sh inst/$sh_fn $compiler_opt
+    elif [[ $bm_id =~ mvmc ]];then
+        echo "Got MVMC"
+        tools/replica_install_mvmc.sh inst/$sh_fn $compiler_opt
     else
+        # echo "SKIP"
         inst/$sh_fn $compiler_opt
     fi
 
