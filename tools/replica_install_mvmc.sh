@@ -148,11 +148,8 @@ else
     echo "[LOG] $BM binary exist! Nothing to do"
 fi
 cd $ROOTDIR
-exit 0
 
-#TODO: COPY BINARY VMC  TO OUR CUSTOM BIN DIR
-# if [ ! -e $ROOTDIR/bin/hpl/$2/xhpl ];then
-    # echo "COPYING XHPL TO bin/hpl/$2"
-    # echo "$BM_DIR/bin/$ARCH/xhpl"
-    # cp -p $BM_DIR/bin/$ARCH/xhpl $ROOTDIR/bin/hpl/$2/
-# fi
+if [ ! -e $ROOTDIR/bin/mvmc/$2/vmc.out ];then
+    echo "COPYING MVMC TO bin/mvmc/$2"
+    cp -p $BM_DIR/src/vmc.out $ROOTDIR/bin/mvmc/$2/
+fi
