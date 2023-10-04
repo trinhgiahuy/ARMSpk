@@ -43,7 +43,7 @@ BM_ARR_NO_DOMAIN=(
     'mvmc'
     'nekbone'
     'ngsa'
-    'nicam'
+    # 'nicam'
     'ntchem'
     'sw4lite'
     'swfft'
@@ -65,6 +65,9 @@ elif [[ "$BENCH_ID" =~ hpl ]];then
     echo "BENCHMARK HPL DIFFERENT CONFIG"
     # GET 2 DOMAINS ONLY
     export TESTCONFVAL=$(echo "${TESTCONFVAL}" | sed 's/\([0-9]*|[0-9]*|[0-9]*|[0-9]*\)|[0-9]*/\1/g')
+elif [[ "$BENCH_ID" =~ nicam ]];then
+    echo "BENCHMARK NICAM DIFFERENT CONFIG"
+    export TESTCONFVAL=$(echo "${TESTCONFVAL}" | tr ' ' '\n' | sed 's/^[0-9]*\([|][0-9]*\).*$/10\1/g' | sort | uniq | paste -sd' ' -)
 else
     echo "[$0] BENCHMARK $BENCH_ID REQUIRE DOMAIN IN TESTCONF"
 fi
