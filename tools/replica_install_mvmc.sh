@@ -17,6 +17,13 @@
 # =============================================================================
 #
 
+source $HOME/spack/share/spack/setup-env.sh
+# ACTIVATE SPACK ENVIRONMENT FOR SUPERCOMP07 NODE
+spack env activate supercomp07-env-ffb
+
+
+
+
 ROOTDIR=$(cd "$(dirname "$0")/.." && pwd)
 CPU_ARCH=NEOVERSEN1
 ARCH=ARM64
@@ -127,7 +134,6 @@ $ARCH :
     # sed -i '/^LAlib\s*=/,/-Wl,--end-group -lpthread -ldl/c\LAlib        = -L$(LAdir)/lib -lopenblas' $MAKE_ARCH_FILE
     # sed -i -e 's#\$(MKLROOT)#~/OpenBlas#g' -e 's#mkl/include#include#g' $MAKE_ARCH_FILE
     # sed -i 's/-m64\|-ansi-alias\|-i-static\|-nocompchk\|-mt_mpi\|-littnotify//g' $MAKE_ARCH_FILE
-    source $HOME/spack/share/spack/setup-env.sh
     command -v mpicc >/dev/null || spack load openmpi@4.1.5%gcc@12.2.1 arch=linux-fedora37-neoverse_n1
     # NO NEED FOR CLEAN AS IT MAY RAISE INFINITE LOOP
     # make clean arch=$ARCH
@@ -136,7 +142,7 @@ $ARCH :
     # HERE UPDATE ALL INCOMPATIBLE OPTIONS
     cd $ROOTDIR
     echo "CALL UPDATE"
-    tools/update-options-gcc.sh "MVMC" "-xHost|-ipo|-opt-prefetch=3|-nofor-main|-vec-report|-DHAVE_SSE2|-xSSE2"
+    tools/update-options-gcc.sh "MVMC" "" "-xHost|-ipo|-opt-prefetch=3|-nofor-main|-vec-report|-DHAVE_SSE2|-xSSE2"
 
     cd $BM_DIR/src
     # -fopenmp is Intel specific flag, change to -fopenmp
@@ -153,3 +159,41 @@ if [ ! -e $ROOTDIR/bin/mvmc/$2/vmc.out ];then
     echo "COPYING MVMC TO bin/mvmc/$2"
     cp -p $BM_DIR/src/vmc.out $ROOTDIR/bin/mvmc/$2/
 fi
+
+
+# CATCH ERROR OF
+# error while loading shared libraries: libscalapack.so: cannot open shared object file: No such file or directory
+ERROR_MSG=$($ROOTDIR/bin/mvmc/$2/vmc.out 2>&1)
+if [[ ! -z $ERROR_MSG ]];then
+    echo "ERROR_MSG: $ERROR_MSG"
+    MISSING_LIB=$(echo $ERROR_MSG | grep -o "error while loading shared libraries: \w\+" | cut -d' ' -f6)
+    if [[ ! -z $MISSING_LIB ]]; then
+        echo "$MISSING_LIB is missing!"
+
+        if [[ "$MISSING_LIB" == *"libscalapack"* ]];then
+            # Check if the library is installed in the current spack environment
+            if ! spack find scalapack > /dev/null 2>&1; then
+                echo "scalapack is not installed in the current spack environment. Installing..."
+                spack install -added $libscalapack
+            fi
+            echo "[LOG] SPACK LOAD SCALAPACK INSIDE SPACK VIRTUAL ENV"
+            spack load scalapack
+            SCALA_PATH=$(spack location -i scalapack)/lib
+            if [[ ! $LD_LIBRARY_PATH =~ $SCALA_PATH ]]; then
+                echo "[LOG] EXPORTING SCALA_PATH TO LD_LIBRARY_PATH"
+                export LD_LIBRARY_PATH=$SCALA_PATH:$LD_LIBRARY_PATH
+            fi
+        else
+            echo "DIFFERENT FROM SCALAPACK MISSING. MISSING LIB:${MISSING_LIB}"
+        fi
+    fi
+fi
+
+# USED STEP TO INSTALL ENV TO RUN MVMC BINARY
+# conda config --add channels conda-forge
+# conda create --name py27_env python=2.7
+# THIS COMMAND CAN BE EXECUTE WITH ROOT PRIVILIDGE ONLY
+# conda init `echo $SHELL | rev | cut -d'/' -f1 | rev`
+conda activate py27_env
+# conda install -c anaconda numpy -y
+
