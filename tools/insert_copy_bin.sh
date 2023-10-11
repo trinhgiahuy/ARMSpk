@@ -44,11 +44,15 @@ BINARY_DIR=\$ROOTDIR/bin
 
 
 DOUBLE_QUOTE=(\$(extract_double_quote \"\$CONF_FILE\"))
+# echo \"DOUBLE_QUOTE: \$DOUBLE_QUOTE\"
 BINARY_VALUE=\${DOUBLE_QUOTE[0]}
+# echo \"BINARY_VALUE: \$BINARY_VALUE\"
 APP_DIR=\${DOUBLE_QUOTE[1]}
+# echo \"APP DIR: \$APP_DIR\"
 BIN_ARR=\$(parse_binary \"\$BINARY_VALUE\")
-echo BIN_ARR \$BIN_ARR
+# echo BIN_ARR \$BIN_ARR
 BINEXE=\"\$ROOTDIR/\$APP_DIR/\$BIN_ARR\"
+# echo \"BINEXE: \$BINEXE \"
 
 # ?? NECESSARY Check for an existing executable binary in BM dir
 # if [[ ! -x \"\$BINEXE\" ]]; then
