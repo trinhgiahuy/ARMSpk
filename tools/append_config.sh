@@ -79,6 +79,13 @@ elif [ -n \"\${ARMHOST}\" ]; then
     export TESTCONF=\"$TESTCONFVAL\"
     export BESTCONF=\"\"
     export HPLNB=\"192\""
+elif [[ "$BENCH_ID" =~ minife ]];then
+    echo "GOT MINIFE"
+    CODE_DEFINE="\
+elif [ -n \"\${ARMHOST}\" ]; then
+    export TESTCONF=\"$TESTCONFVAL\"
+    export BESTCONF=\"\"
+    export BINARY=\"./mkl/src/miniFE.x\""
 elif [[ "$BENCH_ID" =~ hibench || "$BENCH_ID" =~ polybench ]];then
     #TODO: ADD HERE
     CODE_DEFINE=""
