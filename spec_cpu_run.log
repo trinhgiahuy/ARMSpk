@@ -1,0 +1,74 @@
+❯ run/spec_cpu/test.sh gnu
+Source host.cfg
+Source env.conf
+gnu
+Best 600.perlbench_s|train run:  18.604488
+Best 602.gcc_s|train run:  38.966813
+Best 605.mcf_s|train run:  42.816971
+Best 620.omnetpp_s|train run:
+Best 623.xalancbmk_s|train run:  34.967577
+Best 625.x264_s|train run:  16.939637
+Best 631.deepsjeng_s|train run:  48.228323
+Best 641.leela_s|train run:  63.479981
+Best 648.exchange2_s|train run:  20.268440
+Best 657.xz_s|train run:  31.537911
+Best 603.bwaves_s|train run:  15.552675
+Best 603.bwaves_s|train run:  15.513461
+Best 603.bwaves_s|train run:  15.537529
+Best 603.bwaves_s|train run:  15.443343
+Best 603.bwaves_s|train run:  15.432466
+Best 603.bwaves_s|train run:  15.487876
+Best 607.cactuBSSN_s|train run:  4.689212
+Best 607.cactuBSSN_s|train run:  4.007536
+Best 607.cactuBSSN_s|train run:  3.308284
+Best 607.cactuBSSN_s|train run:  3.039657
+Best 607.cactuBSSN_s|train run:  2.901585
+Best 607.cactuBSSN_s|train run:  2.719147
+Best 619.lbm_s|train run:  194.045974
+Best 619.lbm_s|train run:  194.371371
+Best 619.lbm_s|train run:  195.989454
+Best 619.lbm_s|train run:  196.758460
+Best 619.lbm_s|train run:  197.205267
+Best 619.lbm_s|train run:  198.247525
+Best 621.wrf_s|train run:  7.652684
+Best 621.wrf_s|train run:  6.737933
+Best 621.wrf_s|train run:  6.240572
+Best 621.wrf_s|train run:  5.756935
+Best 621.wrf_s|train run:  5.832143
+Best 621.wrf_s|train run:  6.051495
+Best 627.cam4_s|train run:  18.434916
+Best 627.cam4_s|train run:  18.358178
+Best 627.cam4_s|train run:  18.491397
+Best 627.cam4_s|train run:  18.721564
+Best 627.cam4_s|train run:  18.741412
+Best 627.cam4_s|train run:  19.393749
+Best 628.pop2_s|train run:
+Best 628.pop2_s|train run:
+Best 628.pop2_s|train run:
+Best 628.pop2_s|train run:
+Best 628.pop2_s|train run:
+Best 628.pop2_s|train run:
+Best 638.imagick_s|train run:  15.920179
+Best 638.imagick_s|train run:  15.993036
+Best 638.imagick_s|train run:  16.426177
+Best 638.imagick_s|train run:  16.391277
+Best 638.imagick_s|train run:  16.404275
+Best 638.imagick_s|train run:  16.342827
+Best 644.nab_s|train run:  10.033128
+Best 644.nab_s|train run:  7.950233
+Best 644.nab_s|train run:  5.819045
+Best 644.nab_s|train run:  4.825783
+Best 644.nab_s|train run:  4.534189
+Best 644.nab_s|train run:  3.935416
+Best 649.fotonik3d_s|train run:  25.908757
+Best 649.fotonik3d_s|train run:  25.593089
+Best 649.fotonik3d_s|train run:  25.476244
+Best 649.fotonik3d_s|train run:  25.412977
+Best 649.fotonik3d_s|train run:  25.397819
+Best 649.fotonik3d_s|train run:  25.300485
+Best 654.roms_s|train run:  33.634502
+Best 654.roms_s|train run:  31.473357
+Best 654.roms_s|train run:  30.388622
+Best 654.roms_s|train run:  28.804911
+Best 654.roms_s|train run:  22.045474
+Best 654.roms_s|train run:  27.696398
