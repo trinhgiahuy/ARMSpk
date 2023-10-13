@@ -40,8 +40,22 @@ GNU_UPDATE_CODE="\
             sed -i \"\$line s/ -m64//\" config/nedo.cfg
         done"
 
+
+
+
 cd $ROOTDIR
 if ! rg 'UPDATED|ARM' $INPUT_FILE >> /dev/null;then
+    #COMMENT OUT THE FUSEISO PART AS IT REQUIRE ROOT PRIVILIDGE
+    grep_iso_line=$(grep -nE '\t*if.*ROOTDIR.*iso' $1 | cut -d: -f1)
+    echo "grep_iso_line $grep_iso_line"
+
+    fuse_iso_line=$(grep -nE '\t*fuseiso' $1 | cut -d: -f1)
+    echo "fuse_iso_line $fuse_iso_line"
+
+    gawk -i inplace -v start="$grep_iso_line" -v end="$fuse_iso_line" 'NR>=start && NR<=end {print "#"$0; next} 1' $INPUT_FILE
+
+
+    # Add the update code for gcc part
     gnu_elif_line=$(grep -nE '\t*elif.*\$1.*gnu' $INPUT_FILE | cut -d: -f1)
     echo "gnu_elif_line $gnu_elif_line"
     if [ -n "$gnu_elif_line" ];then
@@ -50,6 +64,8 @@ if ! rg 'UPDATED|ARM' $INPUT_FILE >> /dev/null;then
         gnu_clause_end_line=$(awk -v start="$gnu_elif_line" 'NR > start && /\t*elif \[\[ "\$1" = \*/ {print NR-1; exit}' $INPUT_FILE)
         gawk -i inplace -v gnu_clause_end_line="$gnu_clause_end_line" -v update_arm_msg="$UPDATE_ARM_CODE" 'NR==gnu_clause_end_line {print $0; print update_arm_msg; next} 1' $INPUT_FILE
     fi
+else
+    echo "FIND UPDATE ARM MSG!"
 fi
 
 exit 1
@@ -57,3 +73,9 @@ exit 1
 #TODO: CHECK THIS: SOMEHOW INSTALL THE SPEC_CPU IS ONE HIRECHY UP FROM, NEED COPY
 
 
+
+
+
+# COPY ALL BINARIES/EXECUTABLE TO OUR CUSTOM BIN DIR
+# cd $BM_DIR/benchspec/CPU
+# find [0-9][0-9][0-9]* -type f -executable -name "*.gnu" -exec rsync -R {} ~/riken/a64fxCvC/bin/spec-cpu \;
